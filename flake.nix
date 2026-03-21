@@ -23,9 +23,13 @@
       url = "github:nikitabobko/homebrew-tap";
       flake = false;
     };
+    homebrew-janky-borders = {
+      url = "github:FelixKratz/homebrew-formulae";
+      flake = false;
+    };
   };
 
-  outputs = inputs@{ self, nix-darwin, nixpkgs, nix-homebrew, homebrew-core, homebrew-cask, homebrew-aerospace, home-manager }:
+  outputs = inputs@{ self, nix-darwin, nixpkgs, nix-homebrew, homebrew-core, homebrew-cask, homebrew-aerospace, homebrew-janky-borders, home-manager }:
   let
     system = "aarch64-darwin";
     pkgs = nixpkgs.legacyPackages.${system};
@@ -37,7 +41,7 @@
       "Lucass-MacBook-Pro" = nix-darwin.lib.darwinSystem {
         inherit system;
         specialArgs = {
-          inherit homebrew-core homebrew-cask homebrew-aerospace;
+          inherit homebrew-core homebrew-cask homebrew-aerospace homebrew-janky-borders;
         };
         modules = [
           ./modules/darwin

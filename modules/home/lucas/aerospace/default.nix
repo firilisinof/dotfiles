@@ -5,6 +5,9 @@
     enable = true;
     package = null;
     settings = {
+      after-startup-command = [
+        "exec-and-forget borders active_color=0xffd37cae inactive_color=0xff78788b width=5.0"
+      ];
       gaps = {
         inner.horizontal = 8;
         inner.vertical = 8;
