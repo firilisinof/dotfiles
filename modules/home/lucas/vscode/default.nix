@@ -2,7 +2,7 @@
 
 {
   programs.vscode = {
-    enable = pkgs.lib.mkForce false;
+    enable = true;
     mutableExtensionsDir = false;
 
     profiles.default = {
@@ -17,8 +17,6 @@
         dbaeumer.vscode-eslint
         dotjoshjohnson.xml
         esbenp.prettier-vscode
-        github.copilot
-        github.copilot-chat
         github.vscode-github-actions
         github.vscode-pull-request-github
         james-yu.latex-workshop
