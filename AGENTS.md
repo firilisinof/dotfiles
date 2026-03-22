@@ -32,15 +32,16 @@ Home Manager conventions:
 Validation:
 
 - Run `nix flake check` after changing Nix modules.
-- Do not leave Home Manager deprecation warnings unresolved if they are easy to fix.
 
 Git workflow:
 
 - Use conventional commit messages.
 - Keep commit scopes short and meaningful, for example: `feat(home): ...`, `chore(darwin): ...`.
+- Do not add a `Co-Authored-By` trailer or any mention of AI tools in commit messages.
 
 When editing:
 
 - Prefer extending the existing module layout instead of creating parallel patterns.
 - Use absolute paths where environment-sensitive values matter.
 - Avoid imperative one-off setup when the same thing can be expressed in Nix.
+- Use homebrew for GUI packages and packages not found in nixpkgs.
