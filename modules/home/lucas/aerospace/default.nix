@@ -84,6 +84,10 @@
           "if".app-id = "com.apple.systempreferences";
           run = "layout floating";
         }
+        {
+          "if".window-title-regex-substring = "Settings|Preferences";
+          run = "layout floating";
+        }
       ];
     };
   };
