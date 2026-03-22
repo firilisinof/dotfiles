@@ -6,6 +6,7 @@
     ./aerospace
     ./bat
     ./environment.nix
+    ./fzf
     ./ghostty
     ./git
     ./lsd
