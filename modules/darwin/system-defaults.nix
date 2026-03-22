@@ -46,6 +46,7 @@
       NSAutomaticWindowAnimationsEnabled = false;
       NSDocumentSaveNewDocumentsToCloud = false;
       NSNavPanelExpandedStateForSaveMode = true;
+      NSWindowShouldDragOnGesture = true;
       PMPrintingExpandedStateForPrint = true;
     };
     trackpad = {
