@@ -16,16 +16,32 @@
 
   homebrew = {
     enable = true;
+
+    onActivation = {
+      autoUpdate = true;
+      upgrade = true;
+      cleanup = "zap";
+    };
+
+    global.autoUpdate = true;
+
     brews = [
       "FelixKratz/formulae/borders"
     ];
+
     casks = [
       "bitwarden"
       "nikitabobko/tap/aerospace"
       "mediosz/tap/swipeaerospace"
       "ghostty"
       "google-chrome"
+      "google-drive"
+      "zotero"
+      "discord"
     ];
-    masApps = {};
+
+    masApps = {
+      "amphetamine" = 937984704;
+    };
   };
 }
