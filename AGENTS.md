@@ -45,3 +45,4 @@ When editing:
 - Use absolute paths where environment-sensitive values matter.
 - Avoid imperative one-off setup when the same thing can be expressed in Nix.
 - Use homebrew for GUI packages and packages not found in nixpkgs.
+- Just make meaningful comments. The code should be readable by itself.
