@@ -1,5 +1,21 @@
 {
   "nodes": {
+    "aerospace": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1773014271,
+        "narHash": "sha256-FTE1he09SKkm7e4W4wwuhoBSgM3zROlRYcjZiU7Yjsg=",
+        "owner": "nikitabobko",
+        "repo": "homebrew-tap",
+        "rev": "db2dcd4d2fd7087457b3cc0baf597880ac4e35a0",
+        "type": "github"
+      },
+      "original": {
+        "owner": "nikitabobko",
+        "repo": "homebrew-tap",
+        "type": "github"
+      }
+    },
     "brew-src": {
       "flake": false,
       "locked": {
@@ -37,22 +53,6 @@
         "type": "github"
       }
     },
-    "homebrew-aerospace": {
-      "flake": false,
-      "locked": {
-        "lastModified": 1773014271,
-        "narHash": "sha256-FTE1he09SKkm7e4W4wwuhoBSgM3zROlRYcjZiU7Yjsg=",
-        "owner": "nikitabobko",
-        "repo": "homebrew-tap",
-        "rev": "db2dcd4d2fd7087457b3cc0baf597880ac4e35a0",
-        "type": "github"
-      },
-      "original": {
-        "owner": "nikitabobko",
-        "repo": "homebrew-tap",
-        "type": "github"
-      }
-    },
     "homebrew-cask": {
       "flake": false,
       "locked": {
@@ -85,7 +85,7 @@
         "type": "github"
       }
     },
-    "homebrew-janky-borders": {
+    "janky-borders": {
       "flake": false,
       "locked": {
         "lastModified": 1766486515,
@@ -158,14 +158,31 @@
     },
     "root": {
       "inputs": {
+        "aerospace": "aerospace",
         "home-manager": "home-manager",
-        "homebrew-aerospace": "homebrew-aerospace",
         "homebrew-cask": "homebrew-cask",
         "homebrew-core": "homebrew-core",
-        "homebrew-janky-borders": "homebrew-janky-borders",
+        "janky-borders": "janky-borders",
         "nix-darwin": "nix-darwin",
         "nix-homebrew": "nix-homebrew",
-        "nixpkgs": "nixpkgs"
+        "nixpkgs": "nixpkgs",
+        "swipeaerospace": "swipeaerospace"
+      }
+    },
+    "swipeaerospace": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1764689098,
+        "narHash": "sha256-UAKwQDtU6lXqyN/ZsMeMmCvxyYbE/5heLQjQDpvkb1M=",
+        "owner": "mediosz",
+        "repo": "homebrew-tap",
+        "rev": "5dd8a5c21806eba4361e2dd19b6c991f11b634c1",
+        "type": "github"
+      },
+      "original": {
+        "owner": "mediosz",
+        "repo": "homebrew-tap",
+        "type": "github"
       }
     }
   },

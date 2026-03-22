@@ -1,4 +1,4 @@
-{ homebrew-cask, homebrew-core, homebrew-aerospace, homebrew-janky-borders, ... }:
+{ homebrew-cask, homebrew-core, aerospace, janky-borders, swipeaerospace, ... }:
 
 {
   nix-homebrew = {
@@ -7,8 +7,9 @@
     taps = {
       "homebrew/homebrew-core" = homebrew-core;
       "homebrew/homebrew-cask" = homebrew-cask;
-      "nikitabobko/homebrew-tap" = homebrew-aerospace;
-      "FelixKratz/homebrew-formulae" = homebrew-janky-borders;
+      "nikitabobko/homebrew-tap" = aerospace;
+      "FelixKratz/homebrew-formulae" = janky-borders;
+      "mediosz/homebrew-tap" = swipeaerospace;
     };
     mutableTaps = false;
   };
@@ -21,7 +22,9 @@
     casks = [
       "bitwarden"
       "nikitabobko/tap/aerospace"
+      "mediosz/tap/swipeaerospace"
       "ghostty"
+      "google-chrome"
     ];
     masApps = {};
   };
