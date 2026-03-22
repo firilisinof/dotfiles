@@ -38,6 +38,7 @@
       "google-drive"
       "zotero"
       "discord"
+      "visual-studio-code"
     ];
 
     masApps = {
