@@ -49,12 +49,6 @@
         modules = [
           ./modules/darwin
           home-manager.darwinModules.home-manager
-          {
-            home-manager.useGlobalPkgs = true;
-            home-manager.useUserPackages = true;
-            home-manager.users.lucas = ./modules/home/lucas;
-          }
-          
           nix-homebrew.darwinModules.nix-homebrew
           # Align homebrew taps config with nix-homebrew.
           ({ config, ... }: {
