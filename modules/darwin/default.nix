@@ -2,6 +2,7 @@
 
 {
   imports = [
+    ./fonts.nix
     ./homebrew.nix
     ./nix.nix
     ./packages.nix
