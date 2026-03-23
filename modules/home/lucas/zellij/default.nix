@@ -4,9 +4,7 @@
   programs.zellij = {
     enable = true;
     package = pkgs.zellij;
-    enableZshIntegration = true;
-    attachExistingSession = true;
-    exitShellOnExit = true;
+    enableZshIntegration = false;
 
     extraConfig = ''
       themes {
