@@ -7,5 +7,6 @@
     claude-code
     codex
     nixfmt
+    ripgrep
   ];
 }
