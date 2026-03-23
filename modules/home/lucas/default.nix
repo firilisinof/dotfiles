@@ -5,6 +5,7 @@
     ./packages.nix
     ./aerospace
     ./bat
+    ./direnv
     ./environment.nix
     ./fzf
     ./ghostty
