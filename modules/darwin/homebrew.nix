@@ -39,6 +39,7 @@
       "zotero"
       "discord"
       "visual-studio-code"
+      "codex-app"
     ];
 
     masApps = {

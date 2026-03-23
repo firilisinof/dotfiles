@@ -12,6 +12,7 @@
     ./lsd
     ./man
     ./neovim
+    ./zellij
     ./zsh
     ./vscode
   ];

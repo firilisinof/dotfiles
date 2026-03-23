@@ -26,7 +26,7 @@
       (lib.mkIf config.programs.lsd.enable {
         tree = "lsd --tree";
       })
-      rec {
+      {
         nano = "nvim";
         vi = "nvim";
         vim = "nvim";
