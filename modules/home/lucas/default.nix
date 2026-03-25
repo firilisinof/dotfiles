@@ -13,6 +13,7 @@
     ./lsd
     ./man
     ./neovim
+    ./tmux
     ./zellij
     ./zsh
     ./vscode
