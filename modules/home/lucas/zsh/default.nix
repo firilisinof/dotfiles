@@ -33,6 +33,9 @@
       source ${pkgs.zsh-syntax-highlighting}/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
       WORDCHARS=''${WORDCHARS//\/}
       bindkey '^W' backward-kill-word
+      bindkey '^[f' forward-word
+      bindkey '^[[1;3C' forward-word
+      bindkey '^[[1;5C' forward-word
 
       rfv() {
         command rg --color=always --line-number --no-heading --smart-case "''${*:-}" |
