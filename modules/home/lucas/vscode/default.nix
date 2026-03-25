@@ -68,6 +68,7 @@
         "terminal.integrated.fontFamily" = "FiraCode Nerd Font";
         "terminal.integrated.confirmOnExit" = "hasChildProcesses";
         "editor.minimap.enabled" = false;
+        "githubPullRequests.createOnPublishBranch" = "never";
       };
     };
   };
