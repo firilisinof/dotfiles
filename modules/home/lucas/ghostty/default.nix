@@ -46,7 +46,7 @@
     keybind = super+ctrl+arrow_down=unbind
     keybind = super+ctrl+arrow_left=unbind
     keybind = super+ctrl+arrow_right=unbind
-    keybind = super+ctrl+==equalize_splits=unbind
+        keybind = super+ctrl+equal=unbind
     keybind = super+shift+enter=unbind
     keybind = super+w=unbind
 
