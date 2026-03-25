@@ -16,7 +16,6 @@
         davidanson.vscode-markdownlint
         dbaeumer.vscode-eslint
         dotjoshjohnson.xml
-        esbenp.prettier-vscode
         github.vscode-github-actions
         github.vscode-pull-request-github
         james-yu.latex-workshop
@@ -35,11 +34,13 @@
         ms-vscode-remote.remote-ssh
         ms-vscode.cmake-tools
         myriad-dreamin.tinymist
+        anthropic.claude-code
         redhat.vscode-yaml
         shd101wyy.markdown-preview-enhanced
         tamasfe.even-better-toml
         tomoki1207.pdf
         vscode-icons-team.vscode-icons
+        genieai.chatgpt-vscode
         yzhang.markdown-all-in-one
       ];
 
@@ -55,6 +56,7 @@
           "*.pdf" = "tomoki1207.pdf";
         };
         "vsicons.dontShowNewVersionMessage" = true;
+        "github.copilot.inlineSuggest.enable" = false;
         "editor.fontSize" = 12;
         "editor.fontLigatures" = true;
         "editor.fontFamily" = "FiraCode Nerd Font";
