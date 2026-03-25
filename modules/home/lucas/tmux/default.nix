@@ -21,11 +21,11 @@
       # Reload config without recreating the session.
       bind r source-file ~/.tmux.conf
 
-      # Move between panes with Alt+arrows, no prefix needed.
-      bind -n M-Left select-pane -L
-      bind -n M-Right select-pane -R
-      bind -n M-Up select-pane -U
-      bind -n M-Down select-pane -D
+      # Move between panes with Vim-style keys after prefix.
+      bind h select-pane -L
+      bind j select-pane -D
+      bind k select-pane -U
+      bind l select-pane -R
 
       set -g mouse on
       set -g base-index 1
