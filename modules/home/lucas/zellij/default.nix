@@ -28,6 +28,13 @@
       copy_command "pbcopy"
       copy_clipboard "system"
       show_startup_tips false
+
+      keybinds {
+        shared_except "locked" {
+          unbind "Alt Left"
+          unbind "Alt Right"
+        }
+      }
     '';
   };
 }
