@@ -40,7 +40,12 @@
         tamasfe.even-better-toml
         tomoki1207.pdf
         vscode-icons-team.vscode-icons
-        genieai.chatgpt-vscode
+        (pkgs.vscode-utils.extensionFromVscodeMarketplace {
+          name = "chatgpt";
+          publisher = "openai";
+          version = "26.5323.20928";
+          sha256 = "0malac6ycpz6zsaqxx1ay8vp9nx7k0ziyzmyxk1b47hgq50dlrc1";
+        })
         yzhang.markdown-all-in-one
       ];
 
