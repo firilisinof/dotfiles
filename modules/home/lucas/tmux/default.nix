@@ -43,6 +43,11 @@
       setw -g window-status-style 'fg=default,bg=default'
       setw -g window-status-current-style 'fg=default,bg=default,bold'
       set -g message-style 'fg=default,bg=default'
+
+      # Improve mouse/visual selection contrast in copy mode.
+      setw -g mode-style 'bg=colour236 fg=colour231'
+      setw -g copy-mode-match-style 'bg=colour238 fg=colour231 bold'
+      setw -g copy-mode-current-match-style 'bg=colour238 fg=colour231 bold'
       set -g status-right '%Y-%m-%d %H:%M '
       set -g status-right-length 50
       setw -g clock-mode-colour default
