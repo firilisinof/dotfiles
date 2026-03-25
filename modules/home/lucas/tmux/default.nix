@@ -32,12 +32,17 @@
       setw -g pane-base-index 1
       set-option -g allow-rename off
 
-      # Lightweight status/pane styling from the guide's recommendations.
+      # Theme-compatible styling: keep tmux on terminal defaults.
       set -g status-justify left
-      set -g status-style 'fg=red'
+      set -g status-style 'fg=default,bg=default'
+      set -g pane-border-style 'fg=default'
+      set -g pane-active-border-style 'fg=default'
+      setw -g window-status-style 'fg=default,bg=default'
+      setw -g window-status-current-style 'fg=default,bg=default,bold'
+      set -g message-style 'fg=default,bg=default'
       set -g status-right '%Y-%m-%d %H:%M '
       set -g status-right-length 50
-      setw -g clock-mode-colour yellow
+      setw -g clock-mode-colour default
     '';
   };
 }
