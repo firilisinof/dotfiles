@@ -13,13 +13,16 @@
       bind-key C-a send-prefix
 
       # Split panes with mnemonic keys, then remove the defaults.
-      bind | split-window -h
-      bind - split-window -v
+      bind | split-window -h -c "#{pane_current_path}"
+      bind - split-window -v -c "#{pane_current_path}"
       unbind '"'
       unbind %
 
       # Reload config without recreating the session.
       bind r source-file ~/.tmux.conf
+
+      # Open new windows in current pane directory.
+      bind c new-window -c "#{pane_current_path}"
 
       # Move between panes with Vim-style keys after prefix.
       bind h select-pane -L
