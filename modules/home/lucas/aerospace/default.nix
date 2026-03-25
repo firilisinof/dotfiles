@@ -37,6 +37,7 @@
         alt-j = "focus down";
         alt-k = "focus up";
         alt-l = "focus right";
+        alt-enter = "exec-and-forget open -n /Applications/Ghostty.app";
 
         alt-shift-h = "move left";
         alt-shift-j = "move down";
@@ -67,6 +68,13 @@
 
         alt-f = "fullscreen";
         alt-shift-space = "layout floating tiling";
+        alt-r = "mode resize";
+      };
+
+      mode.resize.binding = {
+        minus = "resize smart -50";
+        equal = "resize smart +50";
+        esc = "mode main";
       };
       on-window-detected = [
         {
