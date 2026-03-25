@@ -47,9 +47,6 @@
               --bind 'enter:become(${pkgs.neovim}/bin/nvim {1} +{2})'
       }
 
-      if [[ -o interactive ]] && [[ -z "$TMUX" ]] && command -v ${pkgs.tmux}/bin/tmux >/dev/null 2>&1; then
-        exec ${pkgs.tmux}/bin/tmux new-session -A -s main
-      fi
     '';
   };
 }
