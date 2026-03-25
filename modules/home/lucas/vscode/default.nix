@@ -40,7 +40,6 @@
         tamasfe.even-better-toml
         tomoki1207.pdf
         vscode-icons-team.vscode-icons
-        vscodevim.vim
         yzhang.markdown-all-in-one
       ];
 
@@ -50,15 +49,18 @@
         "extensions.autoCheckUpdates" = false;
         "window.titleBarStyle" = "custom";
         "workbench.startupEditor" = "none";
-        "workbench.colorTheme" = "Visual Studio Light";
+        "workbench.colorTheme" = "Default Light Modern";
         "workbench.iconTheme" = "vscode-icons";
+        "workbench.editorAssociations" = {
+          "*.pdf" = "tomoki1207.pdf";
+        };
         "vsicons.dontShowNewVersionMessage" = true;
         "editor.fontSize" = 12;
         "editor.fontLigatures" = true;
         "editor.fontFamily" = "FiraCode Nerd Font";
         "terminal.integrated.fontFamily" = "FiraCode Nerd Font";
         "terminal.integrated.confirmOnExit" = "hasChildProcesses";
-        "explorer.excludeGitIgnore" = true;
+        "editor.minimap.enabled" = false;
       };
     };
   };
