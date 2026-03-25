@@ -33,6 +33,8 @@
         shared_except "locked" {
           unbind "Alt Left"
           unbind "Alt Right"
+          unbind "Alt f"
+          unbind "Alt b"
         }
       }
     '';
