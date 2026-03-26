@@ -48,7 +48,6 @@
     keybind = super+ctrl+arrow_right=unbind
         keybind = super+ctrl+equal=unbind
     keybind = super+shift+enter=unbind
-    keybind = super+w=unbind
 
     # Remove command-palette command entries so no tab/pane action icons are shown.
     command-palette-entry =
