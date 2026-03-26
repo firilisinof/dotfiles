@@ -13,7 +13,6 @@
         b4dm4n.vscode-nixpkgs-fmt
         jnoortheen.nix-ide
         charliermarsh.ruff
-        davidanson.vscode-markdownlint
         dbaeumer.vscode-eslint
         dotjoshjohnson.xml
         github.vscode-github-actions
@@ -54,6 +53,7 @@
         "update.mode" = "none";
         "extensions.autoCheckUpdates" = false;
         "window.titleBarStyle" = "custom";
+        "cmake.ignoreCMakeListsMissing" = true;
         "workbench.startupEditor" = "none";
         "workbench.colorTheme" = "Default Light Modern";
         "workbench.iconTheme" = "vscode-icons";

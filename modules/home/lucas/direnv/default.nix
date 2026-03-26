@@ -4,4 +4,22 @@
     enableZshIntegration = true;
     nix-direnv.enable = true;
   };
+
+  home.file.".config/direnv/direnvrc".text = ''
+    # Place in ~/.config/direnv/direnvrc
+
+    # Two things to know:
+    # * `direnv_layout_dir` is called once for every {.direnvrc,.envrc} sourced
+    # * The indicator for a different direnv file being sourced is a different $PWD value
+    # This means we can hash $PWD to get a fully unique cache path for any given environment
+
+    : ''${XDG_CACHE_HOME:=$HOME/.cache}
+    declare -A direnv_layout_dirs
+    direnv_layout_dir() {
+      echo "''${direnv_layout_dirs[$PWD]:=$(
+        echo -n "$XDG_CACHE_HOME"/direnv/layouts/
+        echo -n "$PWD" | sha1sum | cut -d ' ' -f 1
+      )}"
+    }
+  '';
 }
