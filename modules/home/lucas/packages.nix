@@ -6,6 +6,7 @@
     wget
     claude-code
     codex
+    gemini-cli
     nixfmt
     ripgrep
     nodejs
