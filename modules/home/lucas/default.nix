@@ -14,6 +14,7 @@
     ./man
     ./neovim
     ./tmux
+    ./wallpaper
     ./zellij
     ./zsh
     ./vscode

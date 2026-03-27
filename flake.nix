@@ -33,7 +33,7 @@
     };
   };
 
-  outputs = inputs@{ nix-darwin, nix-homebrew, home-manager, ... }:
+  outputs = inputs@{ self, nix-darwin, nix-homebrew, home-manager, ... }:
   let
     system = "aarch64-darwin";
   in
@@ -44,6 +44,7 @@
       "Lucass-MacBook-Pro" = nix-darwin.lib.darwinSystem {
         inherit system;
         specialArgs = {
+          inherit self;
           inherit (inputs) homebrew-core homebrew-cask aerospace janky-borders swipeaerospace;
         };
         modules = [
