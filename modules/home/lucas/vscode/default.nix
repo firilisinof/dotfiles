@@ -37,8 +37,6 @@
         redhat.vscode-yaml
         shd101wyy.markdown-preview-enhanced
         tamasfe.even-better-toml
-        tomoki1207.pdf
-        vscode-icons-team.vscode-icons
         (pkgs.vscode-utils.extensionFromVscodeMarketplace {
           name = "chatgpt";
           publisher = "openai";
@@ -56,11 +54,6 @@
         "cmake.ignoreCMakeListsMissing" = true;
         "workbench.startupEditor" = "none";
         "workbench.colorTheme" = "Default Light Modern";
-        "workbench.iconTheme" = "vscode-icons";
-        "workbench.editorAssociations" = {
-          "*.pdf" = "tomoki1207.pdf";
-        };
-        "vsicons.dontShowNewVersionMessage" = true;
         "github.copilot.inlineSuggest.enable" = false;
         "editor.fontSize" = 12;
         "editor.fontLigatures" = true;
