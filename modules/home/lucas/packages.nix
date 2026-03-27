@@ -8,5 +8,6 @@
     codex
     nixfmt
     ripgrep
+    nodejs
   ];
 }
