@@ -10,7 +10,8 @@ in
     taps = {
       "homebrew/homebrew-core" = homebrew-core;
       "homebrew/homebrew-cask" = homebrew-cask;
-    } // lib.optionalAttrs aerospaceEnabled {
+      # Keep these taps available so Homebrew cleanup can remove previously
+      # installed AeroSpace-related packages after they are disabled.
       "nikitabobko/homebrew-tap" = aerospace;
       "FelixKratz/homebrew-formulae" = janky-borders;
       "mediosz/homebrew-tap" = swipeaerospace;
