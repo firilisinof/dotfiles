@@ -40,6 +40,7 @@
       "discord"
       "visual-studio-code"
       "codex-app"
+      "claude"
     ];
 
     masApps = {
