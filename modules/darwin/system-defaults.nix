@@ -54,7 +54,7 @@
     };
     trackpad = {
       TrackpadRightClick = true;
-      TrackpadThreeFingerDrag = true;
+      TrackpadThreeFingerDrag = false;
       Clicking = true;
     };
   };
