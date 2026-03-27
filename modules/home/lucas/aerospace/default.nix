@@ -2,7 +2,7 @@
 
 {
   programs.aerospace = {
-    enable = true;
+    enable = false;
     package = null;
     settings = {
       after-startup-command = [

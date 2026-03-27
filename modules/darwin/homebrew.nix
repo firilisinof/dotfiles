@@ -1,5 +1,8 @@
-{ homebrew-cask, homebrew-core, aerospace, janky-borders, swipeaerospace, ... }:
+{ lib, homebrew-cask, homebrew-core, aerospace, janky-borders, swipeaerospace, ... }:
 
+let
+  aerospaceEnabled = false;
+in
 {
   nix-homebrew = {
     enable = true;
@@ -7,6 +10,7 @@
     taps = {
       "homebrew/homebrew-core" = homebrew-core;
       "homebrew/homebrew-cask" = homebrew-cask;
+    } // lib.optionalAttrs aerospaceEnabled {
       "nikitabobko/homebrew-tap" = aerospace;
       "FelixKratz/homebrew-formulae" = janky-borders;
       "mediosz/homebrew-tap" = swipeaerospace;
@@ -25,14 +29,12 @@
 
     global.autoUpdate = true;
 
-    brews = [
+    brews = lib.optionals aerospaceEnabled [
       "FelixKratz/formulae/borders"
     ];
 
     casks = [
       "bitwarden"
-      "nikitabobko/tap/aerospace"
-      "mediosz/tap/swipeaerospace"
       "ghostty"
       "google-chrome"
       "google-drive"
@@ -41,6 +43,9 @@
       "visual-studio-code"
       "codex-app"
       "claude"
+    ] ++ lib.optionals aerospaceEnabled [
+      "nikitabobko/tap/aerospace"
+      "mediosz/tap/swipeaerospace"
     ];
 
     masApps = {
