@@ -12,12 +12,17 @@ in
     enable = true;
     config = {
       ProgramArguments = [
-        "/usr/bin/osascript"
-        "-e"
+        "/bin/sh"
+        "-c"
         ''
-          tell application "System Events"
-            set picture of every desktop to POSIX file "${wallpaperPath}"
-          end tell
+          while ! /usr/bin/pgrep -x Dock >/dev/null || ! /usr/bin/pgrep -x WallpaperAgent >/dev/null; do
+            /bin/sleep 1
+          done
+
+          /bin/sleep 2
+
+          /usr/bin/osascript -e 'tell application "System Events" to set picture of every desktop to POSIX file "${wallpaperPath}"'
+          /usr/bin/killall Dock || true
         ''
       ];
       RunAtLoad = true;
