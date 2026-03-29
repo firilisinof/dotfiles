@@ -35,7 +35,7 @@
     NSGlobalDomain = {
       AppleInterfaceStyle = null;
       ApplePressAndHoldEnabled = false;
-      AppleSpacesSwitchOnActivate = false;
+      AppleSpacesSwitchOnActivate = true; 
       AppleShowAllExtensions = true;
       AppleWindowTabbingMode = "manual";
       InitialKeyRepeat = 20;
