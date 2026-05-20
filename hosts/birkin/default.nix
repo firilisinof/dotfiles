@@ -61,6 +61,11 @@
 
   security.pam.services.sudo_local.touchIdAuth = true;
 
+  system.activationScripts.postActivation.text = ''
+    echo "Setting ${user.name}'s login shell to fish..."
+    dscl . -create /Users/${user.name} UserShell ${pkgs.fish}/bin/fish
+  '';
+
   system = {
     primaryUser = user.name;
     startup.chime = false;
