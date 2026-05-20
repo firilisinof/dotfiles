@@ -22,6 +22,7 @@
       "obsidian"
       "claude"
       "codex-app"
+      "google-drive"
     ];
   };
 }

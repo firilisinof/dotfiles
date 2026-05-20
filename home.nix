@@ -33,6 +33,14 @@
               window-padding-x = 8
               window-padding-y = 8
               macos-titlebar-style = native
+              theme = GitHub Light Default
+              window-theme = light
+            '';
+            ".claude/CLAUDE.md".text = ''
+              # Writing guidelines
+
+              - Avoid em dashes and semicolons for splitting sentences.
+              - Prefer shorter sentences separated by commas or dots.
             '';
           };
 
@@ -41,6 +49,15 @@
 
         programs = {
           home-manager.enable = true;
+
+          fish.enable = true;
+
+          starship = {
+            enable = true;
+            enableFishIntegration = true;
+          };
+
+          man.generateCaches = false;
 
           git = {
             enable = true;
