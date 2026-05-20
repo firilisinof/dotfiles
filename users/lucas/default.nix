@@ -1,4 +1,4 @@
-{ pkgs, ... }:
+{ pkgs, user, ... }:
 {
   imports = [
     ./git.nix
@@ -6,8 +6,8 @@
   ];
 
   home = {
-    username = "lucas";
-    homeDirectory = "/Users/lucas";
+    username = user.name;
+    homeDirectory = user.home;
 
     packages = with pkgs; [
       curl

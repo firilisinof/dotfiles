@@ -1,10 +1,10 @@
-{ inputs, ... }:
+{ inputs, user, ... }:
 {
   imports = [ inputs.nix-homebrew.darwinModules.nix-homebrew ];
 
   nix-homebrew = {
     enable = true;
-    user = "lucas";
+    user = user.name;
   };
 
   homebrew = {

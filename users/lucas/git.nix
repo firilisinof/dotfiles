@@ -1,4 +1,4 @@
-{ ... }:
+{ user, ... }:
 {
   programs.git = {
     enable = true;
@@ -12,8 +12,8 @@
       push.autoSetupRemote = true;
       rebase.autoStash = true;
       user = {
-        name = "Lucas de Sousa Rosa";
-        email = "roses.lucas404@gmail.com";
+        name = user.fullName;
+        email = user.email;
       };
     };
   };

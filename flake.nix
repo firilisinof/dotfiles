@@ -17,12 +17,24 @@
       nix-darwin,
       ...
     }:
+    let
+      user = {
+        name = "lucas";
+        fullName = "Lucas de Sousa Rosa";
+        email = "roses.lucas404@gmail.com";
+        home = "/Users/lucas";
+      };
+      host = {
+        name = "birkin";
+        system = "aarch64-darwin";
+      };
+    in
     {
       # Build darwin flake using:
       # $ darwin-rebuild build --flake .#birkin
-      darwinConfigurations."birkin" = nix-darwin.lib.darwinSystem {
+      darwinConfigurations.${host.name} = nix-darwin.lib.darwinSystem {
         modules = [ ./hosts/birkin ];
-        specialArgs = { inherit inputs; };
+        specialArgs = { inherit inputs user host; };
       };
     };
 }

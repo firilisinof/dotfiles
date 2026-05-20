@@ -2,6 +2,8 @@
   pkgs,
   lib,
   inputs,
+  user,
+  host,
   ...
 }:
 {
@@ -13,10 +15,10 @@
 
   environment = {
     etc."sudoers.d/10-passwordless".text = ''
-      lucas ALL=(ALL:ALL) NOPASSWD:SETENV: ALL
+      ${user.name} ALL=(ALL:ALL) NOPASSWD:SETENV: ALL
     '';
     variables = {
-      SSH_AUTH_SOCK = "/Users/lucas/Library/Containers/com.bitwarden.desktop/Data/.bitwarden-ssh-agent.sock";
+      SSH_AUTH_SOCK = "${user.home}/Library/Containers/com.bitwarden.desktop/Data/.bitwarden-ssh-agent.sock";
     };
     profiles = [
       "$HOME/.nix-profile"
@@ -30,9 +32,9 @@
   ];
 
   networking = {
-    hostName = "birkin";
-    computerName = "birkin";
-    localHostName = "birkin";
+    hostName = host.name;
+    computerName = host.name;
+    localHostName = host.name;
   };
 
   nix = {
@@ -48,7 +50,7 @@
   };
 
   nixpkgs = {
-    hostPlatform = "aarch64-darwin";
+    hostPlatform = host.system;
     config.allowUnfree = true;
   };
 
@@ -60,14 +62,14 @@
   security.pam.services.sudo_local.touchIdAuth = true;
 
   system = {
-    primaryUser = "lucas";
+    primaryUser = user.name;
     startup.chime = false;
     configurationRevision = inputs.self.rev or inputs.self.dirtyRev or null;
     stateVersion = 6;
   };
 
-  users.users.lucas = {
-    home = "/Users/lucas";
+  users.users.${user.name} = {
+    home = user.home;
     shell = pkgs.fish;
   };
 }
