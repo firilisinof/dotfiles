@@ -23,6 +23,12 @@
     pkgs.nerd-fonts.roboto-mono
   ];
 
+  networking = {
+    hostName = "birkin";
+    computerName = "birkin";
+    localHostName = "birkin";
+  };
+
   nix = {
     settings = {
       experimental-features = "nix-command flakes";
