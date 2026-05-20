@@ -17,11 +17,18 @@
     };
 
     casks = [
+      # Terminal & editors
       "ghostty"
       "visual-studio-code"
+
+      # Notes & knowledge
       "obsidian"
+
+      # AI assistants
       "claude"
       "codex-app"
+
+      # Cloud storage
       "google-drive"
     ];
   };
