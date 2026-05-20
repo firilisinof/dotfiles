@@ -11,17 +11,24 @@
     home-manager.inputs.nixpkgs.follows = "nixpkgs";
   };
 
-  outputs = inputs@{ nix-darwin, ... }:
-  {
-    # Build darwin flake using:
-    # $ darwin-rebuild build --flake .#birkin
-    darwinConfigurations."birkin" = nix-darwin.lib.darwinSystem {
-      modules = [
-        ./configuration.nix
-        ./brew.nix
-        ./home.nix
-      ];
-      specialArgs = { inherit inputs; };
+  outputs =
+    inputs@{
+      nixpkgs,
+      nix-darwin,
+      nix-homebrew,
+      home-manager,
+      ...
+    }:
+    {
+      # Build darwin flake using:
+      # $ darwin-rebuild build --flake .#birkin
+      darwinConfigurations."birkin" = nix-darwin.lib.darwinSystem {
+        modules = [
+          ./configuration.nix
+          ./brew.nix
+          ./home.nix
+        ];
+        specialArgs = { inherit inputs; };
+      };
     };
-  };
 }

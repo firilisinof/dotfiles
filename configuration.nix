@@ -1,8 +1,22 @@
-{ pkgs, lib, inputs, ... }:
 {
-  environment.etc."sudoers.d/10-passwordless".text = ''
-    lucas ALL=(ALL:ALL) NOPASSWD:SETENV: ALL
-  '';
+  pkgs,
+  lib,
+  inputs,
+  ...
+}:
+{
+  environment = {
+    etc."sudoers.d/10-passwordless".text = ''
+      lucas ALL=(ALL:ALL) NOPASSWD:SETENV: ALL
+    '';
+    variables = {
+      SSH_AUTH_SOCK = "/Users/lucas/Library/Containers/com.bitwarden.desktop/Data/.bitwarden-ssh-agent.sock";
+    };
+    profiles = [
+      "$HOME/.nix-profile"
+    ];
+    shells = [ pkgs.fish ];
+  };
 
   fonts.packages = [
     pkgs.roboto
@@ -26,6 +40,11 @@
     config.allowUnfree = true;
   };
 
+  programs = {
+    fish.enable = true;
+    man.enable = true;
+  };
+
   security.pam.services.sudo_local.touchIdAuth = true;
 
   system = {
@@ -41,7 +60,7 @@
         minimize-to-application = false;
         expose-animation-duration = 0.15;
         showhidden = true;
-        persistent-apps = [];
+        persistent-apps = [ ];
         wvous-bl-corner = 1;
         wvous-br-corner = 1;
         wvous-tl-corner = 1;
@@ -63,7 +82,7 @@
       NSGlobalDomain = {
         AppleInterfaceStyle = null;
         ApplePressAndHoldEnabled = false;
-        AppleSpacesSwitchOnActivate = true; 
+        AppleSpacesSwitchOnActivate = true;
         AppleShowAllExtensions = true;
         AppleWindowTabbingMode = "manual";
         InitialKeyRepeat = 20;
@@ -90,5 +109,8 @@
     stateVersion = 6;
   };
 
-  users.users.lucas.home = "/Users/lucas";
+  users.users.lucas = {
+    home = "/Users/lucas";
+    shell = pkgs.fish;
+  };
 }
