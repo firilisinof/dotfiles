@@ -37,11 +37,11 @@
       AppleWindowTabbingMode = "manual";
       InitialKeyRepeat = 20;
       KeyRepeat = 2;
-      NSAutomaticCapitalizationEnabled = false;
+      NSAutomaticCapitalizationEnabled = true;
       NSAutomaticDashSubstitutionEnabled = false;
       NSAutomaticQuoteSubstitutionEnabled = false;
-      NSAutomaticSpellingCorrectionEnabled = false;
-      NSAutomaticInlinePredictionEnabled = false;
+      NSAutomaticSpellingCorrectionEnabled = true;
+      NSAutomaticInlinePredictionEnabled = true;
       NSAutomaticPeriodSubstitutionEnabled = false;
       NSAutomaticWindowAnimationsEnabled = false;
       NSDocumentSaveNewDocumentsToCloud = false;
