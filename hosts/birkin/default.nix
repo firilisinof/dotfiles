@@ -29,6 +29,8 @@
   fonts.packages = [
     pkgs.roboto
     pkgs.nerd-fonts.roboto-mono
+    pkgs.gyre-fonts
+    pkgs.liberation_ttf
   ];
 
   networking = {
@@ -48,7 +50,7 @@
       ];
       trusted-users = [
         "root"
-        "lucas"
+        user.name
       ];
     };
   };

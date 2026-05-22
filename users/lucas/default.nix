@@ -21,6 +21,8 @@
       ripgrep
       nixfmt
       helix
+      typst
+      typstyle
     ];
 
     shell = {
