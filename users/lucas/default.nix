@@ -23,12 +23,15 @@
     };
 
     file =
-      let soundLikeMe = ./files/claude/skills/sound-like-me/SKILL.md;
+      let
+        soundLikeMe = ./files/ai/skills/sound-like-me/SKILL.md;
+        aiFile = ./files/ai/AI.md;
       in {
         ".config/ghostty/config".source = ./files/ghostty/config;
-        ".claude/CLAUDE.md".source = ./files/claude/CLAUDE.md;
+        ".claude/CLAUDE.md".source = aiFile;
+        ".codex/AGENTS.md".source = aiFile;
         ".claude/skills/sound-like-me/SKILL.md".source = soundLikeMe;
-        ".agents/skills/sound-like-me/SKILL.md".source = soundLikeMe;
+        ".codex/skills/sound-like-me/SKILL.md".source = soundLikeMe;
       };
 
     stateVersion = "26.05";
