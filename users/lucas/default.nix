@@ -22,10 +22,14 @@
       enableFishIntegration = true;
     };
 
-    file = {
-      ".config/ghostty/config".source = ./files/ghostty/config;
-      ".claude/CLAUDE.md".source = ./files/claude/CLAUDE.md;
-    };
+    file =
+      let soundLikeMe = ./files/claude/skills/sound-like-me/SKILL.md;
+      in {
+        ".config/ghostty/config".source = ./files/ghostty/config;
+        ".claude/CLAUDE.md".source = ./files/claude/CLAUDE.md;
+        ".claude/skills/sound-like-me/SKILL.md".source = soundLikeMe;
+        ".agents/skills/sound-like-me/SKILL.md".source = soundLikeMe;
+      };
 
     stateVersion = "26.05";
   };
