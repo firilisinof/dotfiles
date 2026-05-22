@@ -15,6 +15,7 @@
       git
       ripgrep
       nixfmt
+      helix
     ];
 
     shell = {
@@ -32,5 +33,22 @@
   programs = {
     home-manager.enable = true;
     man.generateCaches = false;
+    helix = {
+      enable = true;
+
+      settings = {
+        theme = "github_light";
+      };
+
+      languages = {
+        language = [
+          {
+            name = "nix";
+            formatter.command = "nixfmt";
+            auto-format = true;
+          }
+        ];
+      };
+    };
   };
 }
