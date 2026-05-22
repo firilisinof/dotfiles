@@ -1,6 +1,5 @@
 ---
 name: sound-like-me
-disable-model-invocation: true
 description: Rewrites text in the user's first-person working-journal voice. Use when the user asks to rephrase, rewrite, or restyle text to sound like their own notes or journal entries.
 ---
 
