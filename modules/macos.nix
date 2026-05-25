@@ -26,7 +26,9 @@
       spans-displays = false;
     };
     WindowManager = {
-      StandardHideDesktopIcons = false;
+      GloballyEnabled = false;
+      StandardHideDesktopIcons = true;
+      HideDesktop = true;
       EnableStandardClickToShowDesktop = false;
     };
     NSGlobalDomain = {

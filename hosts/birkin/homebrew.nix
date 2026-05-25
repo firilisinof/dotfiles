@@ -17,19 +17,21 @@
     };
 
     casks = [
-      # Terminal & editors
       "ghostty"
       "visual-studio-code"
 
-      # Notes & knowledge
       "obsidian"
 
-      # AI assistants
       "claude"
       "codex-app"
 
-      # Cloud storage
+      "google-chrome"
       "google-drive"
+
+      "mullvad-vpn"
+      "anki"
+      "beeper"
+      "calibre"
     ];
   };
 }
