@@ -1,5 +1,10 @@
 { ... }:
 {
+  home.sessionVariables = {
+    EDITOR = "hx";
+    VISUAL = "hx";
+  };
+
   programs = {
     fish.enable = true;
 
