@@ -18,6 +18,7 @@
       curl
       wget
       git
+      git-lfs
       ripgrep
       nixfmt
       helix
@@ -76,6 +77,11 @@
           }
         ];
       };
+    };
+    direnv = {
+      enable = true;
+      enableFishIntegration = true;
+      nix-direnv.enable = true;
     };
   };
 }
