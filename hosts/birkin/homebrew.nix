@@ -23,6 +23,7 @@
       "obsidian"
 
       "claude"
+      "claude-code"
       "codex-app"
 
       "google-chrome"
@@ -30,8 +31,9 @@
 
       "mullvad-vpn"
       "anki"
-      "beeper"
       "calibre"
+
+      "betterdisplay"
     ];
   };
 }
