@@ -16,6 +16,10 @@
       cleanup = "zap";
     };
 
+    brews = [
+      "blueutil"
+    ];
+
     casks = [
       "ghostty"
       "visual-studio-code"
@@ -27,12 +31,17 @@
       "codex-app"
 
       "google-chrome"
+      "firefox"
+
       "google-drive"
 
       "mullvad-vpn"
+      
       "anki"
       "calibre"
+      "zotero"
 
+      "discord"
       "betterdisplay"
     ];
   };
