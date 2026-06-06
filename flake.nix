@@ -33,7 +33,7 @@
       # Build darwin flake using:
       # $ darwin-rebuild build --flake .#birkin
       darwinConfigurations.${host.name} = nix-darwin.lib.darwinSystem {
-        modules = [ ./hosts/birkin ];
+        modules = [ ./configuration.nix ];
         specialArgs = { inherit inputs user host; };
       };
     };
