@@ -166,11 +166,6 @@
       "visual-studio-code"
 
       "obsidian"
-
-      "claude"
-      "claude-code"
-      "codex-app"
-
       "google-chrome"
       "firefox"
 
