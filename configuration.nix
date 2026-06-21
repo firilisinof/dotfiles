@@ -54,6 +54,7 @@
         user.name
       ];
     };
+    gc.automatic = true;
   };
 
   nixpkgs = {
