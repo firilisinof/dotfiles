@@ -28,10 +28,10 @@
       EDITOR = "code --wait --skip-welcome --skip-release-notes --disable-telemetry --skip-add-to-recently-opened";
     };
 
-    file.".config/ghostty/config".source = ./files/ghostty/config;
-
     stateVersion = "26.05";
   };
+
+  xdg.configFile."ghostty/config".source = ./config/ghostty/config;
 
   programs = {
     home-manager.enable = true;
