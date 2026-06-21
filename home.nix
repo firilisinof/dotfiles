@@ -80,6 +80,21 @@
       };
     };
 
+    ssh = {
+      enable = true;
+      enableDefaultConfig = false;
+      settings = {
+        "*" = {
+          IdentityAgent = "${user.home}/Library/Containers/com.bitwarden.desktop/Data/.bitwarden-ssh-agent.sock";
+        };
+        "SuperMaquina" = {
+          HostName = "143.107.45.126";
+          Port = 2031;
+          User = "lsrosa";
+        };
+      };
+    };
+
     fzf = {
       enable = true;
       enableFishIntegration = true;
