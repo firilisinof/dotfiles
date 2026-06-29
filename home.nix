@@ -19,6 +19,7 @@
       typst
       typstyle
       poppler-utils
+      nodejs
     ];
 
     shell = {
