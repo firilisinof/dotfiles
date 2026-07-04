@@ -1,4 +1,5 @@
 {
+  config,
   lib,
   pkgs,
   user,
@@ -20,6 +21,9 @@
       typstyle
       poppler-utils
       nodejs
+      python313
+      restic
+      rclone
     ];
 
     shell = {
@@ -32,9 +36,28 @@
 
     sessionVariables = {
       EDITOR = "code --wait --skip-welcome --skip-release-notes --disable-telemetry --skip-add-to-recently-opened";
+      DIRENV_WARN_TIMEOUT = 0;
     };
 
     stateVersion = "26.05";
+  };
+
+  home.file.".local/bin/run-backup" = {
+    source = ./bin/run-backup.py;
+    executable = true;
+  };
+
+  launchd.agents.run-backup = {
+    enable = true;
+    config = {
+      ProgramArguments = [ "${user.home}/.local/bin/run-backup" ];
+      StartCalendarInterval = [ { Hour = 12; Minute = 0; } ];
+      EnvironmentVariables = {
+        PATH = "${config.home.profileDirectory}/bin:/usr/bin:/bin";
+      };
+      StandardOutPath = "${user.home}/Library/Logs/run-backup.log";
+      StandardErrorPath = "${user.home}/Library/Logs/run-backup.log";
+    };
   };
 
   xdg.configFile."ghostty/config".source = ./config/ghostty/config;
