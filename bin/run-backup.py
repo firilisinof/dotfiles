@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
+import atexit
 import os
 import subprocess
 import sys
+import time
 
 HOME = "/Users/lucas"
 ZOTERO_DIR = f"{HOME}/Zotero"
@@ -37,7 +39,15 @@ def zotero_is_running(process_name):
         return False
     
 if zotero_is_running("zotero"):
-    sys.exit("Zotero is running. Quit Zotero before backing up.")
+    run(["osascript", "-e", 'quit app "Zotero"'])
+    for _ in range(30):
+        if not zotero_is_running("zotero"):
+            break
+        time.sleep(1)
+    else:
+        sys.exit("Zotero did not quit within 30 seconds.")
+    # Reopen via atexit so Zotero comes back even if a backup step fails.
+    atexit.register(subprocess.run, ["open", "-g", "-a", "Zotero"])
 
 run(["restic", "backup", ZOTERO_DIR, ZOTMOOV_DIR])
 
