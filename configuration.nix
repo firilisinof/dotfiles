@@ -158,6 +158,13 @@
       cleanup = "zap";
     };
 
+    taps = [
+      {
+        name = "d12frosted/emacs-plus";
+        trusted = true;
+      }
+    ];
+
     brews = [
       "blueutil"
     ];
@@ -182,6 +189,8 @@
       "betterdisplay"
       "balenaetcher"
       "transmission"
+
+      "emacs-plus-app"
     ];
 
     masApps = {

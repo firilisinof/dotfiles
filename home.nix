@@ -51,12 +51,45 @@
     enable = true;
     config = {
       ProgramArguments = [ "${user.home}/.local/bin/run-backup" ];
-      StartCalendarInterval = [ { Hour = 12; Minute = 0; } ];
+      StartCalendarInterval = [
+        {
+          Hour = 12;
+          Minute = 0;
+        }
+      ];
       EnvironmentVariables = {
         PATH = "${config.home.profileDirectory}/bin:/usr/bin:/bin";
       };
       StandardOutPath = "${user.home}/Library/Logs/run-backup.log";
       StandardErrorPath = "${user.home}/Library/Logs/run-backup.log";
+    };
+  };
+
+  launchd.agents.emacs = {
+    enable = true;
+    config = {
+      ProgramArguments = [
+        "/Applications/Emacs.app/Contents/MacOS/Emacs"
+        "--fg-daemon"
+      ];
+      RunAtLoad = true;
+      KeepAlive.SuccessfulExit = false;
+      ProcessType = "Interactive";
+      WorkingDirectory = user.home;
+      EnvironmentVariables = {
+        PATH = lib.concatStringsSep ":" [
+          "${user.home}/.local/bin"
+          "${config.home.profileDirectory}/bin"
+          "/run/current-system/sw/bin"
+          "/opt/homebrew/bin"
+          "/usr/bin"
+          "/bin"
+          "/usr/sbin"
+          "/sbin"
+        ];
+      };
+      StandardOutPath = "${user.home}/Library/Logs/emacs.log";
+      StandardErrorPath = "${user.home}/Library/Logs/emacs.log";
     };
   };
 
