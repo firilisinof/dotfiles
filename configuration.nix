@@ -191,6 +191,8 @@
       "transmission"
 
       "emacs-plus-app"
+      "wacom-tablet"
+      "osu"
     ];
 
     masApps = {
