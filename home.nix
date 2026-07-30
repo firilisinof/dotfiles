@@ -24,6 +24,7 @@
       python313
       restic
       rclone
+      uv
     ];
 
     shell = {

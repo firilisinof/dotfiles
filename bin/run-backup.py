@@ -7,7 +7,6 @@ import time
 
 HOME = "/Users/lucas"
 ZOTERO_DIR = f"{HOME}/Zotero"
-ZOTMOOV_DIR = f"{HOME}/ws/zotero"
 
 LOCAL_REPO = f"{HOME}/ws/backups"
 
@@ -18,9 +17,6 @@ os.environ["RESTIC_PASSWORD_FILE"] = PASSWORD_FILE
 
 if not os.path.isdir(ZOTERO_DIR):
     sys.exit("Zotero data directory not found.")
-
-if not os.path.isdir(ZOTMOOV_DIR):
-    sys.exit("ZotMoov directory not found.")
 
 if not os.path.isfile(PASSWORD_FILE):
     sys.exit(f"Restic password file not found: {PASSWORD_FILE}")
@@ -49,7 +45,7 @@ if zotero_is_running("zotero"):
     # Reopen via atexit so Zotero comes back even if a backup step fails.
     atexit.register(subprocess.run, ["open", "-g", "-a", "Zotero"])
 
-run(["restic", "backup", ZOTERO_DIR, ZOTMOOV_DIR])
+run(["restic", "backup", ZOTERO_DIR])
 
 run(["restic", "forget", "--keep-last", "5", "--prune"])
 
