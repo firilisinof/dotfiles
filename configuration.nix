@@ -37,18 +37,9 @@
     localHostName = host.name;
   };
 
-  # TODO: Garnix will shutdown in July 15th.
-  # The alternative needs some hacking and can be found at
-  # https://github.com/stepbrobd/atelier
   nix = {
     settings = {
       experimental-features = "nix-command flakes";
-      substituters = [
-        "https://cache.garnix.io"
-      ];
-      trusted-public-keys = [
-        "cache.garnix.io:CTFPyKSLcx5RMJKfLo5EEPUObbA78b0YQ2DTCJXqr9g="
-      ];
       trusted-users = [
         "root"
         user.name
