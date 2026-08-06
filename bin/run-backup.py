@@ -54,6 +54,8 @@ if zotero_is_running("zotero"):
 
 run(["restic", "backup", *BACKUP_PATHS])
 
-run(["restic", "forget", "--keep-last", "5", "--prune"])
+# Group by host only, so changing the backup path set does not start a new
+# retention group that never gets pruned.
+run(["restic", "forget", "--group-by", "host", "--keep-last", "5", "--prune"])
 
 run(["rclone", "sync", LOCAL_REPO, "gdrive:Backups/restic", "--fast-list"])
