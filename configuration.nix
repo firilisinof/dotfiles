@@ -29,6 +29,9 @@
     pkgs.nerd-fonts.roboto-mono
     pkgs.gyre-fonts
     pkgs.liberation_ttf
+    pkgs.atkinson-hyperlegible-next
+    pkgs.atkinson-hyperlegible-mono
+    pkgs.fira-math
   ];
 
   networking = {
