@@ -166,27 +166,24 @@
     casks = [
       "ghostty"
       "visual-studio-code"
-
       "obsidian"
       "google-chrome"
       "firefox"
-
       "google-drive"
-
       "mullvad-vpn"
+      "discord"
+      "emacs-plus-app"
+      "balenaetcher"
+      "transmission"
+      "osu"
 
       "anki"
       "calibre"
       "zotero"
 
-      "discord"
       "betterdisplay"
-      "balenaetcher"
-      "transmission"
-
-      "emacs-plus-app"
+      "mos"
       "wacom-tablet"
-      "osu"
     ];
 
     masApps = {
