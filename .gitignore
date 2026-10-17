@@ -1,0 +1,5 @@
+.DS_Store
+# Authentication state stays outside this repo.
+hosts.yml
+*.pem
+*.key

@@ -1,0 +1,133 @@
+accordion-padding = 30
+after-login-command = []
+after-startup-command = ["exec-and-forget borders"]
+auto-reload-config = true
+automatically-unhide-macos-hidden-apps = false
+config-version = 2
+default-root-container-layout = "tiles"
+default-root-container-orientation = "auto"
+enable-normalization-flatten-containers = true
+enable-normalization-opposite-orientation-for-nested-containers = true
+start-at-login = false
+
+[focus-follows-mouse]
+enabled = false
+
+[gaps.inner]
+horizontal = 8
+vertical = 8
+
+[gaps.outer]
+bottom = 8
+left = 8
+right = 8
+top = 8
+
+[key-mapping]
+preset = "qwerty"
+
+[mode.main.binding]
+ctrl-alt-0 = "workspace 10"
+ctrl-alt-1 = "workspace 1"
+ctrl-alt-2 = "workspace 2"
+ctrl-alt-3 = "workspace 3"
+ctrl-alt-4 = "workspace 4"
+ctrl-alt-5 = "workspace 5"
+ctrl-alt-6 = "workspace 6"
+ctrl-alt-7 = "workspace 7"
+ctrl-alt-8 = "workspace 8"
+ctrl-alt-9 = "workspace 9"
+ctrl-alt-comma = "layout accordion horizontal vertical"
+ctrl-alt-equal = "resize smart +50"
+ctrl-alt-f = "fullscreen"
+ctrl-alt-h = "focus left"
+ctrl-alt-j = "focus down"
+ctrl-alt-k = "focus up"
+ctrl-alt-l = "focus right"
+ctrl-alt-minus = "resize smart -50"
+ctrl-alt-shift-0 = "move-node-to-workspace 10"
+ctrl-alt-shift-1 = "move-node-to-workspace 1"
+ctrl-alt-shift-2 = "move-node-to-workspace 2"
+ctrl-alt-shift-3 = "move-node-to-workspace 3"
+ctrl-alt-shift-4 = "move-node-to-workspace 4"
+ctrl-alt-shift-5 = "move-node-to-workspace 5"
+ctrl-alt-shift-6 = "move-node-to-workspace 6"
+ctrl-alt-shift-7 = "move-node-to-workspace 7"
+ctrl-alt-shift-8 = "move-node-to-workspace 8"
+ctrl-alt-shift-9 = "move-node-to-workspace 9"
+ctrl-alt-shift-equal = "balance-sizes"
+ctrl-alt-shift-h = "move left"
+ctrl-alt-shift-j = "move down"
+ctrl-alt-shift-k = "move up"
+ctrl-alt-shift-l = "move right"
+ctrl-alt-shift-semicolon = "mode service"
+ctrl-alt-shift-space = "layout floating tiling"
+ctrl-alt-slash = "layout tiles horizontal vertical"
+ctrl-alt-tab = "workspace-back-and-forth"
+
+[mode.service.binding]
+ctrl-alt-shift-h = ["join-with left", "mode main"]
+ctrl-alt-shift-j = ["join-with down", "mode main"]
+ctrl-alt-shift-k = ["join-with up", "mode main"]
+ctrl-alt-shift-l = ["join-with right", "mode main"]
+esc = ["reload-config", "mode main"]
+f = ["layout floating tiling", "mode main"]
+r = ["flatten-workspace-tree", "mode main"]
+
+[[on-window-detected]]
+if = "test %{app-bundle-id} = com.apple.systempreferences"
+run = "layout floating"
+
+[[on-window-detected]]
+if = "test %{app-bundle-id} = com.apple.finder"
+run = "layout floating"
+
+[[on-window-detected]]
+if = "test %{app-bundle-id} = com.bitwarden.desktop"
+run = "layout floating"
+
+[[on-window-detected]]
+if = "test %{app-bundle-id} = com.apple.calculator"
+run = "layout floating"
+
+[[on-window-detected]]
+if = "test %{app-bundle-id} = com.apple.ActivityMonitor"
+run = "layout floating"
+
+[[on-window-detected]]
+if = "test %{app-bundle-id} = com.apple.archiveutility"
+run = "layout floating"
+
+[[on-window-detected]]
+if = "test %{app-bundle-id} = com.apple.DigitalColorMeter"
+run = "layout floating"
+
+[[on-window-detected]]
+run = "move-node-to-workspace 10"
+
+[on-window-detected.if]
+app-id = "com.apple.Music"
+
+[[on-window-detected]]
+run = "move-node-to-workspace 10"
+
+[on-window-detected.if]
+app-id = "com.automattic.beeper.desktop"
+
+[[on-window-detected]]
+run = "move-node-to-workspace 10"
+
+[on-window-detected.if]
+app-id = "com.hnc.Discord"
+
+[workspace-to-monitor-force-assignment]
+1 = "main"
+10 = "secondary"
+2 = "main"
+3 = "main"
+4 = "main"
+5 = "main"
+6 = "secondary"
+7 = "secondary"
+8 = "secondary"
+9 = "secondary"

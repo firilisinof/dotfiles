@@ -1,0 +1,15 @@
+#!/bin/bash
+accent="$(defaults read -g AppleHighlightColor 2>/dev/null | awk '{printf "0xff%02x%02x%02x", $1*255, $2*255, $3*255}')"
+if defaults read -g AppleInterfaceStyle >/dev/null 2>&1; then
+  inactive_color=0xff414550
+else
+  inactive_color=0xffd1d1d6
+fi
+options=(
+  style=round
+  width=4.0
+  hidpi=off
+  active_color="${accent:-0xff0a84ff}"
+  inactive_color="$inactive_color"
+)
+borders "${options[@]}"

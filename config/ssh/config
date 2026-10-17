@@ -1,0 +1,13 @@
+Host SuperMaquina
+  HostName 143.107.45.126
+  Port 2031
+  User lsrosa
+
+Host ime
+  HostName 143.107.45.126
+  Port 2031
+  ProxyJump roses.lucas@shell.ime.usp.br
+  User lsrosa
+
+Host *
+  IdentityAgent /Users/lucas//Library/Containers/com.bitwarden.desktop/Data/.bitwarden-ssh-agent.sock
