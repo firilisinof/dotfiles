@@ -22,13 +22,11 @@ done
 if ! $configs && ! $packages; then configs=true; fi
 
 sources=(
-  config/aerospace/aerospace.toml config/borders/bordersrc
   config/gh/config.yml config/ghostty/config config/git/config config/git/ignore
   config/ssh/config config/zsh/environment.zsh
   config/zsh/zshenv config/zsh/zprofile config/zsh/zshrc
 )
 targets=(
-  .aerospace.toml .config/borders/bordersrc
   .config/gh/config.yml .config/ghostty/config .config/git/config .config/git/ignore
   .ssh/config .config/zsh/environment.zsh .zshenv .zprofile .zshrc
 )
