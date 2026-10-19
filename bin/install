@@ -23,12 +23,16 @@ if ! $configs && ! $packages; then configs=true; fi
 
 sources=(
   config/ai/bootstrap.md config/ai/bootstrap.md config/ai/bootstrap.md
+  config/ai/bootstrap.md
+  config/ai/skills config/ai/skills config/ai/skills config/ai/skills
   config/gh/config.yml config/ghostty/config config/git/config config/git/ignore
   config/ssh/config config/zsh/environment.zsh
   config/zsh/zshenv config/zsh/zprofile config/zsh/zshrc
 )
 targets=(
   .codex/AGENTS.md .claude/CLAUDE.md .gemini/GEMINI.md
+  .omp/agent/AGENTS.md
+  .agents/skills .claude/skills .gemini/config/skills .omp/agent/skills
   .config/gh/config.yml .config/ghostty/config .config/git/config .config/git/ignore
   .ssh/config .config/zsh/environment.zsh .zshenv .zprofile .zshrc
 )
@@ -38,7 +42,7 @@ if $configs; then
   for i in "${!sources[@]}"; do
     src="$repo/${sources[$i]}"
     dst="$HOME/${targets[$i]}"
-    [ -f "$src" ] || { echo "Missing source: $src" >&2; exit 1; }
+    [ -f "$src" ] || [ -d "$src" ] || { echo "Missing source: $src" >&2; exit 1; }
     if [ -L "$dst" ] && [ "$(readlink "$dst")" = "$src" ]; then continue; fi
     if [ -e "$dst" ] || [ -L "$dst" ]; then
       echo "Conflict: $dst — move it aside and rerun." >&2
