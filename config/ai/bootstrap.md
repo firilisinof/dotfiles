@@ -5,9 +5,9 @@ Do not use harness memory features. Treat this wiki as the source of truth
 for durable instructions and project knowledge.
 
 Before starting work:
-1. Read global/rules.md.
-2. Read global/index.md.
-3. For project work, open the matching project README listed in the index,
+1. Read rules.md.
+2. Read index.md.
+3. Open the matching topic or project README under memory/ listed in the index,
    then read only the linked files relevant to the task.
 
 Load other wiki files only when relevant.
