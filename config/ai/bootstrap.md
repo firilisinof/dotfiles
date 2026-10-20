@@ -14,3 +14,5 @@ Load other wiki files only when relevant.
 If the wiki is missing or inaccessible, tell me before proceeding.
 
 Agents may freely edit the wiki, commit changes in its repository, and push.
+
+Invoke skills only when the user explicitly requests them.
