@@ -64,6 +64,8 @@ agent-browser install
 Read `agent-browser skills get core` before using it. The CLI supplies workflows
 that match its installed version.
 
+Montar Apresentacao (`montar-apresentacao`) and Reconcile BEPE Ledger (`reconcile-bepe-ledger`) are personal skills with the same manual-only metadata. Invoke them with `$montar-apresentacao` or `$reconcile-bepe-ledger` in Codex, `/montar-apresentacao` or `/reconcile-bepe-ledger` in Claude Code, or `/skill:montar-apresentacao` or `/skill:reconcile-bepe-ledger` in Oh My Pi. In Antigravity, request the corresponding `config/ai/skills/<name>/SKILL.md` by its full path.
+
 Oh My Pi needs discovery and commands enabled without the automatic skill catalog:
 
 ```sh
