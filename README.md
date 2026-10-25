@@ -75,3 +75,15 @@ omp config set skillful false
 ```
 
 Start new harness sessions after configuration changes. Existing sessions can retain earlier context.
+
+## Ghidra
+
+`Brewfile` includes OpenJDK 21. The REA-compatible Ghidra installation is managed separately at `~/Applications/ghidra_12.1.4_PUBLIC`. Launch its GUI with:
+
+```sh
+~/Applications/ghidra_12.1.4_PUBLIC/ghidraRun
+```
+
+That installation's `support/launch.properties` selects `/opt/homebrew/opt/openjdk@21/libexec/openjdk.jdk/Contents/Home` through `JAVA_HOME_OVERRIDE`, without changing the shell's default Java runtime. REA's Claude Code, Codex, Antigravity, and OMP registrations use that same JDK and installation directory. Select the `ghidra` provider explicitly when an investigation should use it rather than Hopper.
+
+Installation compatibility and native-build details are in the [Ghidra configuration note](../ai-wiki/memory/dotfiles/ghidra.md).
