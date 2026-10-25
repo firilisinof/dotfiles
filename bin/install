@@ -24,7 +24,7 @@ if ! $configs && ! $packages; then configs=true; fi
 sources=(
   config/ai/bootstrap.md config/ai/bootstrap.md config/ai/bootstrap.md
   config/ai/bootstrap.md
-  config/ai/skills config/ai/skills config/ai/skills config/ai/skills
+  config/ai/skills config/ai/skills config/ai/skills
   config/gh/config.yml config/ghostty/config config/git/config config/git/ignore
   config/ssh/config config/zsh/environment.zsh
   config/zsh/zshenv config/zsh/zprofile config/zsh/zshrc
@@ -32,7 +32,7 @@ sources=(
 targets=(
   .codex/AGENTS.md .claude/CLAUDE.md .gemini/GEMINI.md
   .omp/agent/AGENTS.md
-  .agents/skills .claude/skills .gemini/config/skills .omp/agent/skills
+  .agents/skills .claude/skills .omp/agent/skills
   .config/gh/config.yml .config/ghostty/config .config/git/config .config/git/ignore
   .ssh/config .config/zsh/environment.zsh .zshenv .zprofile .zshrc
 )
