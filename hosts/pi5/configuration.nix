@@ -1,0 +1,64 @@
+{ pkgs, ... }:
+
+{
+  networking.hostName = "pi5";
+  networking.useDHCP = false;
+  networking.networkmanager = {
+    enable = true;
+    wifi.powersave = false;
+  };
+  networking.firewall.enable = true;
+
+  time.timeZone = "Europe/Paris";
+
+  users.mutableUsers = false;
+  users.users.root.hashedPassword = "!";
+  users.users.lucas = {
+    isNormalUser = true;
+    extraGroups = [ "wheel" ];
+    hashedPassword = "!";
+    openssh.authorizedKeys.keyFiles = [ ../../keys/mac.pub ];
+  };
+  security.sudo = {
+    wheelNeedsPassword = false;
+    execWheelOnly = true;
+  };
+
+  services.openssh = {
+    enable = true;
+    openFirewall = true;
+    settings = {
+      AllowUsers = [ "lucas" ];
+      PermitRootLogin = "no";
+      PasswordAuthentication = false;
+      KbdInteractiveAuthentication = false;
+      X11Forwarding = false;
+    };
+  };
+
+  services.fstrim.enable = true;
+  services.journald.settings.Journal.SystemMaxUse = "256M";
+
+  nix.settings.experimental-features = [ "nix-command" "flakes" ];
+  nix.settings.auto-optimise-store = true;
+  nix.gc = {
+    automatic = true;
+    dates = "weekly";
+    options = "--delete-older-than 30d";
+  };
+
+  # verified for NVMe and Wi-Fi, with CPU thermal and fan support still unresolved
+  boot.kernelPackages = pkgs.linuxPackages;
+  boot.loader.grub.enable = false;
+  boot.loader.timeout = 5;
+  boot.loader.generic-extlinux-compatible = {
+    enable = true;
+    configurationLimit = 10;
+    useGenerationDeviceTree = true;
+    # the existing SD root is mounted at /boot and keeps its original boot directory
+    mirroredBoots = [ { path = "/boot/boot"; } ];
+  };
+  hardware.enableRedistributableFirmware = true;
+
+  system.stateVersion = "26.11";
+}
