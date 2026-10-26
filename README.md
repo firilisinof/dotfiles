@@ -22,7 +22,9 @@ Keep the repository in place for the editable skill library.
 
 | Path | Contents |
 | --- | --- |
-| `modules/home/lucas/` | Shared user settings and the Darwin profile |
+| `modules/home/lucas/default.nix` | Shared user profile for both hosts |
+| `modules/home/lucas/darwin.nix` | macOS user settings and integrations |
+| `modules/home/lucas/<package>/default.nix` | Settings for Git, gh, Ghostty, SSH, or Zsh |
 | `modules/common/packages.nix` | Portable command-line tools |
 | `modules/darwin/homebrew.nix` | Homebrew dependencies |
 | `config/` | Shared assets and skills |

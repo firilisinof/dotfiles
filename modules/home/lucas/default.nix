@@ -2,10 +2,10 @@
 
 {
   imports = [
-    ./git.nix
-    ./gh.nix
-    ./zsh.nix
-    ./ssh.nix
+    ./git
+    ./gh
+    ./zsh
+    ./ssh
   ];
   xdg.enable = true;
   home.packages = [ pkgs.eza ];

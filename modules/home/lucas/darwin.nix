@@ -17,7 +17,7 @@ in
 {
   imports = [
     ./default.nix
-    ./ghostty.nix
+    ./ghostty
   ];
   home.packages = import ../../common/packages.nix { inherit pkgs; };
   home.sessionPath = [
