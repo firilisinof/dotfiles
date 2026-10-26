@@ -26,19 +26,6 @@
       ...
     }:
     {
-      packages.aarch64-darwin.macos-cli =
-        let
-          pkgs = nixpkgs.legacyPackages.aarch64-darwin;
-        in
-        pkgs.buildEnv {
-          name = "macos-cli";
-          paths = import ./modules/common/packages.nix { inherit pkgs; };
-          pathsToLink = [
-            "/bin"
-            "/share/man"
-          ];
-        };
-
       darwinConfigurations.kanjiro = nix-darwin.lib.darwinSystem {
         modules = [
           ./hosts/kanjiro/configuration.nix
