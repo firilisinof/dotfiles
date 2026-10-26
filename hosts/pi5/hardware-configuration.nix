@@ -14,6 +14,9 @@
   fileSystems."/boot/firmware" = {
     device = "/dev/disk/by-uuid/2178-694E";
     fsType = "vfat";
-    options = [ "noauto" "nofail" ];
+    options = [
+      "noauto"
+      "nofail"
+    ];
   };
 }

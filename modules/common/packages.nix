@@ -1,12 +1,8 @@
 { pkgs }:
 
 [
-  pkgs.eza
   pkgs.fd
   pkgs.ffmpeg
-  pkgs.gh
-  pkgs.git
-  pkgs.git-lfs
   pkgs.jq
   pkgs.nixfmt
   pkgs.nodejs_22
