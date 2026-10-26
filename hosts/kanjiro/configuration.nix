@@ -13,7 +13,7 @@
   home-manager.extraSpecialArgs.dotfilesDirectory = "/Users/lucas/Pessoal/dotfiles";
 
   home-manager.users.lucas = {
-    imports = [ ../../modules/darwin/home.nix ];
+    imports = [ ../../modules/home/lucas/darwin.nix ];
     home.username = "lucas";
     home.homeDirectory = "/Users/lucas";
     home.stateVersion = "26.05";

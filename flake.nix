@@ -49,6 +49,7 @@
       nixosConfigurations.pi5 = nixpkgs.lib.nixosSystem {
         system = "aarch64-linux";
         modules = [
+          home-manager.nixosModules.home-manager
           nixos-hardware.nixosModules.raspberry-pi-5
           ./hosts/pi5/hardware-configuration.nix
           ./hosts/pi5/configuration.nix

@@ -14,7 +14,7 @@ sudo darwin-rebuild switch --flake .#kanjiro
 
 Home Manager replaces managed files without backups. It manages Git, gh, Ghostty, Zsh, SSH, and skill links.
 
-Edit the sources in `config/`. Rebuild the configuration after each change. Open a new terminal after activation.
+Edit the sources in `config/` or `modules/home/lucas/`. Rebuild the configuration after each change. Open a new terminal after activation.
 
 Keep the repository in place for the editable skill library.
 
@@ -22,7 +22,8 @@ Keep the repository in place for the editable skill library.
 
 | Path | Contents |
 | --- | --- |
+| `modules/home/lucas/` | Shared user settings and the Darwin profile |
 | `modules/common/packages.nix` | Portable command-line tools |
 | `modules/darwin/homebrew.nix` | Homebrew dependencies |
-| `config/` | Application and shell configuration sources |
+| `config/` | Application configuration and assets |
 | `config/ai/skills/<name>/SKILL.md` | Personal skills |

@@ -1,6 +1,17 @@
 { pkgs, ... }:
 
 {
+  home-manager = {
+    useGlobalPkgs = true;
+    useUserPackages = true;
+    users.lucas = {
+      imports = [ ../../modules/home/lucas/default.nix ];
+      home.username = "lucas";
+      home.homeDirectory = "/home/lucas";
+      home.stateVersion = "26.05";
+    };
+  };
+
   environment.systemPackages = [ pkgs.git ];
 
   networking.hostName = "pi5";
