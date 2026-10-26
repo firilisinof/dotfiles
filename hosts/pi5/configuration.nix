@@ -1,6 +1,8 @@
 { pkgs, ... }:
 
 {
+  environment.systemPackages = [ pkgs.git ];
+
   networking.hostName = "pi5";
   networking.useDHCP = false;
   networking.networkmanager = {
@@ -44,7 +46,10 @@
   services.fstrim.enable = true;
   services.journald.settings.Journal.SystemMaxUse = "256M";
 
-  nix.settings.experimental-features = [ "nix-command" "flakes" ];
+  nix.settings.experimental-features = [
+    "nix-command"
+    "flakes"
+  ];
   nix.settings.auto-optimise-store = true;
   nix.gc = {
     automatic = true;

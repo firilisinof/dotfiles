@@ -7,9 +7,6 @@ export TERMINFO_DIRS="/Applications/Ghostty.app/Contents/Resources/terminfo:/usr
 
 typeset -U path
 path=(
-  /opt/homebrew/opt/node@22/bin
-  /opt/homebrew/opt/python@3.14/libexec/bin
-  /opt/homebrew/opt/rustup/bin
   "$HOME/.local/bin"
   "$HOME/.npm-global/bin"
   "$HOME/.cargo/bin"
