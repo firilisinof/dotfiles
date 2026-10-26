@@ -36,6 +36,11 @@
     };
   };
 
+  services.tailscale = {
+    enable = true;
+    openFirewall = true;
+  };
+
   services.fstrim.enable = true;
   services.journald.settings.Journal.SystemMaxUse = "256M";
 
