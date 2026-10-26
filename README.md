@@ -25,5 +25,5 @@ Keep the repository in place for the editable skill library.
 | `modules/home/lucas/` | Shared user settings and the Darwin profile |
 | `modules/common/packages.nix` | Portable command-line tools |
 | `modules/darwin/homebrew.nix` | Homebrew dependencies |
-| `config/` | Application configuration and assets |
+| `config/` | Shared assets and skills |
 | `config/ai/skills/<name>/SKILL.md` | Personal skills |

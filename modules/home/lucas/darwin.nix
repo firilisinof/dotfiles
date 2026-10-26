@@ -7,7 +7,6 @@
 }:
 
 let
-  configs = ../../../config;
   skills = config.lib.file.mkOutOfStoreSymlink "${dotfilesDirectory}/config/ai/skills";
   environment = ''
     export SSH_AUTH_SOCK="$HOME/Library/Containers/com.bitwarden.desktop/Data/.bitwarden-ssh-agent.sock"
@@ -16,7 +15,10 @@ let
 
 in
 {
-  imports = [ ./default.nix ];
+  imports = [
+    ./default.nix
+    ./ghostty.nix
+  ];
   home.packages = import ../../common/packages.nix { inherit pkgs; };
   home.sessionPath = [
     "/opt/homebrew/bin"
@@ -35,22 +37,15 @@ in
     initContent = lib.mkMerge [
       (lib.mkOrder 500 environment)
       (lib.mkOrder 550 "fpath=(/opt/homebrew/share/zsh/site-functions $fpath)")
-      (lib.mkOrder 1000 ''
-        if [[ -r "$GHOSTTY_RESOURCES_DIR"/shell-integration/zsh/ghostty-integration ]]; then
-          source "$GHOSTTY_RESOURCES_DIR"/shell-integration/zsh/ghostty-integration
-        fi
-      '')
     ];
   };
 
-  xdg.configFile."ghostty/config" = {
-    source = configs + /ghostty/config;
-    force = true;
-  };
+  programs.ssh.settings."*".IdentityAgent =
+    "${config.home.homeDirectory}/Library/Containers/com.bitwarden.desktop/Data/.bitwarden-ssh-agent.sock";
+
   home.file = lib.mapAttrs (_: value: value // { force = true; }) {
     ".agents/skills".source = skills;
     ".claude/skills".source = skills;
     ".omp/agent/skills".source = skills;
-    ".ssh/config".source = configs + /ssh/config;
   };
 }
