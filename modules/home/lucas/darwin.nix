@@ -10,7 +10,7 @@ let
   skills = config.lib.file.mkOutOfStoreSymlink "${dotfilesDirectory}/config/ai/skills";
   environment = ''
     export SSH_AUTH_SOCK="$HOME/Library/Containers/com.bitwarden.desktop/Data/.bitwarden-ssh-agent.sock"
-    export TERMINFO_DIRS="/Applications/Ghostty.app/Contents/Resources/terminfo:/usr/share/terminfo:"
+    export TERMINFO_DIRS="${pkgs.ghostty-bin.terminfo}/share/terminfo:/usr/share/terminfo:"
   '';
 
 in

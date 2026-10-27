@@ -10,10 +10,6 @@
     };
     # ghidra and REA registrations use this JDK's Homebrew path
     brews = [ "openjdk@21" ];
-    casks = [
-      "font-meslo-lg-nerd-font"
-      "ghostty"
-      "mactex-no-gui"
-    ];
+    casks = [ "mactex-no-gui" ];
   };
 }
