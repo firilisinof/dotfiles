@@ -7,7 +7,10 @@
     home.stateVersion = "26.05";
   };
 
-  environment.systemPackages = [ pkgs.git ];
+  environment.systemPackages = [
+    pkgs.git
+    pkgs.ghostty.terminfo
+  ];
 
   networking.hostName = "pi5";
   networking.useDHCP = false;
