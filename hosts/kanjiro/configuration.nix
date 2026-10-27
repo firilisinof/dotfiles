@@ -8,14 +8,13 @@
   users.users.lucas.home = "/Users/lucas";
   system.stateVersion = 6;
 
-  home-manager.extraSpecialArgs.dotfilesDirectory = "/Users/lucas/Pessoal/dotfiles";
-
   home-manager.users.lucas = { config, ... }: {
     imports = [
       ../../modules/home/lucas/darwin.nix
       ../../modules/home/lucas/ai
       ../../modules/home/lucas/ollama
     ];
+    dotfiles.directory = "/Users/lucas/Pessoal/dotfiles";
     home.sessionVariables.AGENT_BROWSER_EXECUTABLE_PATH = "${config.home.homeDirectory}/Applications/Home Manager Apps/Google Chrome.app/Contents/MacOS/Google Chrome";
     home.username = "lucas";
     home.homeDirectory = "/Users/lucas";
