@@ -2,7 +2,6 @@
 
 {
   home-manager.users.lucas = {
-    imports = [ ../../modules/home/lucas/default.nix ];
     home.username = "lucas";
     home.homeDirectory = "/home/lucas";
     home.stateVersion = "26.05";
