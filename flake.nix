@@ -26,6 +26,15 @@
       ...
     }:
     {
+      devShells.aarch64-darwin.sdl =
+        let
+          pkgs = nixpkgs.legacyPackages.aarch64-darwin;
+        in
+        pkgs.mkShell {
+          packages = [ pkgs.pkg-config ];
+          buildInputs = [ pkgs.sdl3 ];
+        };
+
       darwinConfigurations.kanjiro = nix-darwin.lib.darwinSystem {
         modules = [
           ./hosts/kanjiro/configuration.nix
