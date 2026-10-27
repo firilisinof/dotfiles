@@ -1,11 +1,15 @@
 { pkgs }:
 
 [
+  pkgs.agent-browser
+  pkgs.antigravity-cli
   pkgs.autoconf
   pkgs.automake
   pkgs.bash
   pkgs.binutils
+  pkgs.claude-code
   pkgs.cmake
+  pkgs.codex
   pkgs.coreutils
   pkgs.e2fsprogs
   pkgs.fd
@@ -19,6 +23,7 @@
   pkgs.ninja
   pkgs.nixfmt
   pkgs.nodejs_22
+  pkgs.omp
   (pkgs.pkgconf.overrideAttrs (old: {
     installPhase = old.installPhase + ''
       ln -s pkgconf "$out/bin/pkg-config"
