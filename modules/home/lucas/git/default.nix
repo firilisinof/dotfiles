@@ -24,6 +24,4 @@
       };
     };
   };
-  xdg.configFile."git/config".force = true;
-  xdg.configFile."git/ignore".force = true;
 }

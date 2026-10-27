@@ -48,7 +48,4 @@ in
       (lib.mkOrder 1000 "bindkey '^W' backward-kill-word")
     ];
   };
-  home.file."./.zshenv".force = true;
-  home.file."./.zprofile".force = true;
-  home.file."./.zshrc".force = true;
 }

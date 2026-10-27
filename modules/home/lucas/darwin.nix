@@ -43,7 +43,7 @@ in
   programs.ssh.settings."*".IdentityAgent =
     "${config.home.homeDirectory}/Library/Containers/com.bitwarden.desktop/Data/.bitwarden-ssh-agent.sock";
 
-  home.file = lib.mapAttrs (_: value: value // { force = true; }) {
+  home.file = {
     ".agents/skills".source = skills;
     ".claude/skills".source = skills;
     ".omp/agent/skills".source = skills;

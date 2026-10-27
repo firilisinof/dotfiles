@@ -12,7 +12,7 @@ Run this command from the repository root:
 sudo darwin-rebuild switch --flake .#kanjiro
 ```
 
-Home Manager replaces managed files without backups. It manages Git, gh, Ghostty, Zsh, SSH, and skill links.
+Home Manager manages Git, gh, Ghostty, Zsh, SSH, and skill links. If activation reports a conflicting unmanaged file, delete that file and run the command again. No backup is required.
 
 Edit user settings in `modules/home/lucas/`. Rebuild the configuration after each change. Add new files to Git before activation so the flake includes them. Open a new terminal after activation.
 

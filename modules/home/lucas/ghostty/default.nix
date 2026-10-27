@@ -14,5 +14,4 @@
     enableBashIntegration = false;
     enableFishIntegration = false;
   };
-  xdg.configFile."ghostty/config".force = true;
 }
