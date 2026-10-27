@@ -31,6 +31,9 @@
           ./hosts/kanjiro/configuration.nix
           home-manager.darwinModules.home-manager
           ./modules/common/cache.nix
+          ./modules/common/home-manager.nix
+          ./modules/darwin/homebrew.nix
+          ./modules/darwin/system.nix
         ];
       };
 
@@ -42,6 +45,7 @@
           ./hosts/pi5/hardware-configuration.nix
           ./hosts/pi5/configuration.nix
           ./modules/common/cache.nix
+          ./modules/common/home-manager.nix
         ];
       };
     };

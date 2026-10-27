@@ -1,8 +1,6 @@
 { ... }:
 
 {
-  imports = [ ../../modules/darwin/default.nix ];
-
   nixpkgs.hostPlatform = "aarch64-darwin";
   networking.hostName = "kanjiro";
   networking.localHostName = "kanjiro";
