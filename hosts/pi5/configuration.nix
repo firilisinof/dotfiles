@@ -28,7 +28,9 @@
     isNormalUser = true;
     extraGroups = [ "wheel" ];
     hashedPassword = "!";
-    openssh.authorizedKeys.keyFiles = [ ../../keys/mac.pub ];
+    openssh.authorizedKeys.keys = [
+      "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIJ4qki0FODBJfXYm23oCPW7WvNI7VWf+3JdUryWj3dU8 Mac SSH key"
+    ];
   };
   security.sudo = {
     wheelNeedsPassword = false;
