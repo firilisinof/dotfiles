@@ -1,8 +1,6 @@
 { lib, ... }:
 
 {
-  # determinate owns the Nix daemon and its configuration
-  nix.enable = false;
   nixpkgs.config.allowUnfreePredicate =
     pkg:
     builtins.elem (lib.getName pkg) [

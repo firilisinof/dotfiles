@@ -18,6 +18,15 @@
       url = "github:nix-darwin/nix-darwin/master";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    determinate = {
+      url = "https://flakehub.com/f/DeterminateSystems/determinate/3";
+      inputs.nixpkgs.follows = "nixpkgs";
+      # only the nix-darwin module is used, which needs none of these
+      inputs.nix.follows = "";
+      inputs.determinate-nixd-aarch64-darwin.follows = "";
+      inputs.determinate-nixd-aarch64-linux.follows = "";
+      inputs.determinate-nixd-x86_64-linux.follows = "";
+    };
     home-manager = {
       url = "github:nix-community/home-manager/master";
       inputs.nixpkgs.follows = "nixpkgs";

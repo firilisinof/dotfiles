@@ -12,6 +12,7 @@
             ollama
           ];
         }
+        inputs.determinate.darwinModules.default
         inputs.home-manager.darwinModules.home-manager
         self.darwinModules.cache
         self.darwinModules.home-manager
