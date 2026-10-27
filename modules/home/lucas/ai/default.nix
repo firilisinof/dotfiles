@@ -6,7 +6,7 @@
 }:
 
 let
-  skills = config.lib.file.mkOutOfStoreSymlink "${config.dotfiles.directory}/config/ai/skills";
+  skills = config.lib.file.mkOutOfStoreSymlink "${config.dotfiles.directory}/skills";
 in
 {
   options.dotfiles.directory = lib.mkOption {

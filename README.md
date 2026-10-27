@@ -18,7 +18,7 @@ Edit user settings in `modules/home/lucas/`. Rebuild the configuration after eac
 
 Each file or directory in `modules/common/`, `modules/darwin/`, and `modules/home/lucas/` is a module. The flake exports each module by its name. Home modules apply macOS settings and packages only on macOS, so you can import them on Linux and macOS hosts.
 
-Keep the repository at `/Users/lucas/Pessoal/dotfiles` for the editable skill library. Changes to `config/ai/skills/` take effect without a rebuild.
+Keep the repository at `/Users/lucas/Pessoal/dotfiles` for the editable skill library. Changes to `skills/` take effect without a rebuild.
 
 ## Select AI tools per host
 
@@ -53,5 +53,5 @@ Ollama uses a Home Manager launch agent. Its models remain in `~/.ollama`, and i
 | `modules/home/lucas/packages/default.nix` | Additional portable tools selected by the macOS profile |
 | `modules/home/lucas/<package>/default.nix` | Settings for Git, gh, Ghostty, Ollama, SSH, or Zsh |
 | `pkgs/darwin/` | Pinned macOS vendor packages |
-| `config/` | Shared assets and skills |
-| `config/ai/skills/<name>/SKILL.md` | Personal skills |
+| `skills/<name>/SKILL.md` | Personal skills |
+| `wallpapers/` | Wallpapers and their source credits |
