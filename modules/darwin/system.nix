@@ -8,7 +8,6 @@
       "antigravity-bin"
       "beeper-bin"
       "chatgpt-bin"
-      "claude-bin"
       "claude-code"
       "discord-bin"
       "firefox-bin-unwrapped"

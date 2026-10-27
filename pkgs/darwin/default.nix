@@ -34,15 +34,6 @@ in
     archive = "zip";
     license = pkgs.lib.licenses.unfree;
   };
-  claude = app {
-    pname = "claude-bin";
-    version = "3.6556.2";
-    url = "https://downloads.claude.ai/releases/darwin/universal/3.6556.2/Claude-20c019a1e61fa5b687616af57d31f97bb3181723.zip";
-    hash = "sha256-Xz42vQxQDw4CzKhISPXK9FM3IRfsZkFT2xh7NydUxno=";
-    app = "Claude.app";
-    archive = "zip";
-    license = pkgs.lib.licenses.unfree;
-  };
   discord = app {
     pname = "discord-bin";
     version = "0.0.419";

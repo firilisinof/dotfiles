@@ -32,7 +32,7 @@ Open managed apps from `~/Applications/Home Manager Apps/`. Versioned vendor dow
 
 Gemini uses a download URL that can change. Its checksum is pinned. If the vendor replaces that download, update the version and checksum after verification.
 
-Homebrew retains MacTeX, Steam, Tailscale, Mullvad, and VLC. MacTeX supplies TeX Live 2026. Steam manages its client updates and helpers. The VPN installers manage privileged system components. VLC requires signature metadata that the Nix store does not preserve.
+Homebrew retains Claude, MacTeX, Steam, Tailscale, Mullvad, and VLC. Claude Code looks for the Claude app only at `/Applications/Claude.app`. MacTeX supplies TeX Live 2026. Steam manages its client updates and helpers. The VPN installers manage privileged system components. VLC requires signature metadata that the Nix store does not preserve.
 
 Ollama uses a Home Manager launch agent. Its models remain in `~/.ollama`, and its log is `~/Library/Logs/ollama.log`. The Java 21 installation for Ghidra is available at `~/.local/share/java/jdk21`.
 
