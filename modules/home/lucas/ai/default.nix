@@ -16,7 +16,6 @@ in
 
   config = {
     home.packages = [
-      pkgs.agent-browser
       pkgs.antigravity-cli
       pkgs.claude-code
       pkgs.codex

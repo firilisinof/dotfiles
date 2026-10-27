@@ -22,9 +22,9 @@ Keep the repository at `/Users/lucas/Pessoal/dotfiles` for the editable skill li
 
 ## Select AI tools per host
 
-Kanjiro imports `homeModules.lucas.ai` in `modules/flake/configurations.nix`. This module installs agent-browser, Antigravity CLI, Claude Code, Codex, and OMP, and links their shared skills. Pi5 does not import it.
+Kanjiro imports `homeModules.lucas.ai` in `modules/flake/configurations.nix`. This module installs Antigravity CLI, Claude Code, Codex, and OMP, and links their shared skills. Pi5 does not import it.
 
-To use these tools on another host, add the same module to that host's `home-manager.users.lucas.imports`. Set `home-manager.users.lucas.dotfiles.directory` to the local repository path. The host must allow the unfree packages `antigravity-cli` and `claude-code` in its Nixpkgs configuration. Configure a browser for agent-browser on that host. Kanjiro uses its Home Manager Chrome app.
+To use these tools on another host, add the same module to that host's `home-manager.users.lucas.imports`. Set `home-manager.users.lucas.dotfiles.directory` to the local repository path. The host must allow the unfree packages `antigravity-cli` and `claude-code` in its Nixpkgs configuration.
 
 ## macOS packages
 
