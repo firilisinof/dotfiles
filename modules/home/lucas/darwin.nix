@@ -19,7 +19,13 @@ in
     ./default.nix
     ./ghostty
   ];
-  home.packages = import ../../common/packages.nix { inherit pkgs; };
+  home.packages = (import ../../common/packages.nix { inherit pkgs; }) ++ [
+    (pkgs.anki-bin.overrideAttrs { dontFixup = true; })
+    pkgs.firefox-bin-unwrapped
+    pkgs.google-chrome
+    (pkgs.obsidian.overrideAttrs { dontFixup = true; })
+  ];
+  home.sessionVariables.AGENT_BROWSER_EXECUTABLE_PATH = "${config.home.homeDirectory}/Applications/Home Manager Apps/Google Chrome.app/Contents/MacOS/Google Chrome";
   home.sessionPath = [
     "/opt/homebrew/bin"
     "/opt/homebrew/sbin"
