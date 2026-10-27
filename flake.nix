@@ -30,6 +30,7 @@
         modules = [
           ./hosts/kanjiro/configuration.nix
           home-manager.darwinModules.home-manager
+          ./modules/common/cache.nix
         ];
       };
 
@@ -40,6 +41,7 @@
           nixos-hardware.nixosModules.raspberry-pi-5
           ./hosts/pi5/hardware-configuration.nix
           ./hosts/pi5/configuration.nix
+          ./modules/common/cache.nix
         ];
       };
     };
