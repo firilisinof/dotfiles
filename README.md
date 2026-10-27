@@ -40,7 +40,7 @@ Ollama uses a Home Manager launch agent. Its models remain in `~/.ollama`, and i
 
 | Path | Contents |
 | --- | --- |
-| `flake.nix` | Inputs, and the flake-parts entry point that loads every file in `modules/flake/` |
+| `flake.nix` | Inputs, and the autopilot entry point that loads every file in `modules/flake/` as a flake-parts module |
 | `modules/flake/configurations.nix` | Modules and Home Manager profiles that each host imports |
 | `modules/flake/modules.nix` | Exports `darwinModules`, `nixosModules`, and `homeModules.lucas` from the module directories |
 | `hosts/kanjiro/` | Mac system settings |
