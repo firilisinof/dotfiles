@@ -34,10 +34,6 @@ Homebrew retains MacTeX, Steam, Tailscale, Mullvad, and VLC. MacTeX supplies TeX
 
 Ollama uses a Home Manager launch agent. Its models remain in `~/.ollama`, and its log is `~/Library/Logs/ollama.log`. The Java 21 installation for Ghidra is available at `~/.local/share/java/jdk21`.
 
-## SDL development
-
-Run `nix develop .#sdl` from this repository to get SDL3, its headers, a compiler, and pkg-config. This shell replaces the global Homebrew SDL3 installation.
-
 ## Files
 
 | Path | Contents |
