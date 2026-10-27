@@ -1,0 +1,19 @@
+keys:
+  users:
+    - &lucas age1xgl8rkk39l8w206n4snq2reqt7w80g56ld9lhpdf73xu8yl7je9qmks506
+  # derived from each host's ssh ed25519 host key with ssh-to-age
+  hosts:
+    - &kanjiro age16c6q85gnqyfeesrpv27dlk2pk3q07spuj4kpek734ypgll5pwuss793xpw
+    - &pi5 age1svzs0cya03r7rst8ecgtmuw7sw9n4njwwwc9363ajysdj6csuefsx9c9yx
+
+creation_rules:
+  - path_regex: secrets/kanjiro\.yaml$
+    key_groups:
+      - age:
+          - *lucas
+          - *kanjiro
+  - path_regex: secrets/pi5\.yaml$
+    key_groups:
+      - age:
+          - *lucas
+          - *pi5

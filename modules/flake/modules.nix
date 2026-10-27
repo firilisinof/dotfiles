@@ -14,7 +14,7 @@ in
 {
   flake = {
     darwinModules = common // modulesIn ../darwin;
-    nixosModules = common;
+    nixosModules = common // modulesIn ../nixos;
     homeModules.lucas = modulesIn ../home/lucas;
   };
 }
