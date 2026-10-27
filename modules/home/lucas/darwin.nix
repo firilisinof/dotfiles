@@ -18,17 +18,15 @@ in
   imports = [
     ./default.nix
     ./ghostty
+    ./packages
   ];
-  home.packages =
-    (import ../../common/packages.nix { inherit pkgs; })
-    ++ (lib.attrValues (import ../../../pkgs/darwin { inherit pkgs; }))
-    ++ [
-      # preserve vendor signatures by skipping bundle fixups
-      (pkgs.anki-bin.overrideAttrs { dontFixup = true; })
-      pkgs.firefox-bin-unwrapped
-      pkgs.google-chrome
-      (pkgs.obsidian.overrideAttrs { dontFixup = true; })
-    ];
+  home.packages = (lib.attrValues (import ../../../pkgs/darwin { inherit pkgs; })) ++ [
+    # preserve vendor signatures by skipping bundle fixups
+    (pkgs.anki-bin.overrideAttrs { dontFixup = true; })
+    pkgs.firefox-bin-unwrapped
+    pkgs.google-chrome
+    (pkgs.obsidian.overrideAttrs { dontFixup = true; })
+  ];
   home.sessionPath = [
     "/opt/homebrew/bin"
     "/opt/homebrew/sbin"
