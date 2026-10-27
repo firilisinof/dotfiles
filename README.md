@@ -16,13 +16,15 @@ Home Manager manages Git, gh, Ghostty, Zsh, SSH, and skill links. If activation 
 
 Edit user settings in `modules/home/lucas/`. Rebuild the configuration after each change. Add new files to Git before activation so the flake includes them. Open a new terminal after activation.
 
+Each file or directory in `modules/common/`, `modules/darwin/`, and `modules/home/lucas/` is a module. The flake exports each module by its name. Home modules apply macOS settings and packages only on macOS, so you can import them on Linux and macOS hosts.
+
 Keep the repository at `/Users/lucas/Pessoal/dotfiles` for the editable skill library. Changes to `config/ai/skills/` take effect without a rebuild.
 
 ## Select AI tools per host
 
-Kanjiro imports `modules/home/lucas/ai` in its Home Manager configuration. This module installs agent-browser, Antigravity CLI, Claude Code, Codex, and OMP, and links their shared skills. Pi5 does not import it.
+Kanjiro imports `homeModules.lucas.ai` in `modules/flake/configurations.nix`. This module installs agent-browser, Antigravity CLI, Claude Code, Codex, and OMP, and links their shared skills. Pi5 does not import it.
 
-To use these tools on another host, import the same module under `home-manager.users.lucas.imports`. Set `home-manager.extraSpecialArgs.dotfilesDirectory` to the local repository path. The host must allow the unfree packages `antigravity-cli` and `claude-code` in its Nixpkgs configuration. Configure a browser for agent-browser on that host. Kanjiro uses its Home Manager Chrome app.
+To use these tools on another host, add the same module to that host's `home-manager.users.lucas.imports`. Set `home-manager.users.lucas.dotfiles.directory` to the local repository path. The host must allow the unfree packages `antigravity-cli` and `claude-code` in its Nixpkgs configuration. Configure a browser for agent-browser on that host. Kanjiro uses its Home Manager Chrome app.
 
 ## macOS packages
 
@@ -38,16 +40,18 @@ Ollama uses a Home Manager launch agent. Its models remain in `~/.ollama`, and i
 
 | Path | Contents |
 | --- | --- |
-| `flake.nix` | Configuration entry points for both hosts |
+| `flake.nix` | Inputs, and the flake-parts entry point that loads every file in `modules/flake/` |
+| `modules/flake/configurations.nix` | Modules and Home Manager profiles that each host imports |
+| `modules/flake/modules.nix` | Exports `darwinModules`, `nixosModules`, and `homeModules.lucas` from the module directories |
 | `hosts/kanjiro/` | Mac system settings |
 | `hosts/pi5/` | Raspberry Pi system and hardware settings |
+| `modules/common/` | Modules for both nix-darwin and NixOS, such as binary caches and Home Manager integration |
+| `modules/darwin/` | nix-darwin system settings and Homebrew dependencies |
 | `modules/home/lucas/default.nix` | Shared user profile for both hosts |
 | `modules/home/lucas/darwin.nix` | macOS user settings and integrations |
 | `modules/home/lucas/ai/default.nix` | Optional AI tools and shared skill links |
-| `modules/home/lucas/<package>/default.nix` | Settings for Git, gh, Ghostty, SSH, or Zsh |
-| `modules/common/packages.nix` | Additional portable tools selected by the macOS profile |
-| `modules/darwin/default.nix` | nix-darwin and Home Manager integration |
-| `modules/darwin/homebrew.nix` | Homebrew dependencies |
+| `modules/home/lucas/packages/default.nix` | Additional portable tools selected by the macOS profile |
+| `modules/home/lucas/<package>/default.nix` | Settings for Git, gh, Ghostty, Ollama, SSH, or Zsh |
 | `pkgs/darwin/` | Pinned macOS vendor packages |
 | `config/` | Shared assets and skills |
 | `config/ai/skills/<name>/SKILL.md` | Personal skills |
