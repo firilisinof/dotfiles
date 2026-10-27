@@ -6,7 +6,7 @@
 }:
 
 let
-  jdk = pkgs.callPackage ../../../pkgs/darwin/jdk.nix { };
+  jdk = pkgs.temurin-bin-21;
   environment = ''
     export SSH_AUTH_SOCK="$HOME/Library/Containers/com.bitwarden.desktop/Data/.bitwarden-ssh-agent.sock"
     export TERMINFO_DIRS="${pkgs.ghostty-bin.terminfo}/share/terminfo:/usr/share/terminfo:"
@@ -20,10 +20,10 @@ in
     ./packages
   ];
 
-  # homebrew, bitwarden, and the vendor packages are macOS only
+  # homebrew, bitwarden, and these apps are macOS only
   config = lib.mkIf pkgs.stdenv.hostPlatform.isDarwin {
     home.file.".local/share/java/jdk21".source = "${jdk}";
-    home.packages = (lib.attrValues (import ../../../pkgs/darwin { inherit pkgs; })) ++ [
+    home.packages = [
       # preserve vendor signatures by skipping bundle fixups
       (pkgs.anki-bin.overrideAttrs { dontFixup = true; })
       pkgs.firefox-bin-unwrapped

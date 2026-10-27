@@ -9,12 +9,21 @@
       cleanup = "none";
     };
     casks = [
+      "antigravity"
+      "beeper"
+      "chatgpt"
       "claude"
+      "discord"
+      "google-gemini"
       "mactex-no-gui"
       "mullvad-vpn"
-      "tailscale-app"
+      "notion"
+      "obs"
       "steam"
+      "tailscale-app"
+      "visual-studio-code"
       "vlc"
+      "zotero"
     ];
   };
 }

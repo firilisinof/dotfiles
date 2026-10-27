@@ -28,11 +28,11 @@ To use these tools on another host, add the same module to that host's `home-man
 
 ## macOS packages
 
-Open managed apps from `~/Applications/Home Manager Apps/`. Versioned vendor downloads are declared in `pkgs/darwin/default.nix`. The shared package function preserves their signed bundles. To update an app, change its version, download URL, and SHA-256 hash together. Build the Mac configuration and verify the app signature before activation. App updates made inside a copied bundle can be replaced by a later Home Manager activation.
+Homebrew installs the vendor desktop apps in `/Applications`: Antigravity, Beeper, ChatGPT, Claude, Discord, Gemini, Notion, OBS, Visual Studio Code, and Zotero. These apps update themselves. Homebrew does not update or upgrade them during activation. The Visual Studio Code cask adds the `code` and `code-tunnel` commands.
 
-Gemini uses a download URL that can change. Its checksum is pinned. If the vendor replaces that download, update the version and checksum after verification.
+Homebrew also retains MacTeX, Steam, Tailscale, Mullvad, and VLC. Claude Code looks for the Claude app only at `/Applications/Claude.app`. MacTeX supplies TeX Live 2026. Steam manages its client updates and helpers. The VPN installers manage privileged system components. VLC requires signature metadata that the Nix store does not preserve.
 
-Homebrew retains Claude, MacTeX, Steam, Tailscale, Mullvad, and VLC. Claude Code looks for the Claude app only at `/Applications/Claude.app`. MacTeX supplies TeX Live 2026. Steam manages its client updates and helpers. The VPN installers manage privileged system components. VLC requires signature metadata that the Nix store does not preserve.
+Home Manager installs Anki, Firefox, Google Chrome, and Obsidian from Nixpkgs. Open them from `~/Applications/Home Manager Apps/`.
 
 Ollama uses a Home Manager launch agent. Its models remain in `~/.ollama`, and its log is `~/Library/Logs/ollama.log`. The Java 21 installation for Ghidra is available at `~/.local/share/java/jdk21`.
 
@@ -52,6 +52,6 @@ Ollama uses a Home Manager launch agent. Its models remain in `~/.ollama`, and i
 | `modules/home/lucas/ai/default.nix` | Optional AI tools and shared skill links |
 | `modules/home/lucas/packages/default.nix` | Additional portable tools selected by the macOS profile |
 | `modules/home/lucas/<package>/default.nix` | Settings for Git, gh, Ghostty, Ollama, SSH, or Zsh |
-| `pkgs/darwin/` | Pinned macOS vendor packages |
+| `pkgs/darwin/` | Pinned macOS Ollama package |
 | `skills/<name>/SKILL.md` | Personal skills |
 | `wallpapers/` | Wallpapers and their source credits |
