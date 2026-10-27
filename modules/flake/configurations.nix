@@ -9,7 +9,6 @@
           home-manager.users.lucas.imports = with self.homeModules.lucas; [
             darwin
             ai
-            ollama
           ];
         }
         inputs.determinate.darwinModules.default

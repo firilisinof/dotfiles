@@ -34,7 +34,7 @@ Homebrew also retains MacTeX, Steam, Tailscale, Mullvad, and VLC. Claude Code lo
 
 Home Manager installs Anki, Firefox, Google Chrome, and Obsidian from Nixpkgs. Open them from `~/Applications/Home Manager Apps/`.
 
-Ollama uses a Home Manager launch agent. Its models remain in `~/.ollama`, and its log is `~/Library/Logs/ollama.log`. The Java 21 installation for Ghidra is available at `~/.local/share/java/jdk21`.
+The Java 21 installation for Ghidra is available at `~/.local/share/java/jdk21`.
 
 ## Files
 
@@ -51,7 +51,6 @@ Ollama uses a Home Manager launch agent. Its models remain in `~/.ollama`, and i
 | `modules/home/lucas/darwin.nix` | macOS user settings and integrations |
 | `modules/home/lucas/ai/default.nix` | Optional AI tools and shared skill links |
 | `modules/home/lucas/packages/default.nix` | Additional portable tools selected by the macOS profile |
-| `modules/home/lucas/<package>/default.nix` | Settings for Git, gh, Ghostty, Ollama, SSH, or Zsh |
-| `pkgs/darwin/` | Pinned macOS Ollama package |
+| `modules/home/lucas/<package>/default.nix` | Settings for Git, gh, Ghostty, SSH, or Zsh |
 | `skills/<name>/SKILL.md` | Personal skills |
 | `wallpapers/` | Wallpapers and their source credits |
