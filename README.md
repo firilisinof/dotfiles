@@ -24,6 +24,20 @@ Kanjiro imports `modules/home/lucas/ai` in its Home Manager configuration. This 
 
 To use these tools on another host, import the same module under `home-manager.users.lucas.imports`. Set `home-manager.extraSpecialArgs.dotfilesDirectory` to the local repository path. The host must allow the unfree packages `antigravity-cli` and `claude-code` in its Nixpkgs configuration. Configure a browser for agent-browser on that host. Kanjiro uses its Home Manager Chrome app.
 
+## macOS packages
+
+Open managed apps from `~/Applications/Home Manager Apps/`. Versioned vendor downloads are declared in `pkgs/darwin/default.nix`. The shared package function preserves their signed bundles. To update an app, change its version, download URL, and SHA-256 hash together. Build the Mac configuration and verify the app signature before activation. App updates made inside a copied bundle can be replaced by a later Home Manager activation.
+
+Gemini uses a download URL that can change. Its checksum is pinned. If the vendor replaces that download, update the version and checksum after verification.
+
+Homebrew retains MacTeX, Steam, Tailscale, Mullvad, and VLC. MacTeX supplies TeX Live 2026. Steam manages its client updates and helpers. The VPN installers manage privileged system components. VLC requires signature metadata that the Nix store does not preserve.
+
+Ollama uses a Home Manager launch agent. Its models remain in `~/.ollama`, and its log is `~/Library/Logs/ollama.log`. The Java 21 installation for Ghidra is available at `~/.local/share/java/jdk21`.
+
+## SDL development
+
+Run `nix develop .#sdl` from this repository to get SDL3, its headers, a compiler, and pkg-config. This shell replaces the global Homebrew SDL3 installation.
+
 ## Files
 
 | Path | Contents |
@@ -38,5 +52,6 @@ To use these tools on another host, import the same module under `home-manager.u
 | `modules/common/packages.nix` | Additional portable tools selected by the macOS profile |
 | `modules/darwin/default.nix` | nix-darwin and Home Manager integration |
 | `modules/darwin/homebrew.nix` | Homebrew dependencies |
+| `pkgs/darwin/` | Pinned macOS vendor packages |
 | `config/` | Shared assets and skills |
 | `config/ai/skills/<name>/SKILL.md` | Personal skills |

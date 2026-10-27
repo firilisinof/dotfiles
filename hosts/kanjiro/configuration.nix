@@ -16,6 +16,7 @@
     imports = [
       ../../modules/home/lucas/darwin.nix
       ../../modules/home/lucas/ai
+      ../../modules/home/lucas/ollama
     ];
     home.sessionVariables.AGENT_BROWSER_EXECUTABLE_PATH = "${config.home.homeDirectory}/Applications/Home Manager Apps/Google Chrome.app/Contents/MacOS/Google Chrome";
     home.username = "lucas";
