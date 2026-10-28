@@ -1,5 +1,8 @@
-{ lib, ... }:
+{ config, lib, ... }:
 
+let
+  user = config.system.primaryUser;
+in
 {
   nixpkgs.config.allowUnfreePredicate =
     pkg:
@@ -23,7 +26,7 @@
       ShowHardDrivesOnDesktop = false;
       ShowRemovableMediaOnDesktop = false;
       NewWindowTarget = "Other";
-      NewWindowTargetPath = "file:///Users/lucas/Downloads/";
+      NewWindowTargetPath = "file://${config.users.users.${user}.home}/Downloads/";
     };
     dock = {
       autohide = true;
@@ -142,7 +145,7 @@
   system.startup.chime = false;
 
   system.activationScripts.postActivation.text = ''
-    launchctl asuser "$(id -u lucas)" sudo -u lucas -- defaults -currentHost write com.apple.controlcenter BatteryShowPercentage -bool true
-    launchctl asuser "$(id -u lucas)" sudo -u lucas -- defaults -currentHost write com.apple.controlcenter NowPlaying -int 18
+    launchctl asuser "$(id -u ${user})" sudo -u ${user} -- defaults -currentHost write com.apple.controlcenter BatteryShowPercentage -bool true
+    launchctl asuser "$(id -u ${user})" sudo -u ${user} -- defaults -currentHost write com.apple.controlcenter NowPlaying -int 18
   '';
 }

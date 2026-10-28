@@ -10,8 +10,6 @@
 
   home-manager.users.lucas = {
     dotfiles.directory = "/Users/lucas/Pessoal/dotfiles";
-    home.username = "lucas";
-    home.homeDirectory = "/Users/lucas";
     home.stateVersion = "26.05";
   };
 }

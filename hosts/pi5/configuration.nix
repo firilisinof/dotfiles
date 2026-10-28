@@ -2,8 +2,6 @@
 
 {
   home-manager.users.lucas = {
-    home.username = "lucas";
-    home.homeDirectory = "/home/lucas";
     home.stateVersion = "26.05";
   };
 
