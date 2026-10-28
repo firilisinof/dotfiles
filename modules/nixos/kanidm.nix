@@ -93,10 +93,16 @@ in
       "kanidm-tls.service"
       "tailscale-serve-kanidm.service"
     ];
-    requires = [
+    # tailscale may not be connected at boot, so start with the certificate already on disk
+    # and retry until provisioning reaches the serve endpoint
+    wants = [
       "kanidm-tls.service"
       "tailscale-serve-kanidm.service"
     ];
+    serviceConfig = {
+      Restart = "on-failure";
+      RestartSec = 10;
+    };
   };
 
   systemd.services.kanidm-tls = {
