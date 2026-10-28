@@ -1,6 +1,7 @@
 .DS_Store
 result
 result-*
+.direnv/
 # Authentication state stays outside this repo.
 hosts.yml
 *.pem

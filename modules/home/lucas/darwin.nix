@@ -18,6 +18,7 @@ in
     ./default.nix
     ./ghostty
     ./packages
+    ./direnv
   ];
 
   # homebrew, bitwarden, and these apps are macOS only
