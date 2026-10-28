@@ -53,6 +53,17 @@ For a new installation, the host SSH key changes. Add the new key to `.sops.yaml
 
 ## Secrets
 
+Run this command in the development shell:
+
 ```sh
 sops edit secrets/<host>.yaml
+```
+
+## Development
+
+Enter the shell with the secrets tools, then format the files:
+
+```sh
+nix develop
+nix fmt
 ```

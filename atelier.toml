@@ -2,7 +2,9 @@ systems = ["aarch64-darwin", "aarch64-linux"]
 
 include = [
   "nixosConfigurations.pi5",
-  "darwinConfigurations.kanjiro"
+  "darwinConfigurations.kanjiro",
+  "checks.*.treefmt",
+  "devShells.*.default"
 ]
 
 substituters = [

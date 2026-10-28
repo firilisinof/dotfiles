@@ -2,7 +2,6 @@
 
 {
   home.packages = [
-    pkgs.age
     pkgs.autoconf
     pkgs.automake
     pkgs.bash
@@ -30,8 +29,6 @@
     pkgs.ripgrep
     pkgs.rsync
     pkgs.rustup
-    pkgs.sops
-    pkgs.ssh-to-age
     pkgs.typst
     pkgs.util-linux
     pkgs.uv
