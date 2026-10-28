@@ -78,34 +78,17 @@
     mirroredBoots = [ { path = "/boot/boot"; } ];
   };
   hardware.enableRedistributableFirmware = true;
-  # the mainline device tree declares no leds, so declare the green status led and keep it off
+  # the mainline device tree omits the status led, cpu temperature sensor, and fan
   hardware.deviceTree.overlays = [
     {
       name = "status-led-off";
-      dtsText = ''
-        /dts-v1/;
-        /plugin/;
-
-        / {
-          compatible = "brcm,bcm2712";
-
-          fragment@0 {
-            target-path = "/";
-            __overlay__ {
-              leds {
-                compatible = "gpio-leds";
-
-                led-act {
-                  label = "ACT";
-                  gpios = <&gio_aon 9 0>;
-                  default-state = "off";
-                  linux,default-trigger = "none";
-                };
-              };
-            };
-          };
-        };
-      '';
+      dtsFile = ./status-led.dtso;
+    }
+    {
+      name = "fan";
+      dtsFile = ./fan.dtso;
+      # a substring match that skips the ovl-rp1 variant, which adds rp1 at runtime and has no rp1_gpio label
+      filter = "rpi-5-b.dtb";
     }
   ];
 

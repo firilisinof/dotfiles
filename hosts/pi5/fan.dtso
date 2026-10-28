@@ -1,0 +1,69 @@
+/dts-v1/;
+/plugin/;
+
+// sensor address and calibration come from the raspberry pi firmware's bcm2712-rpi-5-b.dtb
+// mainline has no rp1 pwm driver, so the fan header is switched on or off as a gpio
+/ {
+	compatible = "brcm,bcm2712";
+
+	fragment@0 {
+		target-path = "/soc@107c000000";
+		__overlay__ {
+			#address-cells = <1>;
+			#size-cells = <1>;
+
+			avs-monitor@7d542000 {
+				compatible = "brcm,bcm2711-avs-monitor", "syscon", "simple-mfd";
+				reg = <0x7d542000 0xf00>;
+
+				cpu_sensor: thermal {
+					compatible = "brcm,bcm2711-thermal";
+					#thermal-sensor-cells = <0>;
+				};
+			};
+		};
+	};
+
+	fragment@1 {
+		target-path = "/";
+		__overlay__ {
+			// the fan runs while its control line is low
+			fan: gpio-fan {
+				compatible = "gpio-fan";
+				gpios = <&rp1_gpio 45 1>;
+				gpio-fan,speed-map = <0 0>, <5000 1>;
+				#cooling-cells = <2>;
+			};
+
+			thermal-zones {
+				cpu-thermal {
+					polling-delay-passive = <1000>;
+					polling-delay = <1000>;
+					coefficients = <(-550) 450000>;
+					thermal-sensors = <&cpu_sensor>;
+
+					trips {
+						cpu-crit {
+							temperature = <110000>;
+							hysteresis = <0>;
+							type = "critical";
+						};
+
+						fan_on: fan-on {
+							temperature = <60000>;
+							hysteresis = <10000>;
+							type = "active";
+						};
+					};
+
+					cooling-maps {
+						fan {
+							trip = <&fan_on>;
+							cooling-device = <&fan 1 1>;
+						};
+					};
+				};
+			};
+		};
+	};
+};
