@@ -34,6 +34,8 @@
         self.nixosModules.backup
         self.nixosModules.cache
         self.nixosModules.home-manager
+        self.nixosModules.kanidm
+        self.nixosModules.kavita
         self.nixosModules.sops
         self.nixosModules.webdav
       ];
