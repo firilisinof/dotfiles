@@ -78,6 +78,36 @@
     mirroredBoots = [ { path = "/boot/boot"; } ];
   };
   hardware.enableRedistributableFirmware = true;
+  # the mainline device tree declares no leds, so declare the green status led and keep it off
+  hardware.deviceTree.overlays = [
+    {
+      name = "status-led-off";
+      dtsText = ''
+        /dts-v1/;
+        /plugin/;
+
+        / {
+          compatible = "brcm,bcm2712";
+
+          fragment@0 {
+            target-path = "/";
+            __overlay__ {
+              leds {
+                compatible = "gpio-leds";
+
+                led-act {
+                  label = "ACT";
+                  gpios = <&gio_aon 9 1>;
+                  default-state = "off";
+                  linux,default-trigger = "none";
+                };
+              };
+            };
+          };
+        };
+      '';
+    }
+  ];
 
   system.stateVersion = "26.11";
 }
