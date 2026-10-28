@@ -97,7 +97,7 @@
 
                 led-act {
                   label = "ACT";
-                  gpios = <&gio_aon 9 1>;
+                  gpios = <&gio_aon 9 0>;
                   default-state = "off";
                   linux,default-trigger = "none";
                 };
