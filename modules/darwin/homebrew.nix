@@ -14,7 +14,6 @@
       "chatgpt"
       "claude"
       "discord"
-      "google-gemini"
       "mactex-no-gui"
       "mullvad-vpn"
       "notion"
