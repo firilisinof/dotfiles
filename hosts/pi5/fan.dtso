@@ -27,7 +27,8 @@
 	fragment@1 {
 		target-path = "/";
 		__overlay__ {
-			// the fan runs while its control line is low
+			// the fan runs at full speed while its control line is low
+			// the cpu idles near 60 c in the case, so the fan starts only under sustained load
 			fan: gpio-fan {
 				compatible = "gpio-fan";
 				gpios = <&rp1_gpio 45 1>;
@@ -50,7 +51,7 @@
 						};
 
 						fan_on: fan-on {
-							temperature = <60000>;
+							temperature = <75000>;
 							hysteresis = <10000>;
 							type = "active";
 						};
