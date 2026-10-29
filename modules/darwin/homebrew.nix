@@ -16,7 +16,6 @@
       "discord"
       "mactex-no-gui"
       "mullvad-vpn"
-      "notion"
       "obs"
       "steam"
       "tailscale-app"
