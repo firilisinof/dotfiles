@@ -1,13 +1,10 @@
 {
   config,
-  lib,
-  pkgs,
   ...
 }:
 
 let
   cfg = config.services.kavita;
-  tailscale = lib.getExe config.services.tailscale.package;
 in
 {
   sops.secrets."kavita/token-key".restartUnits = [ "kavita.service" ];
@@ -57,20 +54,9 @@ in
     };
   };
 
-  systemd.services.tailscale-serve-kavita = {
-    after = [
-      "tailscaled.service"
-      "kavita.service"
-    ];
-    wants = [ "tailscaled.service" ];
-    wantedBy = [ "multi-user.target" ];
-    serviceConfig = {
-      Type = "oneshot";
-      RemainAfterExit = true;
-      Restart = "on-failure";
-      RestartSec = 10;
-      ExecStart = "${tailscale} serve --bg --https=8443 http://${cfg.settings.IpAddresses}:${toString cfg.settings.Port}";
-      ExecStop = "${tailscale} serve --https=8443 off";
-    };
+  services.caddy.virtualHosts."read.firilisinof.com" = {
+    useACMEHost = "firilisinof.com";
+    logFormat = null;
+    extraConfig = "reverse_proxy ${cfg.settings.IpAddresses}:${toString cfg.settings.Port}";
   };
 }

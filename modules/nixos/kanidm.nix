@@ -1,17 +1,15 @@
 {
   config,
-  lib,
   pkgs,
   ...
 }:
 
 let
   cfg = config.services.kanidm;
-  hostname = "pi5.tail0a1230.ts.net";
-  origin = "https://${hostname}:8444";
-  kavitaOrigin = "https://${hostname}:8443";
-  tlsDirectory = "/var/lib/kanidm-tls";
-  tailscale = lib.getExe config.services.tailscale.package;
+  hostname = "auth.firilisinof.com";
+  origin = "https://${hostname}";
+  kavitaOrigin = "https://read.firilisinof.com";
+  tlsDirectory = config.security.acme.certs."firilisinof.com".directory;
   identity = config.home-manager.users.lucas.programs.git.settings.user;
 in
 {
@@ -44,7 +42,8 @@ in
         inherit origin;
         bindaddress = "127.0.0.1:8445";
         tls_key = "${tlsDirectory}/key.pem";
-        tls_chain = "${tlsDirectory}/cert.pem";
+        tls_chain = "${tlsDirectory}/fullchain.pem";
+        http_client_address_info.x-forward-for = [ "127.0.0.1" ];
         online_backup = {
           path = "/var/backup/kanidm";
           schedule = "0 22 * * *";
@@ -88,16 +87,17 @@ in
     };
   };
 
+  users.users.kanidm.extraGroups = [ "acme" ];
+  security.acme.certs."firilisinof.com".reloadServices = [ "kanidm.service" ];
+
   systemd.services.kanidm = {
     after = [
-      "kanidm-tls.service"
-      "tailscale-serve-kanidm.service"
+      "acme-firilisinof.com.service"
+      "caddy.service"
     ];
-    # tailscale may not be connected at boot, so start with the certificate already on disk
-    # and retry until provisioning reaches the serve endpoint
     wants = [
-      "kanidm-tls.service"
-      "tailscale-serve-kanidm.service"
+      "acme-firilisinof.com.service"
+      "caddy.service"
     ];
     serviceConfig = {
       Restart = "on-failure";
@@ -105,67 +105,16 @@ in
     };
   };
 
-  systemd.services.kanidm-tls = {
-    description = "Tailscale certificate for Kanidm";
-    after = [
-      "network-online.target"
-      "tailscaled.service"
-    ];
-    wants = [
-      "network-online.target"
-      "tailscaled.service"
-    ];
-    path = [
-      pkgs.coreutils
-      pkgs.diffutils
-    ];
-    serviceConfig = {
-      Type = "oneshot";
-      Group = "kanidm";
-      StateDirectory = "kanidm-tls";
-      StateDirectoryMode = "0750";
-      UMask = "0077";
-      Restart = "on-failure";
-      RestartSec = 10;
-    };
-    script = ''
-      temporary=$(mktemp -d "$STATE_DIRECTORY/.renew.XXXXXX")
-      trap 'rm -rf "$temporary"' EXIT
-      ${tailscale} cert --min-validity=720h \
-        --cert-file="$temporary/cert.pem" --key-file="$temporary/key.pem" ${hostname}
-      if ! cmp -s "$temporary/cert.pem" "$STATE_DIRECTORY/cert.pem" \
-        || ! cmp -s "$temporary/key.pem" "$STATE_DIRECTORY/key.pem"; then
-        install -o root -g kanidm -m 0640 "$temporary/key.pem" "$STATE_DIRECTORY/key.pem"
-        install -o root -g kanidm -m 0640 "$temporary/cert.pem" "$STATE_DIRECTORY/cert.pem"
-        if ${pkgs.systemd}/bin/systemctl is-active --quiet kanidm.service; then
-          ${pkgs.systemd}/bin/systemctl --no-block try-restart kanidm.service
-        fi
-      fi
+  services.caddy.virtualHosts.${hostname} = {
+    useACMEHost = "firilisinof.com";
+    logFormat = null;
+    extraConfig = ''
+      reverse_proxy https://${cfg.server.settings.bindaddress} {
+        transport http {
+          tls_server_name ${hostname}
+        }
+      }
     '';
-  };
-
-  systemd.timers.kanidm-tls = {
-    wantedBy = [ "timers.target" ];
-    timerConfig = {
-      OnCalendar = "daily";
-      RandomizedDelaySec = "1h";
-      Persistent = true;
-    };
-  };
-
-  # provisioning uses the public hostname so certificate validation remains enabled
-  systemd.services.tailscale-serve-kanidm = {
-    after = [ "tailscaled.service" ];
-    wants = [ "tailscaled.service" ];
-    wantedBy = [ "multi-user.target" ];
-    serviceConfig = {
-      Type = "oneshot";
-      RemainAfterExit = true;
-      Restart = "on-failure";
-      RestartSec = 10;
-      ExecStart = "${tailscale} serve --bg --tcp=8444 tcp://127.0.0.1:8445";
-      ExecStop = "${tailscale} serve --tcp=8444 off";
-    };
   };
 
   services.restic.backups.b2 = {
