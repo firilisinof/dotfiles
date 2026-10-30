@@ -108,6 +108,20 @@ in
               size = "small";
               widgets = [
                 {
+                  type = "clock";
+                  hour-format = "24h";
+                  timezones = [
+                    {
+                      timezone = "Europe/Paris";
+                      label = "Paris";
+                    }
+                    {
+                      timezone = "America/Sao_Paulo";
+                      label = "São Paulo";
+                    }
+                  ];
+                }
+                {
                   type = "calendar";
                   first-day-of-week = "monday";
                 }
