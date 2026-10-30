@@ -31,6 +31,7 @@
         ../../hosts/pi5/configuration.nix
         inputs.sops-nix.nixosModules.sops
         { home-manager.users.lucas.imports = [ self.homeModules.lucas.default ]; }
+        self.nixosModules.anytype
         self.nixosModules.backup
         self.nixosModules.cache
         self.nixosModules.caddy
