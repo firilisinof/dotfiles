@@ -1,7 +1,6 @@
 ---
 name: simplify
 description: Simplifies code for clarity without changing behavior. Use for readability, maintainability, and complexity reduction after behavior is understood.
-disable-model-invocation: true
 ---
 
 # Code Simplification
