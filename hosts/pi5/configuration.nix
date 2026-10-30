@@ -52,6 +52,8 @@
     openFirewall = true;
   };
 
+  systemd.tmpfiles.rules = [ "d /srv/git 0750 lucas users - -" ];
+
   services.fstrim.enable = true;
   services.journald.settings.Journal.SystemMaxUse = "256M";
 
