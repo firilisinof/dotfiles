@@ -39,6 +39,29 @@ in
           name = "Home";
           columns = [
             {
+              size = "small";
+              widgets = [
+                {
+                  type = "clock";
+                  hour-format = "24h";
+                  timezones = [
+                    {
+                      timezone = "Europe/Paris";
+                      label = "Paris";
+                    }
+                    {
+                      timezone = "America/Sao_Paulo";
+                      label = "São Paulo";
+                    }
+                  ];
+                }
+                {
+                  type = "calendar";
+                  first-day-of-week = "monday";
+                }
+              ];
+            }
+            {
               size = "full";
               widgets = [
                 {
@@ -107,24 +130,6 @@ in
             {
               size = "small";
               widgets = [
-                {
-                  type = "clock";
-                  hour-format = "24h";
-                  timezones = [
-                    {
-                      timezone = "Europe/Paris";
-                      label = "Paris";
-                    }
-                    {
-                      timezone = "America/Sao_Paulo";
-                      label = "São Paulo";
-                    }
-                  ];
-                }
-                {
-                  type = "calendar";
-                  first-day-of-week = "monday";
-                }
                 {
                   type = "weather";
                   location = "Grenoble, France";
