@@ -1,7 +1,22 @@
-{ config, ... }:
+{ config, pkgs, ... }:
 
 let
   cfg = config.services.glance;
+  repositoryDirectory = "/run/glance-repositories";
+  assets = pkgs.linkFarm "glance-assets" [
+    {
+      name = "custom.css";
+      path = pkgs.writeText "glance-custom.css" ''
+        .widget-type-server-stats .widget-header > div:has(.widget-beta-icon) {
+          display: none;
+        }
+      '';
+    }
+    {
+      name = "repositories.json";
+      path = "${repositoryDirectory}/repositories.json";
+    }
+  ];
 in
 {
   services.glance = {
@@ -11,11 +26,13 @@ in
         host = "127.0.0.1";
         port = 8081;
         proxied = true;
+        assets-path = "${assets}";
       };
       theme = {
         light = true;
         background-color = "0 0 100";
         primary-color = "0 0 20";
+        custom-css-file = "/assets/custom.css";
       };
       pages = [
         {
@@ -55,6 +72,7 @@ in
                     {
                       type = "local";
                       name = "pi5";
+                      hide-swap = true;
                       hide-mountpoints-by-default = true;
                       mountpoints = {
                         "/" = {
@@ -68,6 +86,21 @@ in
                       };
                     }
                   ];
+                }
+                {
+                  type = "custom-api";
+                  title = "Git Repositories";
+                  cache = "1s";
+                  url = "http://${cfg.settings.server.host}:${toString cfg.settings.server.port}/assets/repositories.json";
+                  template = ''
+                    <ul class="list list-gap-10">
+                    {{ range .JSON.Array "repositories" }}
+                      <li class="color-highlight">{{ .String "name" }}</li>
+                    {{ else }}
+                      <li class="color-subdue">No repositories yet.</li>
+                    {{ end }}
+                    </ul>
+                  '';
                 }
               ];
             }
@@ -90,6 +123,36 @@ in
         }
       ];
     };
+  };
+
+  systemd.services.glance = {
+    after = [ "glance-repositories.service" ];
+    wants = [ "glance-repositories.service" ];
+  };
+
+  systemd.services.glance-repositories = {
+    description = "Generate the Glance Git repository list";
+    after = [ "systemd-tmpfiles-setup.service" ];
+    serviceConfig = {
+      Type = "oneshot";
+      User = "lucas";
+      Group = "users";
+      ExecStart = "${pkgs.python3}/bin/python3 ${./repositories.py} /srv/git ${repositoryDirectory}/repositories.json";
+      RuntimeDirectory = "glance-repositories";
+      RuntimeDirectoryMode = "0755";
+      RuntimeDirectoryPreserve = "yes";
+      UMask = "0022";
+      NoNewPrivileges = true;
+      PrivateTmp = true;
+      PrivateNetwork = true;
+      ProtectHome = true;
+      ProtectSystem = "strict";
+    };
+  };
+
+  systemd.paths.glance-repositories = {
+    wantedBy = [ "multi-user.target" ];
+    pathConfig.PathChanged = "/srv/git";
   };
 
   services.caddy.virtualHosts."firilisinof.com" = {
