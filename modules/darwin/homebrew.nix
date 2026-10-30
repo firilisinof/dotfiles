@@ -10,6 +10,7 @@
     };
     casks = [
       "antigravity"
+      "anytype"
       "beeper"
       "chatgpt"
       "claude"
