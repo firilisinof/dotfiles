@@ -38,7 +38,7 @@ in
                       title = "Kanidm";
                       url = "https://auth.firilisinof.com";
                       check-url = "https://auth.firilisinof.com/status";
-                      icon = "sh:kanidm";
+                      icon = "https://raw.githubusercontent.com/selfhst/icons/main/svg/kanidm.svg";
                     }
                     {
                       title = "WebDAV";
