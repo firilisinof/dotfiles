@@ -25,25 +25,64 @@ in
               size = "full";
               widgets = [
                 {
-                  type = "bookmarks";
-                  groups = [
+                  type = "monitor";
+                  title = "Services";
+                  cache = "1m";
+                  sites = [
                     {
-                      links = [
-                        {
-                          title = "Kavita";
-                          url = "https://read.firilisinof.com";
-                        }
-                        {
-                          title = "Kanidm";
-                          url = "https://auth.firilisinof.com";
-                        }
-                        {
-                          title = "WebDAV";
-                          url = "https://dav.firilisinof.com";
-                        }
-                      ];
+                      title = "Kavita";
+                      url = "https://read.firilisinof.com";
+                      icon = "sh:kavita";
+                    }
+                    {
+                      title = "Kanidm";
+                      url = "https://auth.firilisinof.com";
+                      check-url = "https://auth.firilisinof.com/status";
+                      icon = "sh:kanidm";
+                    }
+                    {
+                      title = "WebDAV";
+                      url = "https://dav.firilisinof.com";
+                      icon = "mdi:folder-sync";
+                      # an authentication challenge confirms the protected endpoint is reachable
+                      alt-status-codes = [ 401 ];
                     }
                   ];
+                }
+                {
+                  type = "server-stats";
+                  servers = [
+                    {
+                      type = "local";
+                      name = "pi5";
+                      hide-mountpoints-by-default = true;
+                      mountpoints = {
+                        "/" = {
+                          name = "NVMe";
+                          hide = false;
+                        };
+                        "/boot" = {
+                          name = "SD card";
+                          hide = false;
+                        };
+                      };
+                    }
+                  ];
+                }
+              ];
+            }
+            {
+              size = "small";
+              widgets = [
+                {
+                  type = "calendar";
+                  first-day-of-week = "monday";
+                }
+                {
+                  type = "weather";
+                  location = "Grenoble, France";
+                  units = "metric";
+                  hour-format = "24h";
                 }
               ];
             }
