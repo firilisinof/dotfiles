@@ -47,6 +47,8 @@ in
     User = "prowlarr";
     Group = "prowlarr";
     StateDirectoryMode = "0700";
+    # the host resolver daemon would bypass this service's resolv.conf
+    InaccessiblePaths = [ "-/run/nscd" ];
     BindReadOnlyPaths = [
       "${pkgs.writeText "prowlarr-resolv.conf" ''
         nameserver 1.1.1.1
