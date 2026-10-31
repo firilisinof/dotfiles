@@ -70,7 +70,7 @@ in
     group = "media";
     profileDir = "/srv/qbittorrent";
     webuiPort = 8080;
-    torrentingPort = 6881;
+    torrentingPort = 10943;
     openFirewall = false;
   };
 

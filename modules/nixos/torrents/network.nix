@@ -8,17 +8,39 @@ let
   port = toString config.services.qbittorrent.torrentingPort;
 in
 {
+  sops.secrets."airvpn/private-key" = {
+    restartUnits = [ "wireguard-airvpn.service" ];
+  };
+  sops.secrets."airvpn/preshared-key" = {
+    restartUnits = [ "wireguard-airvpn-peer-athebyne.service" ];
+  };
+
   networking.wireguard.interfaces.airvpn = {
     interfaceNamespace = "torrents";
     privateKeyFile = "/run/secrets/airvpn/private-key";
     mtu = 1320;
-    # add the assigned addresses and peer after subscribing to AirVPN
-    ips = [ ];
-    peers = [ ];
+    ips = [
+      "10.158.221.96/32"
+      "fd7d:76ee:e68f:a993:8eef:66af:b9cf:f84d/128"
+    ];
+    peers = [
+      {
+        name = "athebyne";
+        publicKey = "PyLCXAQT8KkM4T+dUsOQfn+Ub3pGxfGlxkIApuig+hk=";
+        presharedKeyFile = "/run/secrets/airvpn/preshared-key";
+        endpoint = "86.106.84.164:1637";
+        persistentKeepalive = 15;
+        allowedIPs = [
+          "0.0.0.0/0"
+          "::/0"
+        ];
+      }
+    ];
   };
 
   environment.etc."netns/torrents/resolv.conf".text = ''
-    nameserver 9.9.9.9
+    nameserver 10.128.0.1
+    nameserver fd7d:76ee:e68f:a993::1
     options timeout:2 attempts:2
   '';
 
