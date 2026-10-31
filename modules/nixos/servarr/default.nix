@@ -1,4 +1,9 @@
-{ lib, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 
 let
   apps = {
@@ -55,6 +60,19 @@ in
         nameserver 1.0.0.1
       ''}:/etc/resolv.conf"
     ];
+  };
+
+  services.flaresolverr = {
+    enable = true;
+    openFirewall = false;
+    port = 8191;
+  };
+  systemd.services.flaresolverr = {
+    environment.HOST = "127.0.0.1";
+    serviceConfig = {
+      BindReadOnlyPaths = config.systemd.services.prowlarr.serviceConfig.BindReadOnlyPaths;
+      InaccessiblePaths = [ "-/run/nscd" ];
+    };
   };
 
   systemd.services.servarr-setup = {
