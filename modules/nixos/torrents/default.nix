@@ -78,14 +78,14 @@ in
     "d ${cfg.profileDir} 0750 qbittorrent media - -"
     "d /srv/media 2750 qbittorrent media - -"
     "d /srv/media/downloads 2750 qbittorrent media - -"
-    "d /srv/media/downloads/complete 2750 qbittorrent media - -"
-    "d /srv/media/downloads/incomplete 2750 qbittorrent media - -"
+    "d /srv/media/downloads/complete 2770 qbittorrent media - -"
+    "d /srv/media/downloads/incomplete 2770 qbittorrent media - -"
     "d /srv/media/library 2750 qbittorrent media - -"
-    "d /srv/media/library/movies 2750 qbittorrent media - -"
-    "d /srv/media/library/series 2750 qbittorrent media - -"
+    "d /srv/media/library/movies 2770 qbittorrent media - -"
+    "d /srv/media/library/series 2770 qbittorrent media - -"
     "d /srv/media/archive 2750 qbittorrent media - -"
-    "d /srv/media/archive/movies 2750 qbittorrent media - -"
-    "d /srv/media/archive/series 2750 qbittorrent media - -"
+    "d /srv/media/archive/movies 2770 qbittorrent media - -"
+    "d /srv/media/archive/series 2770 qbittorrent media - -"
   ];
   systemd.tmpfiles.settings.qbittorrent = {
     "${profile}/".d.mode = lib.mkForce "0750";
@@ -118,7 +118,7 @@ in
         cfg.profileDir
         "/srv/media"
       ];
-      UMask = "0027";
+      UMask = "0007";
       Restart = "on-failure";
       RestartSec = "5s";
     };

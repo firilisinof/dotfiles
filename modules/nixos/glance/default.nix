@@ -92,6 +92,21 @@ in
                       icon = "sh:qbittorrent";
                     }
                     {
+                      title = "Prowlarr";
+                      url = "https://prowlarr.firilisinof.com";
+                      icon = "sh:prowlarr";
+                    }
+                    {
+                      title = "Sonarr";
+                      url = "https://sonarr.firilisinof.com";
+                      icon = "sh:sonarr";
+                    }
+                    {
+                      title = "Radarr";
+                      url = "https://radarr.firilisinof.com";
+                      icon = "sh:radarr";
+                    }
+                    {
                       title = "Kanidm";
                       url = "https://auth.firilisinof.com";
                       check-url = "https://auth.firilisinof.com/status";
