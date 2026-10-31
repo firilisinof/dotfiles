@@ -47,6 +47,12 @@ in
     User = "prowlarr";
     Group = "prowlarr";
     StateDirectoryMode = "0700";
+    BindReadOnlyPaths = [
+      "${pkgs.writeText "prowlarr-resolv.conf" ''
+        nameserver 1.1.1.1
+        nameserver 1.0.0.1
+      ''}:/etc/resolv.conf"
+    ];
   };
 
   systemd.services.servarr-setup = {
