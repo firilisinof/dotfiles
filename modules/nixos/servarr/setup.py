@@ -106,10 +106,9 @@ def main():
     for name, kind in (("sonarr", "series"), ("radarr", "movies")):
         app = apps[name]
         roots = {root["path"] for root in app.request("rootfolder")}
-        for location in ("library", "archive"):
-            path = f"/srv/media/{location}/{kind}"
-            if path not in roots:
-                app.request("rootfolder", {"path": path})
+        path = f"/srv/media/library/{kind}"
+        if path not in roots:
+            app.request("rootfolder", {"path": path})
         app.add_provider(
             "downloadclient", "QBittorrent", "qBittorrent (AirVPN)",
             {
