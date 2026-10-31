@@ -123,6 +123,21 @@ def main():
         media = app.request("config/mediamanagement")
         media.update(copyUsingHardlinks=True, setPermissionsLinux=False)
         app.request(f"config/mediamanagement/{media['id']}", media, "PUT")
+        metadata = next(
+            item for item in app.request("metadata")
+            if item["implementation"] == "XbmcMetadata"
+        )
+        metadata["enable"] = True
+        values = (
+            {"seriesMetadata": True, "episodeMetadata": True,
+             "seriesImages": False, "seasonImages": False, "episodeImages": False}
+            if name == "sonarr" else
+            {"movieMetadata": True, "movieImages": False}
+        )
+        for field in metadata["fields"]:
+            if field["name"] in values:
+                field["value"] = values[field["name"]]
+        app.request(f"metadata/{metadata['id']}", metadata, "PUT")
         apps["prowlarr"].add_provider(
             "applications", name.capitalize(), name.capitalize(),
             {"prowlarrUrl": apps["prowlarr"].url, "baseUrl": app.url, "apiKey": app.key},
