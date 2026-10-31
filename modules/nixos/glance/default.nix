@@ -174,7 +174,7 @@ in
     pathConfig.PathChanged = "/srv/git";
   };
 
-  services.caddy.virtualHosts."firilisinof.com" = {
+  services.caddy.virtualHosts."home.firilisinof.com" = {
     useACMEHost = "firilisinof.com";
     logFormat = null;
     extraConfig = "reverse_proxy ${cfg.settings.server.host}:${toString cfg.settings.server.port}";
