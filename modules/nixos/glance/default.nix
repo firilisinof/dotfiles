@@ -2,7 +2,9 @@
 
 let
   cfg = config.services.glance;
+  forgejo = config.services.forgejo;
   repositoryDirectory = "/run/glance-repositories";
+  repositorySource = "${forgejo.repositoryRoot}/lucas";
   assets = pkgs.linkFarm "glance-assets" [
     {
       name = "custom.css";
@@ -107,6 +109,12 @@ in
                       icon = "sh:radarr";
                     }
                     {
+                      title = "Forgejo";
+                      url = "https://git.firilisinof.com";
+                      check-url = "https://git.firilisinof.com/api/healthz";
+                      icon = "sh:forgejo";
+                    }
+                    {
                       title = "Kanidm";
                       url = "https://auth.firilisinof.com";
                       check-url = "https://auth.firilisinof.com/status";
@@ -186,9 +194,9 @@ in
     after = [ "systemd-tmpfiles-setup.service" ];
     serviceConfig = {
       Type = "oneshot";
-      User = "lucas";
-      Group = "users";
-      ExecStart = "${pkgs.python3}/bin/python3 ${./repositories.py} /srv/git ${repositoryDirectory}/repositories.json";
+      User = forgejo.user;
+      Group = forgejo.group;
+      ExecStart = "${pkgs.python3}/bin/python3 ${./repositories.py} ${repositorySource} ${repositoryDirectory}/repositories.json";
       RuntimeDirectory = "glance-repositories";
       RuntimeDirectoryMode = "0755";
       RuntimeDirectoryPreserve = "yes";
@@ -203,7 +211,7 @@ in
 
   systemd.paths.glance-repositories = {
     wantedBy = [ "multi-user.target" ];
-    pathConfig.PathChanged = "/srv/git";
+    pathConfig.PathChanged = repositorySource;
   };
 
   services.caddy.virtualHosts."home.firilisinof.com" = {

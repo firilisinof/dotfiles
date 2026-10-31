@@ -9,6 +9,7 @@ let
   hostname = "auth.firilisinof.com";
   origin = "https://${hostname}";
   kavitaOrigin = "https://read.firilisinof.com";
+  forgejoOrigin = "https://git.firilisinof.com";
   tlsDirectory = config.security.acme.certs."firilisinof.com".directory;
   identity = config.home-manager.users.lucas.programs.git.settings.user;
 in
@@ -24,6 +25,11 @@ in
     restartUnits = [ "kanidm.service" ];
   };
   sops.secrets."kavita/oidc-secret" = {
+    group = "kanidm";
+    mode = "0440";
+    restartUnits = [ "kanidm.service" ];
+  };
+  sops.secrets."forgejo/oidc-secret" = {
     group = "kanidm";
     mode = "0440";
     restartUnits = [ "kanidm.service" ];
@@ -60,6 +66,8 @@ in
       groups = {
         "kavita.users" = { };
         "kavita.admins" = { };
+        "forgejo.users" = { };
+        "forgejo.admins" = { };
       };
       persons.lucas = {
         displayName = identity.name;
@@ -67,6 +75,8 @@ in
         groups = [
           "kavita.users"
           "kavita.admins"
+          "forgejo.users"
+          "forgejo.admins"
         ];
       };
       systems.oauth2.kavita = {
@@ -83,6 +93,19 @@ in
           "email"
           "profile"
         ];
+      };
+      systems.oauth2.forgejo = {
+        displayName = "Forgejo";
+        originUrl = "${forgejoOrigin}/user/oauth2/kanidm/callback";
+        originLanding = "${forgejoOrigin}/";
+        basicSecretFile = config.sops.secrets."forgejo/oidc-secret".path;
+        preferShortUsername = true;
+        scopeMaps."forgejo.users" = [
+          "openid"
+          "email"
+          "profile"
+        ];
+        claimMaps.forgejo_role.valuesByGroup."forgejo.admins" = [ "admin" ];
       };
     };
   };

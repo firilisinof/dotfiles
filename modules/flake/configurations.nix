@@ -35,6 +35,7 @@
         self.nixosModules.backup
         self.nixosModules.cache
         self.nixosModules.caddy
+        self.nixosModules.forgejo
         self.nixosModules.glance
         self.nixosModules.home-manager
         self.nixosModules.jellyfin
