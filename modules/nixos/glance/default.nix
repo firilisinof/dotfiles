@@ -87,6 +87,11 @@ in
                       alt-status-codes = [ 401 ];
                     }
                     {
+                      title = "qBittorrent";
+                      url = "https://torrents.firilisinof.com";
+                      icon = "sh:qbittorrent";
+                    }
+                    {
                       title = "Kanidm";
                       url = "https://auth.firilisinof.com";
                       check-url = "https://auth.firilisinof.com/status";

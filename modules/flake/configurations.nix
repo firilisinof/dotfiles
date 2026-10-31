@@ -41,6 +41,7 @@
         self.nixosModules.kanidm
         self.nixosModules.kavita
         self.nixosModules.sops
+        self.nixosModules.torrents
         self.nixosModules.webdav
         self.nixosModules.youtarr
       ];
