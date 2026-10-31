@@ -112,6 +112,8 @@ in
     '';
     serviceConfig = {
       NetworkNamespacePath = "/run/netns/torrents";
+      # prevent the host resolver daemon from bypassing AirVPN DNS
+      InaccessiblePaths = [ "-/run/nscd" ];
       BindReadOnlyPaths = [ "/etc/netns/torrents/resolv.conf:/etc/resolv.conf" ];
       ProtectSystem = lib.mkForce "strict";
       ReadWritePaths = [
