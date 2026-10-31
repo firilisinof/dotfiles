@@ -37,10 +37,12 @@
         self.nixosModules.caddy
         self.nixosModules.glance
         self.nixosModules.home-manager
+        self.nixosModules.jellyfin
         self.nixosModules.kanidm
         self.nixosModules.kavita
         self.nixosModules.sops
         self.nixosModules.webdav
+        self.nixosModules.youtarr
       ];
     };
   };

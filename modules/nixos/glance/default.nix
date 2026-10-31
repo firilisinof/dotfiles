@@ -75,6 +75,18 @@ in
                       icon = "sh:kavita";
                     }
                     {
+                      title = "Jellyfin";
+                      url = "https://watch.firilisinof.com";
+                      icon = "sh:jellyfin";
+                      alt-status-codes = [ 401 ];
+                    }
+                    {
+                      title = "YouTube Archive";
+                      url = "https://archive.firilisinof.com";
+                      icon = "mdi:youtube";
+                      alt-status-codes = [ 401 ];
+                    }
+                    {
                       title = "Kanidm";
                       url = "https://auth.firilisinof.com";
                       check-url = "https://auth.firilisinof.com/status";
