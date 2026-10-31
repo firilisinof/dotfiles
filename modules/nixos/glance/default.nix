@@ -83,6 +83,11 @@ in
                       alt-status-codes = [ 401 ];
                     }
                     {
+                      title = "Seerr";
+                      url = "https://requests.firilisinof.com";
+                      icon = "sh:seerr";
+                    }
+                    {
                       title = "YouTube Archive";
                       url = "https://archive.firilisinof.com";
                       icon = "mdi:youtube";

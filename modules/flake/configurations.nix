@@ -41,6 +41,7 @@
         self.nixosModules.jellyfin
         self.nixosModules.kanidm
         self.nixosModules.kavita
+        self.nixosModules.seerr
         self.nixosModules.servarr
         self.nixosModules.sops
         self.nixosModules.torrents
