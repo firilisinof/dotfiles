@@ -61,7 +61,8 @@ in
     "d ${configDir} 0750 youtarr youtube - -"
     "d ${stateDir}/jobs 0750 youtarr youtube - -"
     "d ${stateDir}/images 0750 youtarr youtube - -"
-    "d ${stateDir}/database 0750 root root - -"
+    # MariaDB owns this directory after initialization, including across rebuilds
+    "d ${stateDir}/database 0750 - - - -"
     "d ${mediaDir} 2750 youtarr youtube - -"
     "d /var/backup/youtarr 0700 root root - -"
   ];
