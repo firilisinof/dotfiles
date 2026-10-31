@@ -55,8 +55,6 @@
   # the Claude Code SSH remote uploads a generic glibc build of the cli
   programs.nix-ld.enable = true;
 
-  systemd.tmpfiles.rules = [ "d /srv/git 0750 lucas users - -" ];
-
   services.fstrim.enable = true;
   services.journald.settings.Journal.SystemMaxUse = "256M";
 
