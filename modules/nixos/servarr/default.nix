@@ -20,6 +20,7 @@ in
     };
     systemd.services.${name}.serviceConfig = {
       UMask = lib.mkForce "0007";
+      PrivateTmp = true;
       ProtectSystem = "strict";
       ReadWritePaths = [ "/var/lib/${name}" ] ++ lib.optional (name != "prowlarr") "/srv/media";
     };
