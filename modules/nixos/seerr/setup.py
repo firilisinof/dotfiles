@@ -98,9 +98,26 @@ def configure_arr(seerr, name, port, kind):
     else:
         seerr.request(endpoint, settings)
 
+def wait_for_jellyfin():
+    for attempt in range(60):
+        try:
+            with urllib.request.urlopen(
+                "http://127.0.0.1:8096/System/Info/Public", timeout=5
+            ) as response:
+                info = json.load(response)
+            if not info.get("StartupWizardCompleted"):
+                raise ValueError("Jellyfin setup must already be complete")
+            return
+        except (OSError, ValueError):
+            if attempt == 59:
+                raise
+            time.sleep(2)
+
+
 
 def main():
     seerr = Seerr()
+    wait_for_jellyfin()
     logged_in = False
     restart = False
     try:
