@@ -1,6 +1,7 @@
 {
   config,
   lib,
+  pkgs,
   ...
 }:
 
@@ -8,6 +9,9 @@ let
   cfg = config.services.forgejo;
   hostname = "git.firilisinof.com";
   issuer = "${config.services.kanidm.server.settings.origin}/oauth2/openid/forgejo";
+  releaseDirectory = "/srv/forgejo-releases";
+  # per repository, past this the oldest release files are deleted to bound the b2 bill
+  releaseLimitBytes = 5 * 1024 * 1024 * 1024;
 in
 {
   sops.secrets."forgejo/oidc-secret".restartUnits = [ "forgejo.service" ];
@@ -71,8 +75,41 @@ in
     '';
   };
 
-  # glance watches this directory, which forgejo would create only with the first repository
-  systemd.tmpfiles.rules = [ "d ${cfg.repositoryRoot}/lucas 0750 ${cfg.user} ${cfg.group} - -" ];
+  # mirrors carry only git data, so github release files are archived beside them
+  systemd.services.forgejo-releases = {
+    description = "Archive GitHub release files of Forgejo mirrors";
+    after = [ "network-online.target" ];
+    wants = [ "network-online.target" ];
+    path = [ pkgs.git ];
+    serviceConfig = {
+      Type = "oneshot";
+      User = cfg.user;
+      Group = cfg.group;
+      ExecStart = "${pkgs.python3}/bin/python3 ${./releases.py} ${cfg.repositoryRoot} ${releaseDirectory} ${toString releaseLimitBytes}";
+      UMask = "0027";
+      NoNewPrivileges = true;
+      PrivateTmp = true;
+      ProtectHome = true;
+      ProtectSystem = "strict";
+      ReadWritePaths = [ releaseDirectory ];
+    };
+  };
+
+  systemd.timers.forgejo-releases = {
+    wantedBy = [ "timers.target" ];
+    timerConfig = {
+      OnCalendar = "hourly";
+      RandomizedDelaySec = "5m";
+      Persistent = true;
+    };
+  };
+
+  systemd.tmpfiles.rules = [
+    # glance watches this directory, which forgejo would create only with the first repository
+    "d ${cfg.repositoryRoot}/lucas 0750 ${cfg.user} ${cfg.group} - -"
+    # setgid keeps the archive readable by lucas, who stays out of the forgejo group and its secrets
+    "d ${releaseDirectory} 2750 ${cfg.user} users - -"
+  ];
 
   services.openssh.settings.AllowUsers = [ cfg.user ];
 
@@ -81,6 +118,7 @@ in
       "${cfg.stateDir}/data/forgejo.db*"
       "${cfg.stateDir}/data/tmp"
       "${cfg.stateDir}/log"
+      "${releaseDirectory}/**/*.part"
     ];
     sqlite.forgejo = {
       inherit (cfg.database) path;
