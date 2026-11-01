@@ -130,6 +130,11 @@ in
                       icon = "sh:radarr";
                     }
                     {
+                      title = "Bazarr";
+                      url = "https://bazarr.firilisinof.com";
+                      icon = "sh:bazarr";
+                    }
+                    {
                       title = "Forgejo";
                       url = "https://git.firilisinof.com";
                       check-url = "https://git.firilisinof.com/api/healthz";

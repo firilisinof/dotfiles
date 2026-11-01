@@ -13,7 +13,11 @@ let
   };
 in
 {
-  imports = lib.mapAttrsToList (name: port: {
+  imports = [
+    ./playback.nix
+    ./subtitles.nix
+  ]
+  ++ lib.mapAttrsToList (name: port: {
     services.${name} = {
       enable = true;
       dataDir = "/var/lib/${name}";
