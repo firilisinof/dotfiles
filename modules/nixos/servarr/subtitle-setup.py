@@ -17,7 +17,7 @@ CREDENTIALS = DATA_DIR / "credentials"
 MARKER = DATA_DIR / ".subtitle-setup-complete"
 SETUP_VERSION = "2"
 PROFILE_NAME = "English + Brazilian Portuguese"
-DEFAULT_PROVIDERS = ("subf2m", "tvsubtitles", "yifysubtitles")
+DEFAULT_PROVIDERS = ("subf2m", "tvsubtitles", "yifysubtitles", "gestdown")
 
 
 def write_secret(path, value, replace=False):

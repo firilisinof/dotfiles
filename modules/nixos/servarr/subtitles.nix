@@ -49,6 +49,7 @@ in
         apikey._secret = "${credentialsDir}/radarr-api-key";
         movies_sync_on_live = false;
       };
+      subf2m.user_agent = "Mozilla/5.0 (X11; Linux aarch64; rv:140.0) Gecko/20100101 Firefox/140.0";
       subsync.use_subsync = false;
       auth = {
         type = "form";
