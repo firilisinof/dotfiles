@@ -1,6 +1,7 @@
 import hashlib
 import json
 import re
+import shutil
 import subprocess
 import sys
 import urllib.error
@@ -78,22 +79,54 @@ def download(asset, target):
     return True
 
 
+def newest_within_limit(items, limit):
+    kept = set()
+    total = 0
+    for tag, item in sorted(
+        items.items(), key=lambda entry: entry[1]["published_at"], reverse=True
+    ):
+        total += sum(asset["size"] for asset in item["assets"])
+        if total > limit:
+            break
+        kept.add(tag)
+    if items and not kept:
+        raise ValueError(f"newest release is over the {limit} byte limit")
+    return kept
+
+
 def archive(owner, repository, output, limit):
-    items = list(releases(owner, repository))
-    total = sum(asset["size"] for item in items for asset in item["assets"])
-    if total > limit:
-        raise ValueError(f"release files total {total} bytes, over the {limit} limit")
+    root = output / owner / repository
+    # releases removed upstream stay archived and count against the limit
+    archived = {
+        metadata.parent.name: json.loads(metadata.read_text())
+        for metadata in root.glob("*/release.json")
+    }
+    upstream = {safe_name(item["tag_name"]): item for item in releases(owner, repository)}
+    items = archived | upstream
+    kept = newest_within_limit(items, limit)
     downloaded = 0
-    for item in items:
-        directory = output / owner / repository / safe_name(item["tag_name"])
-        (directory / "assets").mkdir(parents=True, exist_ok=True)
-        for asset in item["assets"]:
-            target = directory / "assets" / safe_name(asset["name"])
-            downloaded += download(asset, target)
+    for tag, item in upstream.items():
+        directory = root / tag
+        directory.mkdir(parents=True, exist_ok=True)
+        if tag in kept:
+            (directory / "assets").mkdir(exist_ok=True)
+            for asset in item["assets"]:
+                target = directory / "assets" / safe_name(asset["name"])
+                downloaded += download(asset, target)
         metadata = directory / "release.json.part"
         metadata.write_text(json.dumps(item, indent=2) + "\n")
         metadata.replace(directory / "release.json")
-    print(f"{owner}/{repository}: {len(items)} releases, {downloaded} new files", flush=True)
+    # deletion waits until every kept file is verified, so a failed run removes nothing
+    removed = 0
+    for tag in items.keys() - kept:
+        if (root / tag / "assets").exists():
+            shutil.rmtree(root / tag / "assets")
+            removed += 1
+    print(
+        f"{owner}/{repository}: {len(items)} releases, {downloaded} new files, "
+        f"{removed} old releases removed",
+        flush=True,
+    )
 
 
 def main():

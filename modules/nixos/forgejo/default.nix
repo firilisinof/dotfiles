@@ -10,8 +10,8 @@ let
   hostname = "git.firilisinof.com";
   issuer = "${config.services.kanidm.server.settings.origin}/oauth2/openid/forgejo";
   releaseDirectory = "/srv/forgejo-releases";
-  # a project with many large releases should be a choice, not a surprise on the b2 bill
-  releaseLimitBytes = 20 * 1024 * 1024 * 1024;
+  # per repository, past this the oldest release files are deleted to bound the b2 bill
+  releaseLimitBytes = 5 * 1024 * 1024 * 1024;
 in
 {
   sops.secrets."forgejo/oidc-secret".restartUnits = [ "forgejo.service" ];
