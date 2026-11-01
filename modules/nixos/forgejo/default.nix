@@ -9,9 +9,9 @@ let
   cfg = config.services.forgejo;
   hostname = "git.firilisinof.com";
   issuer = "${config.services.kanidm.server.settings.origin}/oauth2/openid/forgejo";
-  releaseDirectory = "/srv/forgejo-releases";
   # per repository, past this the oldest release files are deleted to bound the b2 bill
   releaseLimitBytes = 5 * 1024 * 1024 * 1024;
+  releaseToken = "${cfg.customDir}/conf/releases-token";
 in
 {
   sops.secrets."forgejo/oidc-secret".restartUnits = [ "forgejo.service" ];
@@ -72,26 +72,36 @@ in
       else
         forgejo admin auth add-oauth "''${options[@]}"
       fi
+      # a failure must not stop forgejo, and the release job then reports the missing token
+      if [ ! -s ${releaseToken} ]; then
+        forgejo admin user generate-access-token \
+          --username lucas \
+          --token-name forgejo-releases \
+          --scopes write:repository \
+          --raw >${releaseToken} || rm -f ${releaseToken}
+      fi
     '';
   };
 
-  # mirrors carry only git data, so github release files are archived beside them
+  # mirrors carry only git data, so github releases are published into them through the api
   systemd.services.forgejo-releases = {
-    description = "Archive GitHub release files of Forgejo mirrors";
-    after = [ "network-online.target" ];
+    description = "Publish GitHub releases of Forgejo mirrors";
+    after = [
+      "forgejo.service"
+      "network-online.target"
+    ];
     wants = [ "network-online.target" ];
     path = [ pkgs.git ];
     serviceConfig = {
       Type = "oneshot";
       User = cfg.user;
       Group = cfg.group;
-      ExecStart = "${pkgs.python3}/bin/python3 ${./releases.py} ${cfg.repositoryRoot} ${releaseDirectory} ${toString releaseLimitBytes}";
+      ExecStart = "${pkgs.python3}/bin/python3 ${./releases.py} ${cfg.repositoryRoot} http://${cfg.settings.server.HTTP_ADDR}:${toString cfg.settings.server.HTTP_PORT} ${releaseToken} ${toString releaseLimitBytes}";
       UMask = "0027";
       NoNewPrivileges = true;
       PrivateTmp = true;
       ProtectHome = true;
       ProtectSystem = "strict";
-      ReadWritePaths = [ releaseDirectory ];
     };
   };
 
@@ -107,8 +117,6 @@ in
   systemd.tmpfiles.rules = [
     # glance watches this directory, which forgejo would create only with the first repository
     "d ${cfg.repositoryRoot}/lucas 0750 ${cfg.user} ${cfg.group} - -"
-    # setgid keeps the archive readable by lucas, who stays out of the forgejo group and its secrets
-    "d ${releaseDirectory} 2750 ${cfg.user} users - -"
   ];
 
   services.openssh.settings.AllowUsers = [ cfg.user ];
@@ -118,7 +126,6 @@ in
       "${cfg.stateDir}/data/forgejo.db*"
       "${cfg.stateDir}/data/tmp"
       "${cfg.stateDir}/log"
-      "${releaseDirectory}/**/*.part"
     ];
     sqlite.forgejo = {
       inherit (cfg.database) path;
