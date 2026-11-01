@@ -97,6 +97,36 @@ in
     };
   };
 
+  systemd.services.jellyfin-episode-images = {
+    description = "Fetch thumbnails for missing Jellyfin episodes";
+    wants = [ "jellyfin.service" ];
+    after = [ "jellyfin.service" ];
+    serviceConfig = {
+      Type = "oneshot";
+      DynamicUser = true;
+      ExecStart = "${lib.getExe pkgs.python3} ${./episode_images.py}";
+      LoadCredential = [ "admin-password:${config.sops.secrets."jellyfin/admin-password".path}" ];
+      TimeoutStartSec = "30min";
+      UMask = "0077";
+      NoNewPrivileges = true;
+      PrivateTmp = true;
+      ProtectSystem = "strict";
+      ProtectHome = true;
+      RestrictAddressFamilies = [ "AF_INET" ];
+      IPAddressDeny = "any";
+      IPAddressAllow = "localhost";
+    };
+  };
+
+  systemd.timers.jellyfin-episode-images = {
+    wantedBy = [ "timers.target" ];
+    timerConfig = {
+      OnCalendar = "hourly";
+      Persistent = true;
+      RandomizedDelaySec = "5min";
+    };
+  };
+
   services.restic.backups.b2 = {
     exclude = [
       "${cfg.dataDir}/data/jellyfin.db*"
