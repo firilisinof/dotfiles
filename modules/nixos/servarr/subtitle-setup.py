@@ -15,6 +15,7 @@ import xml.etree.ElementTree as ET
 DATA_DIR = Path("/var/lib/bazarr")
 CREDENTIALS = DATA_DIR / "credentials"
 MARKER = DATA_DIR / ".subtitle-setup-complete"
+SETUP_VERSION = "2"
 PROFILE_NAME = "English + Brazilian Portuguese"
 DEFAULT_PROVIDERS = ("subf2m", "tvsubtitles", "yifysubtitles")
 
@@ -122,16 +123,16 @@ def profile_items():
         {
             "id": 1,
             "language": "en",
-            "audioExclude": "False",
-            "audioOnlyInclude": "False",
+            "audio_exclude": "False",
+            "audio_only_include": "False",
             "forced": "False",
             "hi": "False",
         },
         {
             "id": 2,
             "language": "pb",
-            "audioExclude": "False",
-            "audioOnlyInclude": "False",
+            "audio_exclude": "False",
+            "audio_only_include": "False",
             "forced": "False",
             "hi": "False",
         },
@@ -180,9 +181,37 @@ def arr_media_ids(name, endpoint, has_media):
     return {item["id"] for item in items if has_media(item)}
 
 
+def arr_episode_ids(series_ids):
+    key = (CREDENTIALS / "sonarr-api-key").read_text().strip()
+    episode_ids = set()
+    for series_id in series_ids:
+        request = urllib.request.Request(
+            f"http://127.0.0.1:8989/api/v3/episode?seriesId={series_id}",
+            headers={"X-Api-Key": key},
+        )
+        with urllib.request.urlopen(request, timeout=60) as response:
+            episodes = json.load(response)
+        episode_ids.update(
+            episode["id"]
+            for episode in episodes
+            if episode.get("episodeFileId") not in (None, 0)
+        )
+    return episode_ids
+
+
 def bazarr_media_ids(client, endpoint, id_field):
     entries = client.request(f"{endpoint}?start=0&length=-1")["data"]
     return {item[id_field] for item in entries if item.get(id_field) is not None}
+
+
+def bazarr_episode_ids(client, series_ids):
+    episode_ids = set()
+    for start in range(0, len(series_ids), 100):
+        chunk = sorted(series_ids)[start : start + 100]
+        query = urllib.parse.urlencode([("seriesid[]", item) for item in chunk])
+        episodes = client.request(f"episodes?{query}")["data"]
+        episode_ids.update(item["sonarrEpisodeId"] for item in episodes)
+    return episode_ids
 
 
 def sync_manager(client, task_id, endpoint, id_field, expected_ids):
@@ -195,6 +224,49 @@ def sync_manager(client, task_id, endpoint, id_field, expected_ids):
             return
         time.sleep(2)
     raise TimeoutError(f"Timed out syncing Bazarr {endpoint}")
+
+
+def sync_episodes(client, series_ids, expected_episode_ids):
+    if not expected_episode_ids or expected_episode_ids <= bazarr_episode_ids(
+        client, series_ids
+    ):
+        return
+    client.request("system/tasks", {"taskid": "update_series"}, method="POST")
+    deadline = time.monotonic() + 300
+    while time.monotonic() < deadline:
+        if expected_episode_ids <= bazarr_episode_ids(client, series_ids):
+            return
+        time.sleep(2)
+    missing = expected_episode_ids - bazarr_episode_ids(client, series_ids)
+    raise TimeoutError(
+        f"Timed out syncing Bazarr episodes with media files: {sorted(missing)}"
+    )
+
+
+def rescan_series(client, series_ids, expected_episode_ids):
+    if not expected_episode_ids:
+        return
+    for series_id in sorted(series_ids):
+        client.request(
+            "series",
+            {"seriesid": series_id, "action": "scan-disk"},
+            method="PATCH",
+        )
+    deadline = time.monotonic() + 300
+    while time.monotonic() < deadline:
+        indexed_ids = set()
+        for start in range(0, len(expected_episode_ids), 100):
+            chunk = sorted(expected_episode_ids)[start : start + 100]
+            query = urllib.parse.urlencode([("episodeid[]", item) for item in chunk])
+            episodes = client.request(f"episodes?{query}")["data"]
+            indexed_ids.update(item["sonarrEpisodeId"] for item in episodes)
+        if expected_episode_ids <= indexed_ids:
+            return
+        time.sleep(2)
+    missing = expected_episode_ids - indexed_ids
+    raise TimeoutError(
+        f"Timed out indexing Bazarr episodes with media files: {sorted(missing)}"
+    )
 
 
 def assign_profile(client, endpoint, id_field, profile_id):
@@ -213,7 +285,7 @@ def assign_profile(client, endpoint, id_field, profile_id):
     return len(identifiers)
 
 
-def configure(client):
+def configure(client, initialize_provider_defaults=True):
     client.wait_ready()
     password = (CREDENTIALS / "admin-password").read_text().strip()
     client.request(
@@ -226,19 +298,22 @@ def configure(client):
     settings = client.request("system/settings")
     profiles = client.request("system/languages/profiles")
     profile_id, profiles = ensure_profile(profiles)
-    providers = ensure_provider_defaults(settings)
-    settings_form = [
-        ("languages-enabled", "en"),
-        ("languages-enabled", "pb"),
-        ("languages-profiles", json.dumps(profiles)),
-        ("settings-general-serie_default_enabled", "true"),
-        ("settings-general-serie_default_profile", str(profile_id)),
-        ("settings-general-movie_default_enabled", "true"),
-        ("settings-general-movie_default_profile", str(profile_id)),
-    ]
-    settings_form.extend(
-        ("settings-general-enabled_providers", value) for value in providers
-    )
+    if initialize_provider_defaults:
+        settings_form = [
+            ("languages-enabled", "en"),
+            ("languages-enabled", "pb"),
+            ("languages-profiles", json.dumps(profiles)),
+            ("settings-general-serie_default_enabled", "true"),
+            ("settings-general-serie_default_profile", str(profile_id)),
+            ("settings-general-movie_default_enabled", "true"),
+            ("settings-general-movie_default_profile", str(profile_id)),
+        ]
+        providers = ensure_provider_defaults(settings)
+        settings_form.extend(
+            ("settings-general-enabled_providers", value) for value in providers
+        )
+    else:
+        settings_form = [("languages-profiles", json.dumps(profiles))]
     client.request("system/settings", settings_form, method="POST")
 
     series_ids = arr_media_ids(
@@ -249,6 +324,9 @@ def configure(client):
     movie_ids = arr_media_ids("radarr", "movie", lambda item: item.get("hasFile", False))
     sync_manager(client, "update_series", "series", "sonarrSeriesId", series_ids)
     sync_manager(client, "update_movies", "movies", "radarrId", movie_ids)
+    episode_ids = arr_episode_ids(series_ids)
+    sync_episodes(client, series_ids, episode_ids)
+    rescan_series(client, series_ids, episode_ids)
 
     series_count = assign_profile(client, "series", "sonarrSeriesId", profile_id)
     movie_count = assign_profile(client, "movies", "radarrId", profile_id)
@@ -259,12 +337,14 @@ def main():
     if "--prepare-credentials" in sys.argv:
         prepare_credentials()
         return
-    if MARKER.exists():
+    if MARKER.exists() and MARKER.read_text().strip() == SETUP_VERSION:
         print("Bazarr subtitle setup is already complete")
         return
 
-    series_count, movie_count = configure(Bazarr())
-    write_secret(MARKER, "complete")
+    series_count, movie_count = configure(
+        Bazarr(), initialize_provider_defaults=not MARKER.exists()
+    )
+    write_secret(MARKER, SETUP_VERSION, replace=True)
     print(
         "Bazarr configured for English and Brazilian Portuguese; "
         f"assigned the profile to {series_count} series and {movie_count} movies"
