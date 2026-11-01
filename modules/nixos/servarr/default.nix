@@ -11,6 +11,12 @@ let
     sonarr = 8989;
     radarr = 7878;
   };
+  setupUnits = [
+    "network-online.target"
+    "caddy.service"
+    "qbittorrent.service"
+  ]
+  ++ map (name: "${name}.service") (builtins.attrNames apps);
 in
 {
   imports = [
@@ -82,18 +88,8 @@ in
   systemd.services.servarr-setup = {
     description = "Connect media managers to Prowlarr and qBittorrent";
     wantedBy = [ "multi-user.target" ];
-    wants = [
-      "network-online.target"
-      "caddy.service"
-      "qbittorrent.service"
-    ]
-    ++ map (name: "${name}.service") (builtins.attrNames apps);
-    after = [
-      "network-online.target"
-      "caddy.service"
-      "qbittorrent.service"
-    ]
-    ++ map (name: "${name}.service") (builtins.attrNames apps);
+    wants = setupUnits;
+    after = setupUnits;
     serviceConfig = {
       Type = "oneshot";
       ExecStart = "${pkgs.python3}/bin/python3 ${./setup.py}";

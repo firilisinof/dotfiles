@@ -1,5 +1,6 @@
 {
   config,
+  lib,
   pkgs,
   ...
 }:
@@ -14,26 +15,19 @@ let
   identity = config.home-manager.users.lucas.programs.git.settings.user;
 in
 {
-  sops.secrets."kanidm/admin-password" = {
-    group = "kanidm";
-    mode = "0440";
-    restartUnits = [ "kanidm.service" ];
-  };
-  sops.secrets."kanidm/idm-admin-password" = {
-    group = "kanidm";
-    mode = "0440";
-    restartUnits = [ "kanidm.service" ];
-  };
-  sops.secrets."kavita/oidc-secret" = {
-    group = "kanidm";
-    mode = "0440";
-    restartUnits = [ "kanidm.service" ];
-  };
-  sops.secrets."forgejo/oidc-secret" = {
-    group = "kanidm";
-    mode = "0440";
-    restartUnits = [ "kanidm.service" ];
-  };
+  sops.secrets =
+    lib.genAttrs
+      [
+        "kanidm/admin-password"
+        "kanidm/idm-admin-password"
+        "kavita/oidc-secret"
+        "forgejo/oidc-secret"
+      ]
+      (_: {
+        group = "kanidm";
+        mode = "0440";
+        restartUnits = [ "kanidm.service" ];
+      });
 
   services.kanidm = {
     package = pkgs.kanidm_1_11.withSecretProvisioning;

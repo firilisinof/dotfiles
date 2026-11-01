@@ -121,21 +121,14 @@ class Bazarr:
 def profile_items():
     return [
         {
-            "id": 1,
-            "language": "en",
+            "id": identifier,
+            "language": language,
             "audio_exclude": "False",
             "audio_only_include": "False",
             "forced": "False",
             "hi": "False",
-        },
-        {
-            "id": 2,
-            "language": "pb",
-            "audio_exclude": "False",
-            "audio_only_include": "False",
-            "forced": "False",
-            "hi": "False",
-        },
+        }
+        for identifier, language in ((1, "en"), (2, "pb"))
     ]
 
 
@@ -206,8 +199,9 @@ def bazarr_media_ids(client, endpoint, id_field):
 
 def bazarr_episode_ids(client, series_ids):
     episode_ids = set()
+    ordered_series_ids = sorted(series_ids)
     for start in range(0, len(series_ids), 100):
-        chunk = sorted(series_ids)[start : start + 100]
+        chunk = ordered_series_ids[start : start + 100]
         query = urllib.parse.urlencode([("seriesid[]", item) for item in chunk])
         episodes = client.request(f"episodes?{query}")["data"]
         episode_ids.update(item["sonarrEpisodeId"] for item in episodes)
@@ -255,8 +249,9 @@ def rescan_series(client, series_ids, expected_episode_ids):
     deadline = time.monotonic() + 300
     while time.monotonic() < deadline:
         indexed_ids = set()
+        ordered_episode_ids = sorted(expected_episode_ids)
         for start in range(0, len(expected_episode_ids), 100):
-            chunk = sorted(expected_episode_ids)[start : start + 100]
+            chunk = ordered_episode_ids[start : start + 100]
             query = urllib.parse.urlencode([("episodeid[]", item) for item in chunk])
             episodes = client.request(f"episodes?{query}")["data"]
             indexed_ids.update(item["sonarrEpisodeId"] for item in episodes)

@@ -48,30 +48,14 @@ in
     qbittorrent.extraGroups = [ "reading" ];
   };
 
-  sops.secrets =
-    lib.genAttrs
-      (map (name: "reading/${name}") [
-        "annas-member-key"
-        "comicvine-api-key"
-        "shelfmark-password"
-        "shelfmark-api-key"
-        "kapowarr-password"
-        "suwayomi-password"
-      ])
-      (name: {
-        restartUnits =
-          if name == "reading/suwayomi-password" then
-            [ "suwayomi-server.service" ]
-          else if
-            builtins.elem name [
-              "reading/comicvine-api-key"
-              "reading/kapowarr-password"
-            ]
-          then
-            [ "reading-setup.service" ]
-          else
-            [ "podman-shelfmark.service" ];
-      });
+  sops.secrets = lib.mapAttrs (_: unit: { restartUnits = [ unit ]; }) {
+    "reading/annas-member-key" = "podman-shelfmark.service";
+    "reading/comicvine-api-key" = "reading-setup.service";
+    "reading/shelfmark-password" = "podman-shelfmark.service";
+    "reading/shelfmark-api-key" = "podman-shelfmark.service";
+    "reading/kapowarr-password" = "reading-setup.service";
+    "reading/suwayomi-password" = "suwayomi-server.service";
+  };
   sops.templates."shelfmark.env".content = ''
     SHELFMARK_API_KEY=${config.sops.placeholder."reading/shelfmark-api-key"}
   '';

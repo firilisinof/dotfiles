@@ -28,9 +28,9 @@ for attempt in range(60):
         if attempt == 59:
             raise RuntimeError('Kapowarr did not become ready') from None
         time.sleep(2)
-request('/settings', {'auth_username': 'lucas', 'auth_password': password}, 'PUT', key)
-settings = {
-    'auth_username': 'lucas', 'auth_password': password,
+auth_settings = {'auth_username': 'lucas', 'auth_password': password}
+request('/settings', auth_settings, 'PUT', key)
+settings = auth_settings | {
     'comicvine_api_key': Path('/run/secrets/reading/comicvine-api-key').read_text().strip(),
 }
 if not Path('/srv/kapowarr/.configured').exists():
