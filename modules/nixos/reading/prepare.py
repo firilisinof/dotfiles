@@ -1,0 +1,77 @@
+import hashlib
+import json
+import os
+from pathlib import Path
+import secrets
+import sys
+import xml.etree.ElementTree as ET
+
+
+def secret(name):
+    return Path('/run/secrets/' + name).read_text().strip()
+
+
+def write_settings(path, defaults, required, uid):
+    path = Path(path)
+    path.parent.mkdir(parents=True, exist_ok=True, mode=0o700)
+    os.chown(path.parent, uid, 803)
+    values = json.loads(path.read_text()) if path.exists() else {}
+    for key, value in defaults.items():
+        values.setdefault(key, value)
+    values.update(required)
+    temp = path.with_suffix('.tmp')
+    temp.write_text(json.dumps(values, indent=2) + '\n')
+    os.chmod(temp, 0o600)
+    os.chown(temp, uid, 803)
+    temp.replace(path)
+
+
+if sys.argv[1] == 'shelfmark':
+    base = Path('/srv/shelfmark')
+    write_settings(base / 'settings.json', {
+        'SEARCH_MODE': 'universal', 'METADATA_PROVIDER': 'openlibrary',
+        'BOOK_LANGUAGE': ['en'], 'SUPPORTED_FORMATS': ['epub', 'pdf', 'cbz', 'cbr'],
+    }, {}, 803)
+    settings = {
+        'security': {'AUTH_METHOD': 'builtin', 'BUILTIN_USERNAME': 'lucas'},
+        'downloads': {'DESTINATION': '/srv/reading/books', 'FILE_ORGANIZATION': 'organize',
+                      'TEMPLATE_ORGANIZE': '{Author}/{Title}/{Title}', 'MAX_CONCURRENT_DOWNLOADS': 1},
+        'mirrors': {'AA_BASE_URL': 'auto', 'AA_MIRROR_URLS': ['https://annas-archive.gl', 'https://annas-archive.pk', 'https://annas-archive.gd']},
+        'download_sources': {'DIRECT_DOWNLOAD_ENABLED': True},
+        'openlibrary': {'OPENLIBRARY_ENABLED': True},
+        'prowlarr_config': {'PROWLARR_ENABLED': True, 'PROWLARR_URL': 'http://127.0.0.1:9696'},
+        'prowlarr_clients': {'PROWLARR_TORRENT_CLIENT': 'qbittorrent', 'QBITTORRENT_URL': 'http://10.200.0.2:8080',
+                             'QBITTORRENT_USERNAME': 'lucas', 'QBITTORRENT_CATEGORY': 'shelfmark',
+                             'QBITTORRENT_DOWNLOAD_DIR': '/srv/media/downloads/shelfmark',
+                             'PROWLARR_TORRENT_ACTION': 'keep'},
+    }
+    salt = secrets.token_hex(16)
+    password_hash = hashlib.pbkdf2_hmac('sha256', secret('reading/shelfmark-password').encode(), salt.encode(), 1000000).hex()
+    required = {
+        'security': {'AUTH_METHOD': 'builtin', 'BUILTIN_PASSWORD_HASH': f'pbkdf2:sha256:1000000${salt}${password_hash}'},
+        'download_sources': {'AA_DONATOR_KEY': secret('reading/annas-member-key')},
+        'prowlarr_config': {'PROWLARR_API_KEY': ET.parse('/var/lib/prowlarr/config.xml').findtext('ApiKey')},
+        'prowlarr_clients': {'QBITTORRENT_PASSWORD': secret('qbittorrent/admin-password')},
+    }
+    for tab, defaults in settings.items():
+        write_settings(base / 'plugins' / f'{tab}.json', defaults, required.get(tab, {}), 803)
+elif sys.argv[1] == 'suwayomi':
+    write_settings('/srv/suwayomi/managed.json', {}, {'server': {
+        'ip': '127.0.0.1', 'port': 4567, 'systemTrayEnabled': False,
+        'initialOpenInBrowserEnabled': False, 'kcefEnabled': False,
+        'authMode': 'basic_auth', 'authUsername': 'lucas',
+        'authPassword': secret('reading/suwayomi-password'),
+        'downloadAsCbz': True, 'downloadsPath': '',
+        'autoDownloadNewChapters': False, 'globalUpdateInterval': 0,
+        'extensionStores': ['https://raw.githubusercontent.com/keiyoushi/extensions/repo/index.min.json'],
+        'webUIEnabled': True, 'webUIChannel': 'STABLE', 'webUIUpdateCheckInterval': 0,
+    }}, 805)
+    path = Path('/srv/suwayomi/server.conf')
+    content = path.read_text() if path.exists() else ''
+    include = 'include \"managed.json\"'
+    content = '\n'.join(line for line in content.splitlines() if line.strip() != include)
+    path.write_text(content + '\n' + include + '\n')
+    os.chmod(path, 0o600)
+    os.chown(path, 805, 803)
+else:
+    raise SystemExit('Unknown reading service')

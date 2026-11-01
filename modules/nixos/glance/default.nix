@@ -77,6 +77,22 @@ in
                       icon = "sh:kavita";
                     }
                     {
+                      title = "Find Books";
+                      url = "https://shelfmark.firilisinof.com";
+                      icon = "mdi:book-search";
+                    }
+                    {
+                      title = "Kapowarr";
+                      url = "https://kapowarr.firilisinof.com";
+                      icon = "mdi:book-open-page-variant";
+                    }
+                    {
+                      title = "Suwayomi";
+                      url = "https://suwayomi.firilisinof.com";
+                      icon = "mdi:book-open";
+                      alt-status-codes = [ 401 ];
+                    }
+                    {
                       title = "Jellyfin";
                       url = "https://watch.firilisinof.com";
                       icon = "sh:jellyfin";
