@@ -1,7 +1,6 @@
 import hashlib
 import json
 import os
-from pathlib import Path
 import secrets
 import stat
 import sys
@@ -10,7 +9,7 @@ import time
 import urllib.parse
 import urllib.request
 import xml.etree.ElementTree as ET
-
+from pathlib import Path
 
 DATA_DIR = Path("/var/lib/bazarr")
 CREDENTIALS = DATA_DIR / "credentials"
@@ -101,7 +100,9 @@ class Bazarr:
         headers = {"Content-Type": "application/x-www-form-urlencoded"}
         if authenticated:
             headers["X-API-KEY"] = self.key
-        body = None if data is None else urllib.parse.urlencode(data, doseq=True).encode()
+        body = (
+            None if data is None else urllib.parse.urlencode(data, doseq=True).encode()
+        )
         request = urllib.request.Request(url, data=body, headers=headers, method=method)
         with urllib.request.urlopen(request, timeout=60) as response:
             body = response.read()
@@ -316,7 +317,9 @@ def configure(client, initialize_provider_defaults=True):
         "series",
         lambda item: item.get("statistics", {}).get("episodeFileCount", 0) > 0,
     )
-    movie_ids = arr_media_ids("radarr", "movie", lambda item: item.get("hasFile", False))
+    movie_ids = arr_media_ids(
+        "radarr", "movie", lambda item: item.get("hasFile", False)
+    )
     sync_manager(client, "update_series", "series", "sonarrSeriesId", series_ids)
     sync_manager(client, "update_movies", "movies", "radarrId", movie_ids)
     episode_ids = arr_episode_ids(series_ids)

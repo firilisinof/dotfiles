@@ -36,6 +36,7 @@ in
   };
   users.groups.seerr = { };
 
+  # the sqlite copy for the backup runs as this user outside the service, which a dynamic user cannot do
   systemd.services.seerr = {
     environment = {
       HOST = "127.0.0.1";
@@ -76,11 +77,8 @@ in
     };
   };
 
-  services.caddy.virtualHosts."requests.firilisinof.com" = {
-    useACMEHost = "firilisinof.com";
-    logFormat = null;
-    extraConfig = "reverse_proxy 127.0.0.1:5055";
-  };
+  services.caddy.virtualHosts."requests.firilisinof.com".extraConfig =
+    "reverse_proxy 127.0.0.1:${toString cfg.port}";
 
   services.restic.backups.b2 = {
     paths = [ cfg.configDir ];

@@ -57,6 +57,7 @@ in
     "d /srv/media/downloads/radarr 2770 qbittorrent media - -"
   ];
 
+  # the sqlite copy for the backup runs as this user outside the service, which a dynamic user cannot do
   systemd.services.prowlarr.serviceConfig = {
     DynamicUser = lib.mkForce false;
     User = "prowlarr";
@@ -101,8 +102,6 @@ in
   services.caddy.virtualHosts = lib.mapAttrs' (
     name: port:
     lib.nameValuePair "${name}.firilisinof.com" {
-      useACMEHost = "firilisinof.com";
-      logFormat = null;
       extraConfig = "reverse_proxy 127.0.0.1:${toString port}";
     }
   ) apps;

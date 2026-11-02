@@ -20,9 +20,9 @@ GITHUB_REMOTE = re.compile(
 TIMEOUT_SECONDS = 60
 
 
-def open_url(url, method="GET", data=None, headers={}):
+def open_url(url, method="GET", data=None, headers=None):
     request = urllib.request.Request(
-        url, data, {"User-Agent": "forgejo-releases"} | headers, method=method
+        url, data, {"User-Agent": "forgejo-releases"} | (headers or {}), method=method
     )
     return urllib.request.urlopen(request, timeout=TIMEOUT_SECONDS)
 
@@ -32,9 +32,12 @@ class Forgejo:
         self.releases_url = f"{url}/api/v1/repos/{repository}/releases"
         self.authorization = {"Authorization": f"token {token}"}
 
-    def call(self, method, path, data=None, headers={}):
+    def call(self, method, path, data=None, headers=None):
         with open_url(
-            f"{self.releases_url}{path}", method, data, self.authorization | headers
+            f"{self.releases_url}{path}",
+            method,
+            data,
+            self.authorization | (headers or {}),
         ) as response:
             content = response.read()
         return json.loads(content) if content else None
@@ -73,7 +76,9 @@ class Forgejo:
 
 def remote_setting(config, key):
     command = ["git", "config", "--file", config, "--get", key]
-    return subprocess.run(command, capture_output=True, text=True).stdout.strip()
+    # a missing key exits 1 and reads as an empty value
+    result = subprocess.run(command, capture_output=True, text=True, check=False)
+    return result.stdout.strip()
 
 
 def github_mirrors(root):

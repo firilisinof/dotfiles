@@ -133,9 +133,6 @@ in
     };
   };
 
-  services.caddy.virtualHosts.${hostname} = {
-    useACMEHost = "firilisinof.com";
-    logFormat = null;
-    extraConfig = "reverse_proxy ${cfg.settings.server.HTTP_ADDR}:${toString cfg.settings.server.HTTP_PORT}";
-  };
+  services.caddy.virtualHosts.${hostname}.extraConfig =
+    "reverse_proxy ${cfg.settings.server.HTTP_ADDR}:${toString cfg.settings.server.HTTP_PORT}";
 }

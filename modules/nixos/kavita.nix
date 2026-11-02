@@ -1,7 +1,4 @@
-{
-  config,
-  ...
-}:
+{ config, ... }:
 
 let
   cfg = config.services.kavita;
@@ -54,9 +51,6 @@ in
     };
   };
 
-  services.caddy.virtualHosts."read.firilisinof.com" = {
-    useACMEHost = "firilisinof.com";
-    logFormat = null;
-    extraConfig = "reverse_proxy ${cfg.settings.IpAddresses}:${toString cfg.settings.Port}";
-  };
+  services.caddy.virtualHosts."read.firilisinof.com".extraConfig =
+    "reverse_proxy ${cfg.settings.IpAddresses}:${toString cfg.settings.Port}";
 }

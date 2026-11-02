@@ -1,9 +1,8 @@
 import os
-from pathlib import Path
 import sys
 import tempfile
 import xml.etree.ElementTree as ET
-
+from pathlib import Path
 
 DISABLED = (
     "DisableScriptInjectionMiddleware",
@@ -104,11 +103,17 @@ DISABLED = (
 
 def main():
     path = Path(sys.argv[1])
-    key = (Path(os.environ["CREDENTIALS_DIRECTORY"]) / "seerr-api-key").read_text().strip()
+    key = (
+        (Path(os.environ["CREDENTIALS_DIRECTORY"]) / "seerr-api-key")
+        .read_text()
+        .strip()
+    )
     if not key:
         raise ValueError("Seerr API key is empty")
 
-    root = ET.parse(path).getroot() if path.exists() else ET.Element("PluginConfiguration")
+    root = (
+        ET.parse(path).getroot() if path.exists() else ET.Element("PluginConfiguration")
+    )
     settings = dict.fromkeys(DISABLED, "false")
     settings.update(
         DisableBrandingMiddleware="true",

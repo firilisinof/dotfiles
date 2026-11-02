@@ -8,7 +8,8 @@ from pathlib import Path
 def display_name(name):
     words = re.sub(r"[-_.]+", " ", name.removesuffix(".git")).split()
     return (
-        " ".join(word if word.isupper() else word.capitalize() for word in words) or name
+        " ".join(word if word.isupper() else word.capitalize() for word in words)
+        or name
     )
 
 

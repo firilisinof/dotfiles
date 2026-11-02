@@ -1,9 +1,6 @@
-{ ... }:
-
 let
   dataDir = "/srv/anytype";
   uid = 800;
-  service = "podman-anytype.service";
 in
 {
   users.users.anytype = {
@@ -37,8 +34,7 @@ in
 
   # upstream supports backups only after a clean stop
   services.restic.backups.b2 = {
-    backupPrepareCommand = "systemctl stop ${service}";
-    backupCleanupCommand = "systemctl start ${service}";
+    stopUnits = [ "podman-anytype.service" ];
     exclude = [ "${dataDir}/mongo/diagnostic.data" ];
   };
 }

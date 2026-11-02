@@ -11,13 +11,15 @@ Nix configuration for two hosts:
 | --- | --- |
 | `hosts/` | Settings for each host |
 | `modules/common/` | Modules for nix-darwin and NixOS |
-| `modules/darwin/` | nix-darwin modules |
-| `modules/nixos/` | NixOS service modules |
+| `modules/darwin/` | nix-darwin modules, all applied to `kanjiro` |
+| `modules/nixos/` | NixOS service modules, all applied to `pi5` |
 | `modules/home/lucas/` | Home Manager user modules |
-| `modules/flake/` | Module exports and host configurations |
+| `modules/flake/` | Module exports, host configurations, and the formatter |
 | `secrets/` | Secrets encrypted with sops |
 | `skills/` | AI agent skills |
 | `wallpapers/` | Wallpapers |
+
+Every file or directory under `modules/<class>/` is one module named after it. A service module keeps its helper scripts next to its `default.nix` and declares its own Caddy site, backup paths, and secrets.
 
 Homebrew installs the Mac desktop apps that need `/Applications` or their own updates. Home Manager installs all other user software.
 
@@ -63,9 +65,14 @@ sops edit secrets/<host>.yaml
 
 ## Development
 
-Enter the shell with the secrets tools, then format the files:
+Enter the shell with the secrets tools, or let direnv do it:
 
 ```sh
 nix develop
+```
+
+Format and lint every file before committing. CI runs the same check.
+
+```sh
 nix fmt
 ```

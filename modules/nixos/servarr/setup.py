@@ -1,11 +1,11 @@
 import http.cookiejar
 import json
-from pathlib import Path
 import time
 import urllib.error
 import urllib.parse
 import urllib.request
 import xml.etree.ElementTree as ET
+from pathlib import Path
 
 
 class App:
@@ -55,7 +55,8 @@ class App:
         if any(item["name"] == name for item in existing):
             return
         provider = next(
-            item for item in self.request(f"{endpoint}/schema")
+            item
+            for item in self.request(f"{endpoint}/schema")
             if item["implementation"] == implementation
         )
         provider.pop("id", None)
@@ -110,39 +111,60 @@ def main():
         if path not in roots:
             app.request("rootfolder", {"path": path})
         app.add_provider(
-            "downloadclient", "QBittorrent", "qBittorrent (AirVPN)",
+            "downloadclient",
+            "QBittorrent",
+            "qBittorrent (AirVPN)",
             {
-                "host": "torrents.firilisinof.com", "port": 443,
-                "useSsl": True, "username": "lucas", "password": password,
+                "host": "torrents.firilisinof.com",
+                "port": 443,
+                "useSsl": True,
+                "username": "lucas",
+                "password": password,
                 "tvCategory" if name == "sonarr" else "movieCategory": name,
             },
-            enable=True, priority=1, removeCompletedDownloads=False,
+            enable=True,
+            priority=1,
+            removeCompletedDownloads=False,
             removeFailedDownloads=False,
         )
         media = app.request("config/mediamanagement")
         media.update(copyUsingHardlinks=True, setPermissionsLinux=False)
         app.request(f"config/mediamanagement/{media['id']}", media, "PUT")
         metadata = next(
-            item for item in app.request("metadata")
+            item
+            for item in app.request("metadata")
             if item["implementation"] == "XbmcMetadata"
         )
         metadata["enable"] = True
         values = (
-            {"seriesMetadata": True, "episodeMetadata": True,
-             "seriesImages": False, "seasonImages": False, "episodeImages": False}
-            if name == "sonarr" else
-            {"movieMetadata": True, "movieImages": False}
+            {
+                "seriesMetadata": True,
+                "episodeMetadata": True,
+                "seriesImages": False,
+                "seasonImages": False,
+                "episodeImages": False,
+            }
+            if name == "sonarr"
+            else {"movieMetadata": True, "movieImages": False}
         )
         for field in metadata["fields"]:
             if field["name"] in values:
                 field["value"] = values[field["name"]]
         app.request(f"metadata/{metadata['id']}", metadata, "PUT")
         apps["prowlarr"].add_provider(
-            "applications", name.capitalize(), name.capitalize(),
-            {"prowlarrUrl": apps["prowlarr"].url, "baseUrl": app.url, "apiKey": app.key},
+            "applications",
+            name.capitalize(),
+            name.capitalize(),
+            {
+                "prowlarrUrl": apps["prowlarr"].url,
+                "baseUrl": app.url,
+                "apiKey": app.key,
+            },
             syncLevel="fullSync",
         )
-    print("Media manager logins, download clients, library roots, and indexer sync configured")
+    print(
+        "Media manager logins, download clients, library roots, and indexer sync configured"
+    )
 
 
 if __name__ == "__main__":

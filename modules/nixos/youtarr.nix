@@ -80,7 +80,7 @@ in
           MARIADB_USER = "youtarr";
           MARIADB_ROOT_PASSWORD_FILE = "/run/secrets/database-root-password";
           MARIADB_PASSWORD_FILE = "/run/secrets/database-password";
-          TZ = "Europe/Paris";
+          TZ = config.time.timeZone;
         };
         volumes = [
           "${stateDir}/database:/var/lib/mysql"
@@ -111,7 +111,7 @@ in
           DB_USER = "youtarr";
           AUTH_ENABLED = "true";
           YOUTUBE_OUTPUT_DIR = mediaDir;
-          TZ = "Europe/Paris";
+          TZ = config.time.timeZone;
         };
         ports = [ "127.0.0.1:3087:3011" ];
         volumes = [
@@ -193,15 +193,10 @@ in
       '';
     };
 
+    # the dump needs only the database container, which keeps running
     "restic-backups-b2" = {
-      path = [
-        config.virtualisation.podman.package
-        pkgs.coreutils
-        pkgs.systemd
-      ];
       preStart = lib.mkAfter ''
         set -eu
-        ${lib.getExe' pkgs.systemd "systemctl"} stop podman-${appName}.service
         dump=${lib.escapeShellArg "/var/backup/youtarr/youtarr.sql"}
         tmp="''${dump}.tmp"
         ${lib.getExe' pkgs.coreutils "rm"} -f "$dump" "$tmp"
@@ -214,13 +209,11 @@ in
         ${lib.getExe' pkgs.coreutils "mv"} "$tmp" "$dump"
         trap - EXIT
       '';
-      postStop = lib.mkAfter ''
-        ${lib.getExe' pkgs.systemd "systemctl"} start podman-${appName}.service
-      '';
     };
   };
 
   services.restic.backups.b2 = {
+    stopUnits = [ "podman-${appName}.service" ];
     paths = [ "/var/backup/youtarr" ];
     exclude = [
       "${stateDir}/database"
@@ -228,9 +221,5 @@ in
     ];
   };
 
-  services.caddy.virtualHosts."archive.firilisinof.com" = {
-    useACMEHost = "firilisinof.com";
-    logFormat = null;
-    extraConfig = "reverse_proxy 127.0.0.1:3087";
-  };
+  services.caddy.virtualHosts."archive.firilisinof.com".extraConfig = "reverse_proxy 127.0.0.1:3087";
 }
