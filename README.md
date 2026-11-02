@@ -40,6 +40,8 @@ sudo darwin-rebuild switch --flake .#kanjiro
 
 Add new files to Git before you rebuild.
 
+Use Touch ID or your password for `sudo`. The built-in Touch ID sensor requires the Mac lid to be open.
+
 ## Raspberry Pi
 
 Build and apply the configuration on the Pi:
