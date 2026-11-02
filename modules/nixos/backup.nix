@@ -36,19 +36,24 @@ let
   stopScript = name: job: ''
     ${lib.getExe' pkgs.coreutils "install"} -d -m 0700 ${stoppedDirectory name}
     for unit in ${lib.escapeShellArgs job.stopUnits}; do
-      if ${lib.getExe' pkgs.systemd "systemctl"} is-active --quiet "$unit"; then
-        ${lib.getExe' pkgs.coreutils "touch"} "${stoppedDirectory name}/$unit"
-        ${lib.getExe' pkgs.systemd "systemctl"} stop "$unit"
-      fi
+      state=$(${lib.getExe' pkgs.systemd "systemctl"} show --property=ActiveState --value "$unit")
+      case "$state" in
+        active|activating|reloading|refreshing)
+          ${lib.getExe' pkgs.coreutils "touch"} "${stoppedDirectory name}/$unit"
+          ;;
+      esac
+      ${lib.getExe' pkgs.systemd "systemctl"} stop "$unit"
     done
   '';
   startScript = name: job: ''
+    status=0
     for unit in ${lib.escapeShellArgs job.stopUnits}; do
       if [ -e "${stoppedDirectory name}/$unit" ]; then
         ${lib.getExe' pkgs.coreutils "rm"} -f "${stoppedDirectory name}/$unit"
-        ${lib.getExe' pkgs.systemd "systemctl"} start "$unit"
+        ${lib.getExe' pkgs.systemd "systemctl"} start "$unit" || status=1
       fi
     done
+    exit "$status"
   '';
 in
 {
@@ -79,7 +84,7 @@ in
           options.stopUnits = lib.mkOption {
             type = lib.types.listOf lib.types.str;
             default = [ ];
-            description = "Units stopped before the database copies and the snapshot, and started again afterwards if they were active.";
+            description = "Units stopped before the database copies and the snapshot, and started again afterwards if they were running or starting.";
           };
 
           config.paths = lib.optional (config.sqlite != { }) "${dumpDirectory}/${name}";
