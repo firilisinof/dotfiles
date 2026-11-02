@@ -1,11 +1,11 @@
 import http.cookiejar
 import json
-from pathlib import Path
 import subprocess
 import time
 import urllib.error
 import urllib.request
 import xml.etree.ElementTree as ET
+from pathlib import Path
 
 
 class Seerr:
@@ -58,7 +58,8 @@ def configure_arr(seerr, name, port, kind):
     if not any(item["path"] == root for item in capabilities["rootFolders"]):
         raise ValueError(f"{name} must have the ordinary library root {root}")
     existing = [
-        item for item in seerr.request(endpoint)
+        item
+        for item in seerr.request(endpoint)
         if item["name"] == f"{name.capitalize()} (local)"
     ]
     if len(existing) > 1:
@@ -98,6 +99,7 @@ def configure_arr(seerr, name, port, kind):
     else:
         seerr.request(endpoint, settings)
 
+
 def wait_for_jellyfin():
     for attempt in range(60):
         try:
@@ -114,7 +116,6 @@ def wait_for_jellyfin():
             time.sleep(2)
 
 
-
 def main():
     seerr = Seerr()
     wait_for_jellyfin()
@@ -126,7 +127,9 @@ def main():
                 "auth/jellyfin",
                 {
                     "username": "lucas",
-                    "password": Path("/run/secrets/jellyfin/admin-password").read_text().strip(),
+                    "password": Path("/run/secrets/jellyfin/admin-password")
+                    .read_text()
+                    .strip(),
                     "hostname": "127.0.0.1",
                     "port": 8096,
                     "useSsl": False,
@@ -139,8 +142,14 @@ def main():
             raise ValueError("Seerr must use the existing Jellyfin server")
 
         user = seerr.request("auth/me")
-        if user["id"] != 1 or user.get("jellyfinUsername") != "lucas" or not user.get("jellyfinUserId"):
-            raise ValueError("Seerr owner must be linked to the existing Jellyfin lucas identity")
+        if (
+            user["id"] != 1
+            or user.get("jellyfinUsername") != "lucas"
+            or not user.get("jellyfinUserId")
+        ):
+            raise ValueError(
+                "Seerr owner must be linked to the existing Jellyfin lucas identity"
+            )
 
         seerr.request(
             "settings/main",
@@ -164,7 +173,9 @@ def main():
         libraries = seerr.request("settings/jellyfin/library/sync", method="POST")
         selected = {"Movies", "Series"}
         if not selected.issubset({item["name"] for item in libraries}):
-            raise ValueError("Jellyfin must have the existing Movies and Series libraries")
+            raise ValueError(
+                "Jellyfin must have the existing Movies and Series libraries"
+            )
         for library in libraries:
             enabled = library["name"] in selected
             if library["enabled"] != enabled:
@@ -187,7 +198,9 @@ def main():
             seerr.request("auth/logout", method="POST")
     if restart:
         subprocess.run(["systemctl", "restart", "seerr.service"], check=True)
-    print("Seerr Jellyfin login, ordinary library roots, and explicit requests configured")
+    print(
+        "Seerr Jellyfin login, ordinary library roots, and explicit requests configured"
+    )
 
 
 if __name__ == "__main__":

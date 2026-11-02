@@ -17,7 +17,7 @@ in
 
   networking.wireguard.interfaces.airvpn = {
     interfaceNamespace = "torrents";
-    privateKeyFile = "/run/secrets/airvpn/private-key";
+    privateKeyFile = config.sops.secrets."airvpn/private-key".path;
     mtu = 1320;
     ips = [
       "10.158.221.96/32"
@@ -27,7 +27,7 @@ in
       {
         name = "athebyne";
         publicKey = "PyLCXAQT8KkM4T+dUsOQfn+Ub3pGxfGlxkIApuig+hk=";
-        presharedKeyFile = "/run/secrets/airvpn/preshared-key";
+        presharedKeyFile = config.sops.secrets."airvpn/preshared-key".path;
         endpoint = "86.106.84.164:1637";
         persistentKeepalive = 15;
         allowedIPs = [

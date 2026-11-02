@@ -123,8 +123,6 @@ in
   };
 
   services.caddy.virtualHosts.${hostname} = {
-    useACMEHost = "firilisinof.com";
-    logFormat = null;
     extraConfig = ''
       reverse_proxy https://${cfg.server.settings.bindaddress} {
         transport http {

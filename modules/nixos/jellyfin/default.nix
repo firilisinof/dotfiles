@@ -134,13 +134,9 @@ in
     ];
     sqlite.jellyfin = {
       path = database;
-      user = cfg.user;
+      inherit (cfg) user;
     };
   };
 
-  services.caddy.virtualHosts."watch.firilisinof.com" = {
-    useACMEHost = "firilisinof.com";
-    logFormat = null;
-    extraConfig = "reverse_proxy 127.0.0.1:8096";
-  };
+  services.caddy.virtualHosts."watch.firilisinof.com".extraConfig = "reverse_proxy 127.0.0.1:8096";
 }

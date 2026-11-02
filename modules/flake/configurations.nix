@@ -1,9 +1,18 @@
-{ inputs, self, ... }:
+{
+  inputs,
+  lib,
+  self,
+  ...
+}:
 
 {
+  # every module under modules/darwin applies to kanjiro, and every module under modules/nixos to pi5
   flake = {
     darwinConfigurations.kanjiro = inputs.nix-darwin.lib.darwinSystem {
       modules = [
+        inputs.determinate.darwinModules.default
+        inputs.home-manager.darwinModules.home-manager
+        inputs.sops-nix.darwinModules.sops
         ../../hosts/kanjiro/configuration.nix
         {
           home-manager.users.lucas.imports = with self.homeModules.lucas; [
@@ -11,15 +20,8 @@
             ai
           ];
         }
-        inputs.determinate.darwinModules.default
-        inputs.home-manager.darwinModules.home-manager
-        inputs.sops-nix.darwinModules.sops
-        self.darwinModules.cache
-        self.darwinModules.home-manager
-        self.darwinModules.homebrew
-        self.darwinModules.sops
-        self.darwinModules.system
-      ];
+      ]
+      ++ lib.attrValues self.darwinModules;
     };
 
     nixosConfigurations.pi5 = inputs.nixpkgs.lib.nixosSystem {
@@ -27,28 +29,11 @@
       modules = [
         inputs.home-manager.nixosModules.home-manager
         inputs.nixos-hardware.nixosModules.raspberry-pi-5
-        ../../hosts/pi5/hardware-configuration.nix
-        ../../hosts/pi5/configuration.nix
         inputs.sops-nix.nixosModules.sops
+        ../../hosts/pi5/configuration.nix
         { home-manager.users.lucas.imports = [ self.homeModules.lucas.default ]; }
-        self.nixosModules.anytype
-        self.nixosModules.backup
-        self.nixosModules.cache
-        self.nixosModules.caddy
-        self.nixosModules.forgejo
-        self.nixosModules.glance
-        self.nixosModules.home-manager
-        self.nixosModules.jellyfin
-        self.nixosModules.kanidm
-        self.nixosModules.kavita
-        self.nixosModules.reading
-        self.nixosModules.seerr
-        self.nixosModules.servarr
-        self.nixosModules.sops
-        self.nixosModules.torrents
-        self.nixosModules.webdav
-        self.nixosModules.youtarr
-      ];
+      ]
+      ++ lib.attrValues self.nixosModules;
     };
   };
 }

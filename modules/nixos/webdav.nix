@@ -29,9 +29,6 @@ in
 
   systemd.tmpfiles.rules = [ "d ${cfg.settings.directory} 0750 ${cfg.user} ${cfg.group} - -" ];
 
-  services.caddy.virtualHosts."dav.firilisinof.com" = {
-    useACMEHost = "firilisinof.com";
-    logFormat = null;
-    extraConfig = "reverse_proxy ${cfg.settings.address}:${toString cfg.settings.port}";
-  };
+  services.caddy.virtualHosts."dav.firilisinof.com".extraConfig =
+    "reverse_proxy ${cfg.settings.address}:${toString cfg.settings.port}";
 }

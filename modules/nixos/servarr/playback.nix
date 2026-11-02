@@ -62,7 +62,7 @@ let
     trash_ids = [ id ];
     assign_scores_to = [
       {
-        name = profile.name;
+        inherit (profile) name;
         score = 100;
       }
     ];
@@ -72,7 +72,7 @@ let
     trash_ids = [ "playback-original-language" ];
     assign_scores_to = [
       {
-        name = profile.name;
+        inherit (profile) name;
         score = 200;
       }
     ];

@@ -1,0 +1,9 @@
+# the helper scripts run on the python3 of nixpkgs
+target-version = "py313"
+
+[lint]
+extend-select = [
+  "B",  # likely bugs
+  "I",  # import order
+  "UP", # outdated syntax
+]

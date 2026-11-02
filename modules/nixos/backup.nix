@@ -10,7 +10,6 @@ let
 
   # each job's database copies land here before its snapshot
   dumpDirectory = "/var/backup";
-  dumpJobs = lib.filterAttrs (_: job: job.sqlite != { }) config.services.restic.backups;
 
   # root prepares each directory and clears the previous copy, then setpriv drops to the owner,
   # so sqlite never leaves root-owned wal or shm files and no-new-privs keeps the child there
@@ -31,6 +30,31 @@ let
         ''
       ) job.sqlite
     );
+
+  # a marker per stopped unit survives the snapshot, so only units that were running start again
+  stoppedDirectory = name: "/run/restic-backups-${name}/stopped";
+  stopScript = name: job: ''
+    ${lib.getExe' pkgs.coreutils "install"} -d -m 0700 ${stoppedDirectory name}
+    for unit in ${lib.escapeShellArgs job.stopUnits}; do
+      state=$(${lib.getExe' pkgs.systemd "systemctl"} show --property=ActiveState --value "$unit")
+      case "$state" in
+        active|activating|reloading|refreshing)
+          ${lib.getExe' pkgs.coreutils "touch"} "${stoppedDirectory name}/$unit"
+          ;;
+      esac
+      ${lib.getExe' pkgs.systemd "systemctl"} stop "$unit"
+    done
+  '';
+  startScript = name: job: ''
+    status=0
+    for unit in ${lib.escapeShellArgs job.stopUnits}; do
+      if [ -e "${stoppedDirectory name}/$unit" ]; then
+        ${lib.getExe' pkgs.coreutils "rm"} -f "${stoppedDirectory name}/$unit"
+        ${lib.getExe' pkgs.systemd "systemctl"} start "$unit" || status=1
+      fi
+    done
+    exit "$status"
+  '';
 in
 {
   options.services.restic.backups = lib.mkOption {
@@ -55,6 +79,12 @@ in
             );
             default = { };
             description = "Databases copied through the SQLite online backup API to ${dumpDirectory}/<job>/sqlite/<name>/<name>.db before the snapshot.";
+          };
+
+          options.stopUnits = lib.mkOption {
+            type = lib.types.listOf lib.types.str;
+            default = [ ];
+            description = "Units stopped before the database copies and the snapshot, and started again afterwards if they were running or starting.";
           };
 
           config.paths = lib.optional (config.sqlite != { }) "${dumpDirectory}/${name}";
@@ -115,8 +145,14 @@ in
       # copies run after restic reaches the repository, and a failed copy fails the snapshot
       (lib.mapAttrs' (
         name: job:
-        lib.nameValuePair "restic-backups-${name}" { preStart = lib.mkAfter (dumpScript name job); }
-      ) dumpJobs)
+        lib.nameValuePair "restic-backups-${name}" {
+          preStart = lib.mkMerge [
+            (lib.mkIf (job.stopUnits != [ ]) (lib.mkBefore (stopScript name job)))
+            (lib.mkIf (job.sqlite != { }) (lib.mkAfter (dumpScript name job)))
+          ];
+          postStop = lib.mkIf (job.stopUnits != [ ]) (lib.mkAfter (startScript name job));
+        }
+      ) config.services.restic.backups)
     ];
 
     assertions = lib.concatLists (
@@ -126,7 +162,7 @@ in
           assertion = config.users.users ? ${sqlite.user};
           message = "services.restic.backups.${name}.sqlite.${db} runs as ${sqlite.user}, which is not a user on this host";
         }) job.sqlite
-      ) dumpJobs
+      ) config.services.restic.backups
     );
   };
 }

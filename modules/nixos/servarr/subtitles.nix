@@ -1,12 +1,8 @@
-{
-  config,
-  lib,
-  pkgs,
-  ...
-}:
+{ lib, pkgs, ... }:
 
 let
   dataDir = "/var/lib/bazarr";
+  port = 6767;
   credentialsDir = "${dataDir}/credentials";
   python = lib.getExe pkgs.python3;
 in
@@ -19,7 +15,7 @@ in
     settings = {
       general = {
         ip = "127.0.0.1";
-        port = 6767;
+        inherit port;
         concurrent_jobs = 1;
         multithreading = false;
         use_embedded_subs = true;
@@ -77,7 +73,7 @@ in
       RemainAfterExit = true;
       UMask = "0077";
       TimeoutStartSec = "3min";
-      ExecStart = "${python} ${./subtitle-setup.py} --prepare-credentials";
+      ExecStart = "${python} ${./subtitle_setup.py} --prepare-credentials";
     };
   };
 
@@ -108,15 +104,12 @@ in
       Type = "oneshot";
       UMask = "0077";
       TimeoutStartSec = "10min";
-      ExecStart = "${python} ${./subtitle-setup.py}";
+      ExecStart = "${python} ${./subtitle_setup.py}";
     };
   };
 
-  services.caddy.virtualHosts."bazarr.firilisinof.com" = {
-    useACMEHost = "firilisinof.com";
-    logFormat = null;
-    extraConfig = "reverse_proxy 127.0.0.1:6767";
-  };
+  services.caddy.virtualHosts."bazarr.firilisinof.com".extraConfig =
+    "reverse_proxy 127.0.0.1:${toString port}";
 
   services.restic.backups.b2 = {
     paths = [ dataDir ];

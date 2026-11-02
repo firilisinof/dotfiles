@@ -1,8 +1,8 @@
 import os
-from pathlib import Path
 import sys
 import tempfile
 import xml.etree.ElementTree as ET
+from pathlib import Path
 
 
 def main():

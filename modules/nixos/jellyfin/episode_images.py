@@ -1,10 +1,10 @@
 import json
 import os
-from pathlib import Path
 import sys
 import urllib.error
 import urllib.parse
 import urllib.request
+from pathlib import Path
 
 
 class Jellyfin:
@@ -30,8 +30,10 @@ class Jellyfin:
 
     def login(self):
         password = (
-            Path(os.environ["CREDENTIALS_DIRECTORY"]) / "admin-password"
-        ).read_text().strip()
+            (Path(os.environ["CREDENTIALS_DIRECTORY"]) / "admin-password")
+            .read_text()
+            .strip()
+        )
         login = self.request(
             "/Users/AuthenticateByName", "POST", {"Username": "lucas", "Pw": password}
         )

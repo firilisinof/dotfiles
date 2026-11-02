@@ -89,7 +89,7 @@ in
           CONFIG_DIR = "/config";
           INGEST_DIR = "/srv/reading/books";
           TMP_DIR = "/downloads-tmp";
-          TZ = "Europe/Paris";
+          TZ = config.time.timeZone;
           SESSION_COOKIE_SECURE = "true";
         };
         environmentFiles = [ config.sops.templates."shelfmark.env".path ];
@@ -112,7 +112,7 @@ in
         environment = {
           PUID = "804";
           PGID = "803";
-          TZ = "Europe/Paris";
+          TZ = config.time.timeZone;
         };
         ports = [ "127.0.0.1:5656:5656" ];
         volumes = [
@@ -139,7 +139,7 @@ in
         User = "suwayomi";
         Group = "reading";
         UMask = "0007";
-        ExecStart = "${pkgs.python3}/bin/python3 ${./import-manga.py} /srv/suwayomi/downloads/mangas /srv/reading/manga";
+        ExecStart = "${pkgs.python3}/bin/python3 ${./import_manga.py} /srv/suwayomi/downloads/mangas /srv/reading/manga";
         NoNewPrivileges = true;
         ProtectSystem = true;
         ProtectHome = true;
@@ -185,25 +185,6 @@ in
         TimeoutStartSec = "5min";
       };
     };
-    restic-backups-b2 = {
-      preStart = lib.mkBefore ''
-        install -d -m 0700 /run/reading-backup
-        for unit in ${lib.escapeShellArgs units}; do
-          if ${pkgs.systemd}/bin/systemctl is-active --quiet "$unit"; then
-            touch "/run/reading-backup/$unit"
-            ${pkgs.systemd}/bin/systemctl stop "$unit"
-          fi
-        done
-      '';
-      postStop = lib.mkAfter ''
-        for unit in ${lib.escapeShellArgs units}; do
-          if test -e "/run/reading-backup/$unit"; then
-            ${pkgs.systemd}/bin/systemctl start "$unit"
-            rm -f "/run/reading-backup/$unit"
-          fi
-        done
-      '';
-    };
   };
 
   systemd.timers.reading-import-manga = {
@@ -214,20 +195,21 @@ in
     };
   };
 
-  services.restic.backups.b2.exclude = [
-    "/srv/shelfmark/logs"
-    "/srv/shelfmark/covers"
-    "/srv/kapowarr/logs"
-    "/srv/suwayomi/logs"
-    "/srv/suwayomi/cache"
-    "/srv/suwayomi/downloads"
-  ];
+  services.restic.backups.b2 = {
+    stopUnits = units;
+    exclude = [
+      "/srv/shelfmark/logs"
+      "/srv/shelfmark/covers"
+      "/srv/kapowarr/logs"
+      "/srv/suwayomi/logs"
+      "/srv/suwayomi/cache"
+      "/srv/suwayomi/downloads"
+    ];
+  };
 
   services.caddy.virtualHosts = lib.mapAttrs' (
     name: port:
     lib.nameValuePair "${name}.firilisinof.com" {
-      useACMEHost = "firilisinof.com";
-      logFormat = null;
       extraConfig = "reverse_proxy 127.0.0.1:${toString port}";
     }
   ) apps;

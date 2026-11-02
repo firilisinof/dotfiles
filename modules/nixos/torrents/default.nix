@@ -27,7 +27,7 @@ in
   sops.secrets."qbittorrent/password-hash" = { };
   sops.templates."qbittorrent.conf" = {
     owner = cfg.user;
-    group = cfg.group;
+    inherit (cfg) group;
     mode = "0400";
     content = ''
       [LegalNotice]
@@ -131,30 +131,15 @@ in
     "/srv/media/archive"
   ];
 
-  services.restic.backups.b2.exclude = [
-    "/srv/media/downloads"
-    "/srv/media/library"
-    "${profile}/data/logs"
-  ];
-  systemd.services.restic-backups-b2 = {
-    preStart = lib.mkAfter ''
-      rm -f /run/restic-qbittorrent-stopped
-      if ${pkgs.systemd}/bin/systemctl is-active --quiet qbittorrent.service; then
-        ${pkgs.systemd}/bin/systemctl stop qbittorrent.service
-        touch /run/restic-qbittorrent-stopped
-      fi
-    '';
-    postStop = lib.mkAfter ''
-      if [ -e /run/restic-qbittorrent-stopped ]; then
-        ${pkgs.systemd}/bin/systemctl start qbittorrent.service
-        rm -f /run/restic-qbittorrent-stopped
-      fi
-    '';
+  services.restic.backups.b2 = {
+    stopUnits = [ "qbittorrent.service" ];
+    exclude = [
+      "/srv/media/downloads"
+      "/srv/media/library"
+      "${profile}/data/logs"
+    ];
   };
 
-  services.caddy.virtualHosts."torrents.firilisinof.com" = {
-    useACMEHost = "firilisinof.com";
-    logFormat = null;
-    extraConfig = "reverse_proxy 10.200.0.2:8080";
-  };
+  services.caddy.virtualHosts."torrents.firilisinof.com".extraConfig =
+    "reverse_proxy 10.200.0.2:8080";
 }

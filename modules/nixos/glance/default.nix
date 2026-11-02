@@ -240,9 +240,6 @@ in
     pathConfig.PathChanged = repositorySource;
   };
 
-  services.caddy.virtualHosts."home.firilisinof.com" = {
-    useACMEHost = "firilisinof.com";
-    logFormat = null;
-    extraConfig = "reverse_proxy ${cfg.settings.server.host}:${toString cfg.settings.server.port}";
-  };
+  services.caddy.virtualHosts."home.firilisinof.com".extraConfig =
+    "reverse_proxy ${cfg.settings.server.host}:${toString cfg.settings.server.port}";
 }
