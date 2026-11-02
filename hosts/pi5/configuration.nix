@@ -156,5 +156,71 @@
     };
   };
 
+  # a stalled link stays associated, so NetworkManager does not reconnect by itself
+  systemd.services.wifi-watchdog = {
+    description = "Reconnect Wi-Fi when the gateway stops answering";
+    after = [ "NetworkManager.service" ];
+    path = [
+      pkgs.iproute2
+      pkgs.iputils
+      pkgs.iw
+      pkgs.networkmanager
+    ];
+    serviceConfig = {
+      Type = "oneshot";
+      RuntimeDirectory = "wifi-watchdog";
+      RuntimeDirectoryPreserve = true;
+    };
+    script = ''
+      route=$(ip -4 route show default dev wlan0)
+      if [[ -z $route ]]; then
+        echo "no default route on wlan0, leaving recovery to NetworkManager"
+        exit 0
+      fi
+      read -r _ _ gateway _ <<< "$route"
+
+      failures_file=$RUNTIME_DIRECTORY/failures
+      if ping -c 3 -W 2 -I wlan0 "$gateway" > /dev/null; then
+        if [[ -e $failures_file ]]; then
+          echo "gateway $gateway is answering again"
+          rm "$failures_file"
+        fi
+        exit 0
+      fi
+
+      failures=$(($(cat "$failures_file" 2> /dev/null || echo 0) + 1))
+      echo "gateway $gateway is not answering, failure $failures of 3"
+      if ((failures < 3)); then
+        echo "$failures" > "$failures_file"
+        exit 0
+      fi
+      echo 0 > "$failures_file"
+
+      record() {
+        echo "+ $*"
+        "$@" 2>&1 || echo "exit status $?"
+      }
+      record ip -s link show dev wlan0
+      record ip -s neigh show dev wlan0
+      record ip route show dev wlan0
+      record iw dev wlan0 link
+      record iw dev wlan0 station dump
+      record nmcli device show wlan0
+
+      connection=$(nmcli --get-values GENERAL.CONNECTION device show wlan0)
+      echo "reconnecting $connection"
+      nmcli --wait 60 connection up "$connection" ifname wlan0
+    '';
+  };
+
+  systemd.timers.wifi-watchdog = {
+    wantedBy = [ "timers.target" ];
+    timerConfig = {
+      OnBootSec = "2min";
+      OnUnitInactiveSec = "1min";
+      AccuracySec = "5s";
+    };
+  };
+
   system.stateVersion = "26.11";
 }
