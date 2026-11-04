@@ -42,7 +42,7 @@ sudo darwin-rebuild switch --flake .#kanjiro
 
 Add new files to Git before you rebuild.
 
-Use Touch ID or your password for `sudo`. The built-in Touch ID sensor requires the Mac lid to be open.
+Use Apple Watch or your password for `sudo`, including when the Mac lid is closed. Enable your watch in System Settings > Touch ID & Password.
 
 ## Raspberry Pi
 
