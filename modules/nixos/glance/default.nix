@@ -72,6 +72,12 @@ in
                   cache = "1m";
                   sites = [
                     {
+                      title = "Nextcloud";
+                      url = "https://cloud.firilisinof.com";
+                      check-url = "https://cloud.firilisinof.com/status.php";
+                      icon = "sh:nextcloud";
+                    }
+                    {
                       title = "Kavita";
                       url = "https://read.firilisinof.com";
                       icon = "sh:kavita";
