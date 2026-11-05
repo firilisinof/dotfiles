@@ -93,6 +93,12 @@ in
                       alt-status-codes = [ 401 ];
                     }
                     {
+                      title = "MetaKavita";
+                      url = "https://metakavita.firilisinof.com";
+                      check-url = "https://metakavita.firilisinof.com/healthz";
+                      icon = "mdi:book-edit";
+                    }
+                    {
                       title = "Jellyfin";
                       url = "https://watch.firilisinof.com";
                       icon = "sh:jellyfin";
