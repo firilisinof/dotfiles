@@ -69,3 +69,14 @@
              continue
          for rank, entry in enumerate(group, start=1):
              shown = entry.get("matched_on")
+--- a/kavita_api.py
++++ b/kavita_api.py
+@@ -6,0 +7 @@
++from urllib.parse import urlsplit
+@@ -1139,0 +1141,6 @@
++            if urlsplit(u).hostname == "uploads.mangadex.org":
++                kw["headers"] = {
++                    **kw.get("headers", {}),
++                    "User-Agent": requests.utils.default_user_agent(),
++                }
++                return requests.get(u, **kw)

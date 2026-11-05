@@ -21,10 +21,13 @@ let
         cp -R ${source} source
         chmod -R u+w source
         cd source
+        python -c "from pathlib import Path; p = Path('kavita_api.py'); p.write_text(p.read_text())"
         patch -p1 < ${./metakavita-manga-volumes.patch}
         python ${./test_metadata.py} services/volume_enrichment/matching.py
+        python -c "import ast; from pathlib import Path; ast.parse(Path('kavita_api.py').read_text())"
         mkdir "$out"
         cp services/volume_enrichment/{matching,job,plan}.py "$out/"
+        cp kavita_api.py "$out/"
       '';
 in
 {
@@ -56,6 +59,7 @@ in
       "${volumeMatching}/matching.py:/app/services/volume_enrichment/matching.py:ro"
       "${volumeMatching}/job.py:/app/services/volume_enrichment/job.py:ro"
       "${volumeMatching}/plan.py:/app/services/volume_enrichment/plan.py:ro"
+      "${volumeMatching}/kavita_api.py:/app/kavita_api.py:ro"
     ];
     cmd = [
       "gunicorn"
