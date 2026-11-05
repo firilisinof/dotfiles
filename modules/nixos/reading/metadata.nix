@@ -64,7 +64,7 @@ in
     stopUnits = [ "podman-metakavita.service" ];
     exclude = [
       "${dataDir}/cache.db*"
-      "${dataDir}/logs"
+      "${dataDir}/metakavita.log*"
     ];
     sqlite.metakavita = {
       path = "${dataDir}/cache.db";
