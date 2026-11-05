@@ -24,7 +24,7 @@ let
         patch -p1 < ${./metakavita-manga-volumes.patch}
         python ${./test_metadata.py} services/volume_enrichment/matching.py
         mkdir "$out"
-        cp services/volume_enrichment/{matching,job}.py "$out/"
+        cp services/volume_enrichment/{matching,job,plan}.py "$out/"
       '';
 in
 {
@@ -55,6 +55,7 @@ in
       "${dataDir}:/app/data"
       "${volumeMatching}/matching.py:/app/services/volume_enrichment/matching.py:ro"
       "${volumeMatching}/job.py:/app/services/volume_enrichment/job.py:ro"
+      "${volumeMatching}/plan.py:/app/services/volume_enrichment/plan.py:ro"
     ];
     cmd = [
       "gunicorn"

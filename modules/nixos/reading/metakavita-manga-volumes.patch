@@ -46,3 +46,26 @@
      read_seconds = time.monotonic() - started
      if not units:
          logging.info("[Tomes] %s : aucun tome lisible dans Kavita", label)
+--- a/services/volume_enrichment/plan.py
++++ b/services/volume_enrichment/plan.py
+@@ -133,6 +133,7 @@
+     return {
+         "chapter_id": unit.get("chapter_id"),
+         "volume_id": unit.get("volume_id"),
++        "library_type": unit.get("library_type"),
+         "volume_number": unit.get("volume_number"),
+         "chapter_number": unit.get("chapter_number"),
+         # Le numéro sur lequel l'appariement s'est fait. Il n'est pas toujours
+@@ -182,6 +183,12 @@
+     duplicates = 0
+     for group in groups.values():
+         if len(group) < 2:
++            continue
++        if (
++            all(entry.get("library_type") == "Manga" for entry in group)
++            and len({entry.get("volume_id") for entry in group}) == 1
++            and len({entry.get("chapter_number") for entry in group}) == len(group)
++        ):
+             continue
+         for rank, entry in enumerate(group, start=1):
+             shown = entry.get("matched_on")

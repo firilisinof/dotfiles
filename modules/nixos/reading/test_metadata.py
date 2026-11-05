@@ -1,8 +1,13 @@
 import importlib.util
 import sys
 import unittest
+from pathlib import Path
 
-spec = importlib.util.spec_from_file_location("matching", sys.argv.pop(1))
+module_path = sys.argv.pop(1)
+sys.path.insert(0, str(Path(module_path).resolve().parents[2]))
+from services.volume_enrichment.plan import build_plan
+
+spec = importlib.util.spec_from_file_location("matching", module_path)
 matching = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(matching)
 
@@ -31,6 +36,14 @@ class VolumeMatchingTest(unittest.TestCase):
             [(unit["chapter_id"], data["cover_url"]) for unit, data in pairs],
             [(11, "volume-1"), (12, "volume-1"), (13, "volume-2"), (14, "volume-2")],
         )
+        self.assertEqual(build_plan(units, index)["counts"]["duplicates"], 0)
+
+    def test_repeated_volumes_remain_duplicates(self):
+        volumes = self.volumes()
+        volumes[1]["minNumber"] = 1
+        units = matching.units_from_volumes(volumes, library_type="Manga")
+        index = {"1": {"cover_url": "volume-1"}}
+        self.assertEqual(build_plan(units, index)["counts"]["duplicates"], 4)
 
     def test_comics_keep_issue_numbers(self):
         for library_type in ("Comic", "ComicFlexible", ""):
