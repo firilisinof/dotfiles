@@ -188,7 +188,7 @@ def prepare_metakavita():
             "VOLUME_FORCE_OVERWRITE": False,
         },
         {
-            "KAVITA_URL": "https://read.firilisinof.com",
+            "KAVITA_URL": "http://kavita.internal:5000",
             "KAVITA_EXTERNAL_URL": "https://read.firilisinof.com",
             "KAVITA_API_KEY": row[0],
             "COMICVINE_API_KEY": secret("reading/comicvine-api-key"),

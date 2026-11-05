@@ -73,6 +73,7 @@ in
     ];
     extraOptions = [
       "--network=host"
+      "--add-host=kavita.internal:127.0.0.1"
       "--umask=0077"
       "--dns=1.1.1.1"
     ];
