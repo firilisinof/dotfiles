@@ -90,6 +90,9 @@ in
     }
   ];
   services.caddy.virtualHosts.${hostname}.extraConfig = "reverse_proxy 127.0.0.1:8086";
+  services.caddy.virtualHosts."dav.firilisinof.com".extraConfig = ''
+    respond "WebDAV moved to Nextcloud. Update the client URL and app password." 410
+  '';
 
   systemd.services.nextcloud-setup = {
     serviceConfig.LoadCredential = [
