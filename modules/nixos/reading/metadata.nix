@@ -3,6 +3,29 @@
 let
   dataDir = "/srv/metakavita";
   image = "ghcr.io/raukorim-bot/metakavita@sha256:03492f964a4fba6ad76860ad36d94d828df37b5da8daff8f3953744136a6bd40";
+  source = pkgs.fetchFromGitHub {
+    owner = "raukorim-bot";
+    repo = "MetaKavita";
+    rev = "b02b65ead0c51fa194a2e819e450d2d414a0256d";
+    hash = "sha256-scwZ28i1WwJxqVFLg+zvwv2st3FKxmhaIQTWSIIR5+Q=";
+  };
+  volumeMatching =
+    pkgs.runCommand "metakavita-volume-matching"
+      {
+        nativeBuildInputs = [
+          pkgs.patch
+          pkgs.python3
+        ];
+      }
+      ''
+        cp -R ${source} source
+        chmod -R u+w source
+        cd source
+        patch -p1 < ${./metakavita-manga-volumes.patch}
+        python ${./test_metadata.py} services/volume_enrichment/matching.py
+        mkdir "$out"
+        cp services/volume_enrichment/{matching,job}.py "$out/"
+      '';
 in
 {
   users.groups.metakavita.gid = 806;
@@ -28,7 +51,11 @@ in
       TZ = config.time.timeZone;
     };
     environmentFiles = [ "/run/metakavita/credentials.env" ];
-    volumes = [ "${dataDir}:/app/data" ];
+    volumes = [
+      "${dataDir}:/app/data"
+      "${volumeMatching}/matching.py:/app/services/volume_enrichment/matching.py:ro"
+      "${volumeMatching}/job.py:/app/services/volume_enrichment/job.py:ro"
+    ];
     cmd = [
       "gunicorn"
       "--worker-class"
