@@ -12,16 +12,17 @@ let
   dumpDirectory = "/var/backup/nextcloud";
   disabledApps = [
     "activity"
+    "app_api"
     "circles"
     "comments"
     "contactsinteraction"
     "dashboard"
-    "federatedfilesharing"
     "federation"
     "files_reminders"
     "files_sharing"
     "firstrunwizard"
     "nextcloud_announcements"
+    "office"
     "photos"
     "recommendations"
     "related_resources"
@@ -31,6 +32,7 @@ let
     "systemtags"
     "user_status"
     "weather_status"
+    "webhook_listeners"
   ];
 in
 {
@@ -100,6 +102,9 @@ in
         unset OC_PASS
       fi
       nextcloud-occ group:adduser admin lucas
+      nextcloud-occ config:app:set core shareapi_enabled --value=no
+      nextcloud-occ config:app:set files_sharing outgoing_server2server_share_enabled --value=no
+      nextcloud-occ config:app:set files_sharing incoming_server2server_share_enabled --value=no
       for app in ${lib.escapeShellArgs disabledApps}; do
         if [ -d "${cfg.package}/apps/$app" ]; then
           nextcloud-occ app:disable "$app"
