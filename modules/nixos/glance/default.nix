@@ -72,6 +72,12 @@ in
                   cache = "1m";
                   sites = [
                     {
+                      title = "Nextcloud";
+                      url = "https://cloud.firilisinof.com";
+                      check-url = "https://cloud.firilisinof.com/status.php";
+                      icon = "sh:nextcloud";
+                    }
+                    {
                       title = "Kavita";
                       url = "https://read.firilisinof.com";
                       icon = "sh:kavita";
@@ -91,6 +97,12 @@ in
                       url = "https://suwayomi.firilisinof.com";
                       icon = "mdi:book-open";
                       alt-status-codes = [ 401 ];
+                    }
+                    {
+                      title = "MetaKavita";
+                      url = "https://metakavita.firilisinof.com";
+                      check-url = "https://metakavita.firilisinof.com/healthz";
+                      icon = "mdi:book-edit";
                     }
                     {
                       title = "YouTube Archive";
@@ -114,13 +126,6 @@ in
                       url = "https://auth.firilisinof.com";
                       check-url = "https://auth.firilisinof.com/status";
                       icon = "https://raw.githubusercontent.com/selfhst/icons/main/svg/kanidm.svg";
-                    }
-                    {
-                      title = "WebDAV";
-                      url = "https://dav.firilisinof.com";
-                      icon = "mdi:folder-sync";
-                      # an authentication challenge confirms the protected endpoint is reachable
-                      alt-status-codes = [ 401 ];
                     }
                   ];
                 }

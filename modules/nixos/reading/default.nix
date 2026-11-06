@@ -26,6 +26,8 @@ let
   ];
 in
 {
+  imports = [ ./metadata.nix ];
+
   users.groups.reading.gid = 803;
   users.users = {
     shelfmark = {

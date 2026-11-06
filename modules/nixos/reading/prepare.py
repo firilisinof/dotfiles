@@ -2,22 +2,24 @@ import hashlib
 import json
 import os
 import secrets
+import sqlite3
 import sys
 from pathlib import Path
 
 READING_GID = 803
 SHELFMARK_UID = 803
 SUWAYOMI_UID = 805
+METAKAVITA_UID = 806
 
 
 def secret(name):
     return Path("/run/secrets/" + name).read_text().strip()
 
 
-def write_settings(path, defaults, required, uid):
+def write_settings(path, defaults, required, uid, gid=READING_GID):
     path = Path(path)
     path.parent.mkdir(parents=True, exist_ok=True, mode=0o700)
-    os.chown(path.parent, uid, READING_GID)
+    os.chown(path.parent, uid, gid)
     values = json.loads(path.read_text()) if path.exists() else {}
     for key, value in defaults.items():
         values.setdefault(key, value)
@@ -25,7 +27,7 @@ def write_settings(path, defaults, required, uid):
     temp = path.with_suffix(".tmp")
     temp.write_text(json.dumps(values, indent=2) + "\n")
     os.chmod(temp, 0o600)
-    os.chown(temp, uid, READING_GID)
+    os.chown(temp, uid, gid)
     temp.replace(path)
 
 
@@ -123,7 +125,75 @@ def prepare_suwayomi():
     os.chown(path, SUWAYOMI_UID, READING_GID)
 
 
-SERVICES = {"shelfmark": prepare_shelfmark, "suwayomi": prepare_suwayomi}
+def prepare_metakavita():
+    with sqlite3.connect(
+        "file:/srv/kavita/config/kavita.db?mode=ro", uri=True, timeout=30
+    ) as database:
+        row = database.execute(
+            "SELECT k.Key FROM AppUserAuthKey k "
+            "JOIN AspNetUsers u ON k.AppUserId = u.Id "
+            "WHERE lower(u.UserName) = 'lucas' "
+            "AND (k.ExpiresAtUtc IS NULL OR k.ExpiresAtUtc > datetime('now')) "
+            "ORDER BY k.Id LIMIT 1"
+        ).fetchone()
+    if row is None:
+        raise ValueError("Kavita administrator lucas has no active API key")
+    write_settings(
+        "/srv/metakavita/config.json",
+        {
+            "UI_LANG": "en",
+            "TARGET_LANG": "EN",
+            "TRANSLATION_PROVIDER": "NONE",
+            "LOCALIZED_TITLE_MODE": "none",
+            "PROVIDER_1": "MANGABAKA",
+            "PROVIDER_2": "MANGADEX",
+            "PROVIDER_3": "ANILIST",
+            "BOOK_PROVIDER_1": "GOOGLEBOOKS",
+            "BOOK_PROVIDER_2": "OPENLIBRARY",
+            "BOOK_PROVIDER_3": "NONE",
+            "COMIC_PROVIDER_1": "COMICVINE",
+            "COMIC_PROVIDER_2": "ANILIST",
+            "COMIC_PROVIDER_3": "NONE",
+            "SMART_SCORING": True,
+            "SMART_COMPLETION": True,
+            "MATCH_THRESHOLD_CUSTOM": True,
+            "MATCH_ACCEPT_THRESHOLD": 0.9,
+            "AUTO_COVER": True,
+            "COVER_FORCE_OVERWRITE": False,
+            "AUTO_SYNC_ENABLED": False,
+            "AUTO_SYNC_TRIGGER": "scan",
+            "AUTO_SYNC_CATCHUP_HOURS": 24,
+            "AUTO_SYNC_MODE": "auto",
+            "AUTO_SYNC_FORCE_UPDATE": False,
+            "VOLUME_ENRICHMENT_ENABLED": True,
+            "VOLUME_FORCE_OVERWRITE": False,
+        },
+        {
+            "KAVITA_URL": "http://kavita.internal:5000",
+            "KAVITA_EXTERNAL_URL": "https://read.firilisinof.com",
+            "KAVITA_API_KEY": row[0],
+            "COMICVINE_API_KEY": secret("reading/comicvine-api-key"),
+        },
+        METAKAVITA_UID,
+        METAKAVITA_UID,
+    )
+    salt = secrets.token_hex(16)
+    digest = hashlib.pbkdf2_hmac(
+        "sha256",
+        secret("reading/metakavita-password").encode(),
+        salt.encode(),
+        1000000,
+    ).hex()
+    path = Path("/run/metakavita/credentials.env")
+    path.write_text(f"ADMIN_PASSWORD_HASH=pbkdf2:sha256:1000000${salt}${digest}\n")
+    os.chmod(path, 0o600)
+
+
+SERVICES = {
+    "shelfmark": prepare_shelfmark,
+    "suwayomi": prepare_suwayomi,
+    "metakavita": prepare_metakavita,
+}
 
 
 def main():
