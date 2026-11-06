@@ -93,17 +93,6 @@ in
                       alt-status-codes = [ 401 ];
                     }
                     {
-                      title = "Jellyfin";
-                      url = "https://watch.firilisinof.com";
-                      icon = "sh:jellyfin";
-                      alt-status-codes = [ 401 ];
-                    }
-                    {
-                      title = "Seerr";
-                      url = "https://requests.firilisinof.com";
-                      icon = "sh:seerr";
-                    }
-                    {
                       title = "YouTube Archive";
                       url = "https://archive.firilisinof.com";
                       icon = "mdi:youtube";
@@ -113,26 +102,6 @@ in
                       title = "qBittorrent";
                       url = "https://torrents.firilisinof.com";
                       icon = "sh:qbittorrent";
-                    }
-                    {
-                      title = "Prowlarr";
-                      url = "https://prowlarr.firilisinof.com";
-                      icon = "sh:prowlarr";
-                    }
-                    {
-                      title = "Sonarr";
-                      url = "https://sonarr.firilisinof.com";
-                      icon = "sh:sonarr";
-                    }
-                    {
-                      title = "Radarr";
-                      url = "https://radarr.firilisinof.com";
-                      icon = "sh:radarr";
-                    }
-                    {
-                      title = "Bazarr";
-                      url = "https://bazarr.firilisinof.com";
-                      icon = "sh:bazarr";
                     }
                     {
                       title = "Forgejo";

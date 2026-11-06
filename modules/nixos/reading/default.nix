@@ -146,7 +146,6 @@ in
       };
     };
     podman-shelfmark = {
-      after = [ "prowlarr.service" ];
       preStart = "${pkgs.python3}/bin/python3 ${./prepare.py} shelfmark";
     };
     suwayomi-server = {
@@ -170,7 +169,12 @@ in
           "/srv/suwayomi"
         ];
         InaccessiblePaths = [ "-/run/nscd" ];
-        BindReadOnlyPaths = config.systemd.services.prowlarr.serviceConfig.BindReadOnlyPaths;
+        BindReadOnlyPaths = [
+          "${pkgs.writeText "suwayomi-resolv.conf" ''
+            nameserver 1.1.1.1
+            nameserver 1.0.0.1
+          ''}:/etc/resolv.conf"
+        ];
       };
     };
     reading-setup = {

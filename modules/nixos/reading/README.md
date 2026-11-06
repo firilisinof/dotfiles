@@ -2,7 +2,7 @@
 
 Kavita is the shared reader at https://read.firilisinof.com. Use Shelfmark at https://shelfmark.firilisinof.com for books, Kapowarr at https://kapowarr.firilisinof.com for comics, and Suwayomi at https://suwayomi.firilisinof.com for manga. All endpoints require Tailscale. The acquisition accounts use the username `lucas` and passwords from Sops.
 
-Shelfmark searches Anna's Archive with member downloads and connects to the existing Prowlarr and qBittorrent services. Search defaults to English. Language filters allow Portuguese and French. Select an EPUB when available, otherwise a PDF. Books are organized under `/srv/reading/books` by author and title.
+Shelfmark searches Anna's Archive with member downloads. Search defaults to English. Language filters allow Portuguese and French. Select an EPUB when available, otherwise a PDF. Books are organized under `/srv/reading/books` by author and title.
 
 Kapowarr uses ComicVine metadata and GetComics downloads, with `/srv/reading/comics` as its library. Add volumes without monitoring or automatic search for on-demand use. Review manual search matches before downloading. GetComics sometimes labels a one-shot as a collected edition, requiring a manual match override.
 

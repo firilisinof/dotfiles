@@ -8,20 +8,12 @@
 let
   cfg = config.services.qbittorrent;
   profile = "${cfg.profileDir}/qBittorrent";
-  categories = pkgs.writeText "qbittorrent-categories.json" (
-    builtins.toJSON {
-      movies.save_path = "/srv/media/library/movies";
-      series.save_path = "/srv/media/library/series";
-      archive-movies.save_path = "/srv/media/archive/movies";
-      archive-series.save_path = "/srv/media/archive/series";
-    }
-  );
+
 in
 {
   imports = [ ./network.nix ];
 
   users.groups.media = { };
-  users.users.jellyfin.extraGroups = [ "media" ];
 
   sops.secrets."qbittorrent/admin-password" = { };
   sops.secrets."qbittorrent/password-hash" = { };
@@ -80,12 +72,6 @@ in
     "d /srv/media/downloads 2750 qbittorrent media - -"
     "d /srv/media/downloads/complete 2770 qbittorrent media - -"
     "d /srv/media/downloads/incomplete 2770 qbittorrent media - -"
-    "d /srv/media/library 2750 qbittorrent media - -"
-    "d /srv/media/library/movies 2770 qbittorrent media - -"
-    "d /srv/media/library/series 2770 qbittorrent media - -"
-    "d /srv/media/archive 2750 qbittorrent media - -"
-    "d /srv/media/archive/movies 2770 qbittorrent media - -"
-    "d /srv/media/archive/series 2770 qbittorrent media - -"
   ];
   systemd.tmpfiles.settings.qbittorrent = {
     "${profile}/".d.mode = lib.mkForce "0750";
@@ -106,9 +92,6 @@ in
           config.sops.templates."qbittorrent.conf".path
         } ${profile}/config/qBittorrent.conf
       fi
-      if [ ! -e ${profile}/config/categories.json ]; then
-        ${pkgs.coreutils}/bin/install -m 0600 ${categories} ${profile}/config/categories.json
-      fi
     '';
     serviceConfig = {
       NetworkNamespacePath = "/run/netns/torrents";
@@ -126,16 +109,10 @@ in
     };
   };
 
-  systemd.services.jellyfin.serviceConfig.ReadOnlyPaths = [
-    "/srv/media/library"
-    "/srv/media/archive"
-  ];
-
   services.restic.backups.b2 = {
     stopUnits = [ "qbittorrent.service" ];
     exclude = [
       "/srv/media/downloads"
-      "/srv/media/library"
       "${profile}/data/logs"
     ];
   };

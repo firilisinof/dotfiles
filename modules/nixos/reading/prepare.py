@@ -3,7 +3,6 @@ import json
 import os
 import secrets
 import sys
-import xml.etree.ElementTree as ET
 from pathlib import Path
 
 READING_GID = 803
@@ -61,18 +60,7 @@ def prepare_shelfmark():
         },
         "download_sources": {"DIRECT_DOWNLOAD_ENABLED": True},
         "openlibrary": {"OPENLIBRARY_ENABLED": True},
-        "prowlarr_config": {
-            "PROWLARR_ENABLED": True,
-            "PROWLARR_URL": "http://127.0.0.1:9696",
-        },
-        "prowlarr_clients": {
-            "PROWLARR_TORRENT_CLIENT": "qbittorrent",
-            "QBITTORRENT_URL": "http://10.200.0.2:8080",
-            "QBITTORRENT_USERNAME": "lucas",
-            "QBITTORRENT_CATEGORY": "shelfmark",
-            "QBITTORRENT_DOWNLOAD_DIR": "/srv/media/downloads/shelfmark",
-            "PROWLARR_TORRENT_ACTION": "keep",
-        },
+        "prowlarr_config": {},
     }
     salt = secrets.token_hex(16)
     password_hash = hashlib.pbkdf2_hmac(
@@ -84,14 +72,7 @@ def prepare_shelfmark():
             "BUILTIN_PASSWORD_HASH": f"pbkdf2:sha256:1000000${salt}${password_hash}",
         },
         "download_sources": {"AA_DONATOR_KEY": secret("reading/annas-member-key")},
-        "prowlarr_config": {
-            "PROWLARR_API_KEY": ET.parse("/var/lib/prowlarr/config.xml").findtext(
-                "ApiKey"
-            )
-        },
-        "prowlarr_clients": {
-            "QBITTORRENT_PASSWORD": secret("qbittorrent/admin-password")
-        },
+        "prowlarr_config": {"PROWLARR_ENABLED": False},
     }
     for tab, defaults in settings.items():
         write_settings(
