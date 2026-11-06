@@ -2,23 +2,11 @@
 
 let
   cfg = config.services.glance;
-  forgejo = config.services.forgejo;
-  repositoryDirectory = "/run/glance-repositories";
-  repositorySource = "${forgejo.repositoryRoot}/lucas";
-  assets = pkgs.linkFarm "glance-assets" [
-    {
-      name = "custom.css";
-      path = pkgs.writeText "glance-custom.css" ''
-        .widget-type-server-stats .widget-header > div:has(.widget-beta-icon) {
-          display: none;
-        }
-      '';
+  assets = pkgs.writeTextDir "custom.css" ''
+    .widget-type-server-stats .widget-header > div:has(.widget-beta-icon) {
+      display: none;
     }
-    {
-      name = "repositories.json";
-      path = "${repositoryDirectory}/repositories.json";
-    }
-  ];
+  '';
 in
 {
   services.glance = {
@@ -40,29 +28,6 @@ in
         {
           name = "Home";
           columns = [
-            {
-              size = "small";
-              widgets = [
-                {
-                  type = "clock";
-                  hour-format = "24h";
-                  timezones = [
-                    {
-                      timezone = "Europe/Paris";
-                      label = "Paris";
-                    }
-                    {
-                      timezone = "America/Sao_Paulo";
-                      label = "São Paulo";
-                    }
-                  ];
-                }
-                {
-                  type = "calendar";
-                  first-day-of-week = "monday";
-                }
-              ];
-            }
             {
               size = "full";
               widgets = [
@@ -150,68 +115,12 @@ in
                     }
                   ];
                 }
-                {
-                  type = "custom-api";
-                  title = "Git Repositories";
-                  cache = "1s";
-                  url = "http://${cfg.settings.server.host}:${toString cfg.settings.server.port}/assets/repositories.json";
-                  template = ''
-                    <ul class="list list-gap-10">
-                    {{ range .JSON.Array "repositories" }}
-                      <li class="color-highlight">{{ .String "name" }}</li>
-                    {{ else }}
-                      <li class="color-subdue">No repositories yet.</li>
-                    {{ end }}
-                    </ul>
-                  '';
-                }
-              ];
-            }
-            {
-              size = "small";
-              widgets = [
-                {
-                  type = "weather";
-                  location = "Grenoble, France";
-                  units = "metric";
-                  hour-format = "24h";
-                }
               ];
             }
           ];
         }
       ];
     };
-  };
-
-  systemd.services.glance = {
-    after = [ "glance-repositories.service" ];
-    wants = [ "glance-repositories.service" ];
-  };
-
-  systemd.services.glance-repositories = {
-    description = "Generate the Glance Git repository list";
-    after = [ "systemd-tmpfiles-setup.service" ];
-    serviceConfig = {
-      Type = "oneshot";
-      User = forgejo.user;
-      Group = forgejo.group;
-      ExecStart = "${pkgs.python3}/bin/python3 ${./repositories.py} ${repositorySource} ${repositoryDirectory}/repositories.json";
-      RuntimeDirectory = "glance-repositories";
-      RuntimeDirectoryMode = "0755";
-      RuntimeDirectoryPreserve = "yes";
-      UMask = "0022";
-      NoNewPrivileges = true;
-      PrivateTmp = true;
-      PrivateNetwork = true;
-      ProtectHome = true;
-      ProtectSystem = "strict";
-    };
-  };
-
-  systemd.paths.glance-repositories = {
-    wantedBy = [ "multi-user.target" ];
-    pathConfig.PathChanged = repositorySource;
   };
 
   services.caddy.virtualHosts."home.firilisinof.com".extraConfig =
