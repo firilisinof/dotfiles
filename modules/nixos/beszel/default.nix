@@ -45,7 +45,10 @@ in
       enable = true;
       smartmon = {
         enable = true;
-        deviceAllow = [ "/dev/nvme0" ];
+        deviceAllow = [
+          "/dev/nvme0"
+          "/dev/nvme0n1"
+        ];
       };
       extraPath = [
         pkgs.systemd
@@ -57,7 +60,7 @@ in
         FILESYSTEM = "/";
         EXTRA_FILESYSTEMS = "/boot";
         PRIMARY_SENSOR = "cpu_thermal";
-        SMART_DEVICES = "/dev/nvme0:nvme";
+        SMART_DEVICES = "/dev/nvme0n1:nvme";
         SKIP_GPU = true;
         DOCKER_HOST = "";
         SERVICE_PATTERNS = lib.concatStringsSep "," [
