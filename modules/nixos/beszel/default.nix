@@ -102,10 +102,20 @@ in
 
   services.restic.backups.b2 = {
     paths = [ cfg.hub.dataDir ];
-    stopUnits = [
-      "beszel-agent.service"
-      "beszel-hub.service"
+    exclude = [
+      "${cfg.hub.dataDir}/beszel_data/data.db*"
+      "${cfg.hub.dataDir}/beszel_data/auxiliary.db*"
     ];
+    sqlite = {
+      beszel = {
+        path = "${cfg.hub.dataDir}/beszel_data/data.db";
+        user = "beszel-hub";
+      };
+      beszel-auxiliary = {
+        path = "${cfg.hub.dataDir}/beszel_data/auxiliary.db";
+        user = "beszel-hub";
+      };
+    };
   };
 
   services.caddy.virtualHosts."home.firilisinof.com".extraConfig =
