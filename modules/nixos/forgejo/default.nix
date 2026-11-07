@@ -114,11 +114,6 @@ in
     };
   };
 
-  systemd.tmpfiles.rules = [
-    # glance watches this directory, which forgejo would create only with the first repository
-    "d ${cfg.repositoryRoot}/lucas 0750 ${cfg.user} ${cfg.group} - -"
-  ];
-
   services.openssh.settings.AllowUsers = [ cfg.user ];
 
   services.restic.backups.b2 = {
