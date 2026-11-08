@@ -156,7 +156,9 @@ def configure_prowlarr():
             if item["name"] == "BlueRoms"
         )
         provider.pop("id", None)
-        provider.update(enable=True, priority=10)
+        profiles = api.request("/appprofile")
+        profile = next(item for item in profiles if item["name"] == "Standard")
+        provider.update(enable=True, priority=10, appProfileId=profile["id"])
         api.request("/indexer/test", provider)
         api.request("/indexer", provider)
     else:

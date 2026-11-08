@@ -29,7 +29,8 @@ in
         "openid"
         "email"
         "profile"
-      ];
+      ]
+      ++ lib.optional (name == "romm") "games_role";
       claimMaps.games_role.valuesByGroup."games.admins" = [ "admin" ];
     }) clients;
   };
