@@ -27,7 +27,6 @@ in
     (pkgs.anki-bin.overrideAttrs { dontFixup = true; })
     pkgs.firefox-bin-unwrapped
     pkgs.google-chrome
-    (pkgs.obsidian.overrideAttrs { dontFixup = true; })
   ];
   home.sessionPath = [
     "/opt/homebrew/bin"

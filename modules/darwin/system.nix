@@ -14,7 +14,6 @@ in
       "claude-code"
       "firefox-bin-unwrapped"
       "google-chrome"
-      "obsidian"
     ];
   programs.zsh.enable = true;
 

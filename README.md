@@ -21,11 +21,11 @@ Nix configuration for two hosts:
 
 Every file or directory under `modules/<class>/` is one module named after it. A service module keeps its helper scripts next to its `default.nix` and declares its own Caddy site, backup paths, and secrets.
 
-Homebrew installs the Mac desktop apps that need `/Applications` or their own updates. Home Manager installs all other user software.
+Homebrew installs the Mac desktop apps that need `/Applications` or their own updates, and the Mac App Store apps through `mas`. Activation removes Homebrew packages that `modules/darwin/homebrew.nix` does not declare. Home Manager installs all other user software.
 
 ## Mac
 
-1. Install [Determinate Nix](https://docs.determinate.systems) and [Homebrew](https://brew.sh).
+1. Install [Determinate Nix](https://docs.determinate.systems) and [Homebrew](https://brew.sh), and sign in to the Mac App Store.
 2. Clone the repository to `~/Pessoal/dotfiles`.
 3. Put the sops age key in `~/.config/sops/age/keys.txt`.
 4. Do the first activation:
