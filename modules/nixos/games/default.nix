@@ -37,6 +37,7 @@ in
   ];
 
   users.groups.media.gid = 987;
+  networking.firewall.interfaces.games0.allowedTCPPorts = [ 443 ];
   users.users.romarr = {
     isSystemUser = true;
     uid = 807;
@@ -266,7 +267,7 @@ in
         };
         script = ''
           if ! podman network exists ${network}; then
-            podman network create ${network}
+            podman network create --interface-name games0 ${network}
           fi
         '';
       };
