@@ -18,15 +18,23 @@ class API:
     def __init__(self, url, headers=None):
         self.url = url
         self.headers = headers or {}
+        self.cookies = http.cookiejar.CookieJar()
+        self.client = urllib.request.build_opener(
+            urllib.request.HTTPCookieProcessor(self.cookies)
+        )
 
     def request(self, path, data=None, method=None):
+        headers = {"Content-Type": "application/json", **self.headers}
+        for cookie in self.cookies:
+            if cookie.name == "romm_csrftoken":
+                headers["X-CSRFToken"] = cookie.value
         request = urllib.request.Request(
             self.url + path,
             data=None if data is None else json.dumps(data).encode(),
-            headers={"Content-Type": "application/json", **self.headers},
+            headers=headers,
             method=method,
         )
-        with urllib.request.urlopen(request, timeout=120) as response:
+        with self.client.open(request, timeout=120) as response:
             body = response.read()
             return json.loads(body) if body else None
 
@@ -46,7 +54,7 @@ def basic(username, password):
 
 
 def configure_romm():
-    api = API("http://127.0.0.1:8087/api")
+    api = API("https://games.firilisinof.com/api")
     api.wait("/heartbeat")
     password = secret("romm-admin-password")
     admin = API(api.url, basic("lucas", password))
@@ -202,17 +210,24 @@ def configure_romarr(prowlarr_key):
         )
     plugins = api.request("/hub/plugins")
     rows = plugins["items"]
-    archive = next((row for row in rows if row.get("slug") == "archive-org"), {})
-    if not archive.get("installed"):
-        api.request("/hub/plugin", {"slug": "archive-org", "action": "install"})
-    api.request("/hub/plugin", {"slug": "archive-org", "action": "enable"})
-    print("ROMarr acquisition, request-only defaults, and Archive.org configured")
+    for slug in ("archive-org", "nointro-archive"):
+        plugin = next((row for row in rows if row.get("slug") == slug), {})
+        if not plugin.get("installed"):
+            api.request("/hub/plugin", {"slug": slug, "action": "install"})
+        api.request("/hub/plugin", {"slug": slug, "action": "enable"})
+    print(
+        "ROMarr acquisition, request-only defaults, and Archive.org sources configured"
+    )
 
 
 def main():
+    print("Configuring RomM", flush=True)
     configure_romm()
+    print("Configuring qBittorrent", flush=True)
     configure_qbittorrent()
+    print("Configuring Prowlarr", flush=True)
     prowlarr_key = configure_prowlarr()
+    print("Configuring ROMarr", flush=True)
     configure_romarr(prowlarr_key)
 
 
@@ -220,4 +235,7 @@ if __name__ == "__main__":
     try:
         main()
     except urllib.error.HTTPError as error:
-        raise SystemExit(f"Game service API returned HTTP {error.code}") from None
+        path = urllib.parse.urlsplit(error.url).path
+        raise SystemExit(
+            f"Game service API {path} returned HTTP {error.code}"
+        ) from None

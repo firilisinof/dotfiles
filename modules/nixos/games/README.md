@@ -18,6 +18,8 @@ The initial sources were selected from [FMHY's ROM directory](https://fmhy.net/g
 
 - BlueRoms is configured through its native Prowlarr definition. Both directories list it as a ROM torrent source. Prowlarr's definition reports a placeholder seeder count of one, so a search result does not establish swarm availability.
 - Archive.org is configured through ROMarr's ROM Hub plugin. Its catalog searches supported software collections and imports downloadable files. Items limited to browser playback cannot be imported. The megathread lists Archive.org collections, but the plugin does not index every collection linked there.
+- The No-Intro Archive plugin adds twelve Archive.org cartridge collections by default, primarily Sega, Atari, PC Engine, and WonderSwan. Its catalog description advertises a larger census, but the published v0.4.0 source still has twelve defaults. Do not treat catalog claims as measured coverage.
+- MiNERVA remains a manual alternative. Its v0.2.0 plugin searches individual files but hands the download client a whole collection magnet without selecting that file or reporting the collection size. It is not enabled for automatic requests.
 - Axekin, the r/Roms megathread, Vimm's Lair, and other listed sites are manual alternatives. A directory recommendation alone does not establish an automated integration. Do not describe these as configured sources.
 
 Source definitions and plugins can change independently of the pinned application images. Test searches and imports after updates. DAT checksum verification requires appropriate No-Intro or Redump DAT files configured in ROMarr. Files without a matching DAT remain unverified.
