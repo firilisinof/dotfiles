@@ -89,7 +89,7 @@
   # the mainline device tree omits the status led
   hardware.deviceTree.overlays = [
     {
-      name = "status-led-off";
+      name = "status-led";
       dtsFile = ./status-led.dtso;
     }
   ];
