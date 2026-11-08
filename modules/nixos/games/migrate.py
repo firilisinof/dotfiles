@@ -11,29 +11,6 @@ from pathlib import Path
 
 def destination(relative):
     parts = relative.parts
-    if parts[0] == "bios":
-        name = relative.name
-        platform = None
-        if len(parts) > 2 and parts[1] == "dc":
-            platform = "dc"
-        elif name in {"bios7.bin", "bios9.bin", "firmware.bin"}:
-            platform = "nds"
-        elif name.startswith("bios_CD_"):
-            platform = "segacd"
-        elif name.startswith("scph550"):
-            platform = "psx"
-        elif name.startswith("ps2-"):
-            platform = "ps2"
-        elif name in {"mpr-17933.bin", "sega_101.bin"}:
-            platform = "saturn"
-        elif name in {"mcpx_1.0.bin", "Complex_4627v1.03.bin", "xbox_hdd.qcow2"}:
-            platform = "xbox"
-        elif name.startswith("Switch Firmware"):
-            platform = "switch"
-        elif name == "Cemu keys.txt":
-            platform = "wiiu"
-        if platform:
-            return Path("library/bios") / platform / name
     if len(parts) >= 3 and parts[0] == "roms":
         platform = {"switch 2": "switch-2"}.get(parts[1], parts[1])
         extensions = {
@@ -45,7 +22,7 @@ def destination(relative):
             if platform == "psx" and len(parts) == 3:
                 return Path("library/roms/psx") / relative.stem / relative.name
             return Path("library/roms") / platform / Path(*parts[2:])
-    return Path("preserved/emulation") / relative
+    return None
 
 
 def digest(path):
@@ -65,6 +42,8 @@ def inventory(source):
             raise ValueError(f"Not a regular file: {path}")
         relative = path.relative_to(source)
         target = destination(relative)
+        if target is None:
+            continue
         normalized = unicodedata.normalize("NFC", str(target))
         if normalized in targets:
             raise ValueError(f"Duplicate normalized destination: {target}")
@@ -77,7 +56,7 @@ def inventory(source):
             }
         )
     if not rows:
-        raise ValueError("No source files found")
+        raise ValueError("No supported game files found")
     return rows
 
 
@@ -110,22 +89,19 @@ def copy_verified(source, root, rows, hardlink=False):
         if digest(origin) != expected:
             raise ValueError(f"Source changed during migration: {origin}")
         row["sha256"] = expected
-        if row["destination"].startswith("library/"):
-            os.chown(target, -1 if hardlink else 0, gid)
-            target.chmod(0o660)
-            directory = target.parent
-            while directory != root:
-                os.chown(directory, 0, gid)
-                directory.chmod(0o2770)
-                directory = directory.parent
-        else:
-            target.chmod(0o600)
+        os.chown(target, -1 if hardlink else 0, gid)
+        target.chmod(0o660)
+        directory = target.parent
+        while directory != root:
+            os.chown(directory, 0, gid)
+            directory.chmod(0o2770)
+            directory = directory.parent
     current = inventory(source)
     if current != [
         {key: row[key] for key in ("source", "destination", "size")} for row in rows
     ]:
         raise ValueError("Source inventory changed during migration")
-    manifest = root / "preserved/nextcloud-migration.json"
+    manifest = root / "nextcloud-migration.json"
     manifest.parent.mkdir(parents=True, exist_ok=True)
     with manifest.open("x") as stream:
         json.dump(

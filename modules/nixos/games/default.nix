@@ -104,8 +104,6 @@ in
     "d /srv/games 2750 root media - -"
     "d ${library} 2770 romarr media - -"
     "d ${library}/roms 2770 romarr media - -"
-    "d ${library}/bios 2770 romarr media - -"
-    "d /srv/games/preserved 0700 root root - -"
     "d ${state} 0750 root root - -"
     "d ${state}/romarr 0700 romarr media - -"
     "d ${state}/romm 0750 root root - -"
