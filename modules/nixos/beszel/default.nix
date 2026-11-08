@@ -20,7 +20,6 @@ let
         protocol = "tcp";
         port = 443;
       }
-      { target = "https://metakavita.firilisinof.com/healthz"; }
       {
         target = "archive.firilisinof.com";
         protocol = "tcp";
@@ -72,7 +71,6 @@ in
           "caddy*"
           "forgejo*"
           "kanidm*"
-          "kavita*"
           "mysql*"
           "nextcloud*"
           "nginx*"

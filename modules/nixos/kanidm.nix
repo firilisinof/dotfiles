@@ -9,7 +9,7 @@ let
   cfg = config.services.kanidm;
   hostname = "auth.firilisinof.com";
   origin = "https://${hostname}";
-  kavitaOrigin = "https://read.firilisinof.com";
+  stumpOrigin = "https://read.firilisinof.com";
   forgejoOrigin = "https://git.firilisinof.com";
   tlsDirectory = config.security.acme.certs."firilisinof.com".directory;
   identity = config.home-manager.users.lucas.programs.git.settings.user;
@@ -20,7 +20,7 @@ in
       [
         "kanidm/admin-password"
         "kanidm/idm-admin-password"
-        "kavita/oidc-secret"
+        "stump/oidc-secret"
         "forgejo/oidc-secret"
       ]
       (_: {
@@ -58,8 +58,7 @@ in
       adminPasswordFile = config.sops.secrets."kanidm/admin-password".path;
       idmAdminPasswordFile = config.sops.secrets."kanidm/idm-admin-password".path;
       groups = {
-        "kavita.users" = { };
-        "kavita.admins" = { };
+        "stump.users" = { };
         "forgejo.users" = { };
         "forgejo.admins" = { };
       };
@@ -67,22 +66,20 @@ in
         displayName = identity.name;
         mailAddresses = [ identity.email ];
         groups = [
-          "kavita.users"
-          "kavita.admins"
+          "stump.users"
           "forgejo.users"
           "forgejo.admins"
         ];
       };
-      systems.oauth2.kavita = {
-        displayName = "Kavita";
+      systems.oauth2.stump = {
+        displayName = "Stump";
         originUrl = [
-          "${kavitaOrigin}/signin-oidc"
-          "${kavitaOrigin}/signout-callback-oidc"
+          "${stumpOrigin}/api/v2/auth/oidc/callback"
         ];
-        originLanding = "${kavitaOrigin}/";
-        basicSecretFile = config.sops.secrets."kavita/oidc-secret".path;
+        originLanding = "${stumpOrigin}/";
+        basicSecretFile = config.sops.secrets."stump/oidc-secret".path;
         preferShortUsername = true;
-        scopeMaps."kavita.users" = [
+        scopeMaps."stump.users" = [
           "openid"
           "email"
           "profile"

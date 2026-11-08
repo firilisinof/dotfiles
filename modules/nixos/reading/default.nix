@@ -26,8 +26,6 @@ let
   ];
 in
 {
-  imports = [ ./metadata.nix ];
-
   users.groups.reading.gid = 803;
   users.users = {
     shelfmark = {
@@ -46,7 +44,6 @@ in
       group = "reading";
       home = "/srv/suwayomi";
     };
-    kavita.extraGroups = [ "reading" ];
     qbittorrent.extraGroups = [ "reading" ];
   };
 
@@ -132,9 +129,8 @@ in
   };
 
   systemd.services = {
-    kavita.serviceConfig.SupplementaryGroups = [ "reading" ];
     reading-import-manga = {
-      description = "Import completed manga archives into Kavita";
+      description = "Import completed manga archives into the reading library";
       after = [ "suwayomi-server.service" ];
       serviceConfig = {
         Type = "oneshot";
