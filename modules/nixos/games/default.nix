@@ -202,7 +202,7 @@ in
         LIBRARY_URL = "http://romm:8080";
         LIBRARY_USERNAME = "romarr";
         LIBRARY_PATH = "${library}/roms";
-        QBITTORRENT_URL = "https://torrents.firilisinof.com";
+        QBITTORRENT_URL = "https://torrents.firilisinof.com:443";
         QBITTORRENT_USER = "lucas";
         QBITTORRENT_CATEGORY = "romarr";
         GGREQUESTZ_URL = "https://game-requests.firilisinof.com";

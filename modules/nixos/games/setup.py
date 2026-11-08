@@ -172,7 +172,7 @@ def configure_romarr(prowlarr_key):
         "http://127.0.0.1:6868/api/v1",
         {"X-Api-Key": secret("romarr-api-key")},
     )
-    api.wait("/system/status")
+    settings = api.wait("/config")
     api.request(
         "/config",
         {
@@ -199,8 +199,26 @@ def configure_romarr(prowlarr_key):
             "api_key": prowlarr_key,
         },
     )
-    clients = api.request("/downloadclient")["items"]
-    if not any(item.get("protocol") == "hub" for item in clients):
+    clients = settings["download_clients"]
+    qbit = next((item for item in clients if item.get("type") == "qbittorrent"), {})
+    api.request(
+        "/downloadclient",
+        {
+            **qbit,
+            "name": "qBittorrent",
+            "type": "qbittorrent",
+            "enable": True,
+            "host": "torrents.firilisinof.com",
+            "port": 443,
+            "use_ssl": True,
+            "username": "lucas",
+            "password": Path("/run/secrets/qbittorrent/admin-password")
+            .read_text()
+            .strip(),
+            "category": "romarr",
+        },
+    )
+    if not any(item.get("type") == "hub" for item in clients):
         api.request(
             "/downloadclient",
             {
