@@ -49,6 +49,11 @@ in
     uid = 807;
     group = "media";
   };
+  users.users.romm = {
+    isSystemUser = true;
+    uid = 808;
+    group = "media";
+  };
 
   sops.secrets = lib.genAttrs (map (name: "games/${name}") [
     "igdb-client-id"
@@ -104,10 +109,10 @@ in
     "d ${state} 0750 root root - -"
     "d ${state}/romarr 0700 romarr media - -"
     "d ${state}/romm 0750 root root - -"
-    "d ${state}/romm/resources 0750 root root - -"
-    "d ${state}/romm/assets 0750 root root - -"
-    "d ${state}/romm/config 0750 root root - -"
-    "d ${state}/romm/redis 0750 root root - -"
+    "d ${state}/romm/resources 2770 romm media - -"
+    "d ${state}/romm/assets 2770 romm media - -"
+    "d ${state}/romm/config 0700 romm media - -"
+    "d ${state}/romm/redis 0700 romm media - -"
     "d ${state}/romm/database 0700 - - - -"
     "d ${state}/ggrequestz-database 0700 - - - -"
     "d ${staging} 2770 qbittorrent media - -"
@@ -156,6 +161,7 @@ in
     };
     romm = {
       image = "docker.io/rommapp/romm@sha256:8677fb7b81b1d3db20b849e989a1dadc2a11159e51eb34a2acdcb01102274edf";
+      user = "808:987";
       autoRemoveOnStop = false;
       networks = [ network ];
       dependsOn = [ "romm-db" ];
