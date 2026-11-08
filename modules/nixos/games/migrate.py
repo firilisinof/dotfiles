@@ -42,6 +42,8 @@ def destination(relative):
             "switch-2": {".nup", ".nsp", ".xci", ".nsz"},
         }
         if relative.suffix.lower() in extensions.get(platform, set()):
+            if platform == "psx" and len(parts) == 3:
+                return Path("library/roms/psx") / relative.stem / relative.name
             return Path("library/roms") / platform / Path(*parts[2:])
     return Path("preserved/emulation") / relative
 
