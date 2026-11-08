@@ -123,6 +123,42 @@ def configure_qbittorrent():
     print("qBittorrent game category verified")
 
 
+def configure_byparr(api):
+    API("http://127.0.0.1:8191").wait("/openapi.json")
+    tag = next(
+        (item for item in api.request("/tag") if item["label"] == "byparr"), None
+    )
+    if tag is None:
+        tag = api.request("/tag", {"label": "byparr"})
+    proxy = next(
+        (
+            item
+            for item in api.request("/indexerproxy")
+            if item["name"] == "Byparr (local)"
+        ),
+        None,
+    )
+    if proxy is None:
+        proxy = next(
+            item
+            for item in api.request("/indexerproxy/schema")
+            if item["implementation"] == "FlareSolverr"
+        )
+        proxy.update(name="Byparr (local)", tags=[tag["id"]])
+    proxy["tags"] = sorted(set(proxy["tags"]) | {tag["id"]})
+    for field in proxy["fields"]:
+        if field["name"] == "host":
+            field["value"] = "http://127.0.0.1:8191/"
+        elif field["name"] == "requestTimeout":
+            field["value"] = 120
+    api.request("/indexerproxy/test", proxy)
+    if proxy.get("id"):
+        api.request(f"/indexerproxy/{proxy['id']}", proxy, "PUT")
+    else:
+        api.request("/indexerproxy", proxy)
+    print("Byparr indexer proxy configured")
+
+
 def configure_prowlarr():
     for _attempt in range(90):
         try:
@@ -147,6 +183,7 @@ def configure_prowlarr():
         analyticsEnabled=False,
     )
     api.request(f"/config/host/{host['id']}", host, "PUT")
+    configure_byparr(api)
     indexers = api.request("/indexer")
     existing = next((item for item in indexers if item["name"] == "BlueRoms"), None)
     if existing is None:

@@ -24,6 +24,12 @@ The initial sources were selected from [FMHY's ROM directory](https://fmhy.net/g
 
 Source definitions and plugins can change independently of the pinned application images. Test searches and imports after updates. DAT checksum verification requires appropriate No-Intro or Redump DAT files configured in ROMarr. Files without a matching DAT remain unverified.
 
+### Cloudflare challenges
+
+Byparr runs locally at `http://127.0.0.1:8191` using a pinned ARM64 image. Its browser temporary files and shared memory use RAM, with a 2 GiB container memory limit and two-CPU quota. It has no public endpoint or persistent application data.
+
+`games-setup` creates the `Byparr (local)` indexer proxy in Prowlarr using the FlareSolverr API type. Assign the `byparr` tag to an indexer to use it. The proxy timeout is 120 seconds. Prowlarr invokes the helper when it detects Cloudflare on a tagged indexer. Test the indexer and an actual search after assigning the tag. A successful proxy connection test does not establish that a site's challenge can be solved.
+
 ## Storage and migration
 
 | Path | Contents | B2 backup |
