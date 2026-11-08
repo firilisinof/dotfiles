@@ -37,7 +37,13 @@ in
   ];
 
   users.groups.media.gid = 987;
-  networking.firewall.interfaces.games0.allowedTCPPorts = [ 443 ];
+  networking.firewall.interfaces.games0 = {
+    allowedTCPPorts = [
+      53
+      443
+    ];
+    allowedUDPPorts = [ 53 ];
+  };
   users.users.romarr = {
     isSystemUser = true;
     uid = 807;
