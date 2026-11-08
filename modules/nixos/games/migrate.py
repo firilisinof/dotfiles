@@ -79,7 +79,7 @@ def inventory(source):
     return rows
 
 
-def copy_verified(source, root, rows):
+def copy_verified(source, root, rows, hardlink=False):
     gid = grp.getgrnam("media").gr_gid
     for row in rows:
         origin = source / row["source"]
@@ -92,21 +92,24 @@ def copy_verified(source, root, rows):
                 raise ValueError(f"Destination conflicts with source: {target}")
         else:
             target.parent.mkdir(parents=True, exist_ok=True)
-            partial = target.with_name(target.name + ".migration-partial")
-            with origin.open("rb") as incoming, partial.open("xb") as outgoing:
-                shutil.copyfileobj(incoming, outgoing, 1024 * 1024)
-                outgoing.flush()
-                os.fsync(outgoing.fileno())
-            if digest(partial) != expected:
-                raise ValueError(f"Copied checksum does not match: {origin}")
-            shutil.copystat(origin, partial)
-            os.link(partial, target)
-            partial.unlink()
+            if hardlink:
+                os.link(origin, target)
+            else:
+                partial = target.with_name(target.name + ".migration-partial")
+                with origin.open("rb") as incoming, partial.open("xb") as outgoing:
+                    shutil.copyfileobj(incoming, outgoing, 1024 * 1024)
+                    outgoing.flush()
+                    os.fsync(outgoing.fileno())
+                if digest(partial) != expected:
+                    raise ValueError(f"Copied checksum does not match: {origin}")
+                shutil.copystat(origin, partial)
+                os.link(partial, target)
+                partial.unlink()
         if digest(origin) != expected:
             raise ValueError(f"Source changed during migration: {origin}")
         row["sha256"] = expected
         if row["destination"].startswith("library/"):
-            os.chown(target, 0, gid)
+            os.chown(target, -1 if hardlink else 0, gid)
             target.chmod(0o660)
             directory = target.parent
             while directory != root:
@@ -123,7 +126,11 @@ def copy_verified(source, root, rows):
     manifest = root / "preserved/nextcloud-migration.json"
     manifest.parent.mkdir(parents=True, exist_ok=True)
     with manifest.open("x") as stream:
-        json.dump({"source": str(source), "files": rows}, stream, indent=2)
+        json.dump(
+            {"source": str(source), "hardlink": hardlink, "files": rows},
+            stream,
+            indent=2,
+        )
         stream.write("\n")
         stream.flush()
         os.fsync(stream.fileno())
@@ -141,7 +148,14 @@ def main():
     )
     parser.add_argument("--destination", type=Path, default=Path("/srv/games"))
     parser.add_argument("--copy", action="store_true")
+    parser.add_argument(
+        "--hardlink",
+        action="store_true",
+        help="Link files on the same filesystem. Keep source writes paused until removal.",
+    )
     args = parser.parse_args()
+    if args.hardlink and not args.copy:
+        parser.error("--hardlink requires --copy")
     source = args.source.resolve(strict=True)
     root = args.destination.resolve()
     if root == source or root.is_relative_to(source) or source.is_relative_to(root):
@@ -158,7 +172,7 @@ def main():
         print(f"{group}: {counts[group]} files, {sizes[group]} bytes")
     print(f"Total: {len(rows)} files, {sum(sizes.values())} bytes")
     if args.copy:
-        copy_verified(source, root, rows)
+        copy_verified(source, root, rows, hardlink=args.hardlink)
 
 
 if __name__ == "__main__":

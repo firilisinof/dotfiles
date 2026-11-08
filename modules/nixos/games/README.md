@@ -37,6 +37,8 @@ Source definitions and plugins can change independently of the pinned applicatio
 
 Run `migrate.py` without arguments on pi5 to inventory `/srv/nextcloud/data/lucas/files/Emulation`. `--copy` copies all files, verifies SHA-256 against the source, preserves unclassified files separately, and writes `/srv/games/preserved/nextcloud-migration.json`. It never removes the source. Stop Nextcloud writes and game library scans during the copy. A changed source or conflicting destination fails the migration. A failed copy's `.migration-partial` file must be inspected before retrying.
 
+On the same filesystem, `--copy --hardlink` avoids rewriting file data. Both names initially share an inode, so keep source writes paused until removal and do not treat the second name as a backup. File ownership is preserved, with library files given the media group. Verify an independent B2 snapshot and restore before removing the source. After removal, set library files to `root:media` and preserved files to `root:root`.
+
 The migration recognizes the existing SNES, PlayStation, and Switch 2 game formats and maps known firmware to platform directories. It preserves emulator programs, patches, folder descriptions, and unfinished uploads outside the catalog. Review the inventory if the source collection has changed. Source removal must follow verification of the new catalog, a B2 snapshot, and a restored file's checksum. Remove the source through Nextcloud's WebDAV API so its file cache is updated. Nextcloud clients will receive the deletion when they next sync, including clients on disconnected external drives.
 
 ## Backup and recovery
