@@ -111,8 +111,8 @@ in
       initialize = true;
       paths = [ "/srv" ];
       timerConfig = {
-        OnCalendar = "daily";
-        RandomizedDelaySec = "1h";
+        # daytime, outside fan quiet hours
+        OnCalendar = "10:00";
         Persistent = true;
       };
       # the bucket keeps pruned files for 30 more days
