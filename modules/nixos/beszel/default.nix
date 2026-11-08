@@ -27,6 +27,10 @@ let
         port = 443;
       }
       { target = "https://torrents.firilisinof.com"; }
+      { target = "https://games.firilisinof.com/api/heartbeat"; }
+      { target = "https://romarr.firilisinof.com/api/health"; }
+      { target = "https://game-requests.firilisinof.com/api/health"; }
+      { target = "https://prowlarr.firilisinof.com"; }
       { target = "https://git.firilisinof.com/api/healthz"; }
       { target = "https://auth.firilisinof.com/status"; }
     ]
@@ -74,6 +78,7 @@ in
           "nginx*"
           "phpfpm-nextcloud*"
           "podman-*"
+          "prowlarr*"
           "qbittorrent*"
           "reading-*"
           "redis-nextcloud*"
