@@ -19,7 +19,6 @@ in
       pkgs.antigravity-cli
       pkgs.claude-code
       pkgs.codex
-      pkgs.omp
     ];
 
     home.file = {
@@ -27,9 +26,7 @@ in
       ".codex/AGENTS.md".source = ./context.md;
       ".claude/CLAUDE.md".source = ./context.md;
       ".gemini/GEMINI.md".source = ./context.md;
-      ".omp/agent/AGENTS.md".source = ./context.md;
       ".claude/skills".source = skills;
-      ".omp/agent/skills".source = skills;
     };
   };
 }
