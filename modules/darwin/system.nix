@@ -65,7 +65,6 @@ in
     };
     NSGlobalDomain = {
       AppleEnableSwipeNavigateWithScrolls = true;
-      AppleIconAppearanceTheme = "ClearAutomatic";
       AppleKeyboardUIMode = 0;
       AppleShowAllExtensions = true;
       AppleShowScrollBars = "Automatic";
