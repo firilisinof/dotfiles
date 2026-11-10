@@ -9,7 +9,6 @@ let
   cfg = config.services.kanidm;
   hostname = "auth.firilisinof.com";
   origin = "https://${hostname}";
-  stumpOrigin = "https://read.firilisinof.com";
   forgejoOrigin = "https://git.firilisinof.com";
   tlsDirectory = config.security.acme.certs."firilisinof.com".directory;
   identity = config.home-manager.users.lucas.programs.git.settings.user;
@@ -20,7 +19,6 @@ in
       [
         "kanidm/admin-password"
         "kanidm/idm-admin-password"
-        "stump/oidc-secret"
         "forgejo/oidc-secret"
       ]
       (_: {
@@ -58,7 +56,6 @@ in
       adminPasswordFile = config.sops.secrets."kanidm/admin-password".path;
       idmAdminPasswordFile = config.sops.secrets."kanidm/idm-admin-password".path;
       groups = {
-        "stump.users" = { };
         "forgejo.users" = { };
         "forgejo.admins" = { };
       };
@@ -66,23 +63,8 @@ in
         displayName = identity.name;
         mailAddresses = [ identity.email ];
         groups = [
-          "stump.users"
           "forgejo.users"
           "forgejo.admins"
-        ];
-      };
-      systems.oauth2.stump = {
-        displayName = "Stump";
-        originUrl = [
-          "${stumpOrigin}/api/v2/auth/oidc/callback"
-        ];
-        originLanding = "${stumpOrigin}/";
-        basicSecretFile = config.sops.secrets."stump/oidc-secret".path;
-        preferShortUsername = true;
-        scopeMaps."stump.users" = [
-          "openid"
-          "email"
-          "profile"
         ];
       };
       systems.oauth2.forgejo = {

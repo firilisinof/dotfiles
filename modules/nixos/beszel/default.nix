@@ -12,14 +12,6 @@ let
   monitors = pkgs.writeText "beszel-monitors.json" (
     builtins.toJSON [
       { target = "https://cloud.firilisinof.com/status.php"; }
-      { target = "https://read.firilisinof.com"; }
-      { target = "https://shelfmark.firilisinof.com"; }
-      { target = "https://kapowarr.firilisinof.com"; }
-      {
-        target = "suwayomi.firilisinof.com";
-        protocol = "tcp";
-        port = 443;
-      }
       {
         target = "archive.firilisinof.com";
         protocol = "tcp";
@@ -78,11 +70,9 @@ in
           "podman-*"
           "prowlarr*"
           "qbittorrent*"
-          "reading-*"
           "redis-nextcloud*"
           "restic-*"
           "sshd*"
-          "suwayomi*"
           "tailscaled*"
           "wifi-watchdog*"
         ];
