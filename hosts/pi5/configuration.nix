@@ -68,14 +68,18 @@
     "flakes"
   ];
   nix.settings.auto-optimise-store = true;
+  # the vendor kernel from nixos-raspberrypi
+  nix.settings.substituters = [ "https://nixos-raspberrypi.cachix.org?priority=30" ];
+  nix.settings.trusted-public-keys = [
+    "nixos-raspberrypi.cachix.org-1:4iMO9LXa8BqhU+Rpg6LQKiGa2lsNh/j2oiYLNOQ5sPI="
+  ];
   nix.gc = {
     automatic = true;
     dates = "weekly";
     options = "--delete-older-than 30d";
   };
 
-  # mainline, patched with the device tree overlays here and in fan.nix
-  boot.kernelPackages = pkgs.linuxPackages;
+  # the vendor kernel and its device tree come from modules/flake/configurations.nix
   boot.loader.grub.enable = false;
   boot.loader.timeout = 5;
   boot.loader.generic-extlinux-compatible = {
@@ -86,13 +90,10 @@
     mirroredBoots = [ { path = "/boot/boot"; } ];
   };
   hardware.enableRedistributableFirmware = true;
-  # the mainline device tree omits the status led
-  hardware.deviceTree.overlays = [
-    {
-      name = "status-led";
-      dtsFile = ./status-led.dtso;
-    }
-  ];
+  # the vendor device tree flashes the status led on sd card activity
+  services.udev.extraRules = ''
+    ACTION=="add", SUBSYSTEM=="leds", KERNEL=="ACT", ATTR{trigger}="heartbeat"
+  '';
 
   # a stalled link stays associated, so NetworkManager does not reconnect by itself
   systemd.services.wifi-watchdog = {

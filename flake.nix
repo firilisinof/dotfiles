@@ -35,6 +35,13 @@
       url = "github:NixOS/nixos-hardware/master";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    # only the vendor kernel package is used, so nixpkgs is not followed and the kernel comes from its cache
+    nixos-raspberrypi = {
+      url = "github:nvmd/nixos-raspberrypi";
+      inputs.argononed.follows = "";
+      inputs.nixos-images.follows = "";
+      inputs.flake-compat.follows = "";
+    };
     sops-nix = {
       url = "github:Mic92/sops-nix";
       inputs.nixpkgs.follows = "nixpkgs";
