@@ -5,14 +5,14 @@
   ...
 }:
 
-# a remote MCP shell, after github.com/stepbrobd/inc/blob/master/modules/nixos/mcp.nix.
+# a remote MCP shell, after github.com/stepbrobd/inc/blob/master/modules/nixos/mcp.nix
 # Kanidm issues each app its own issuer and token audience, and the server
 # accepts one of each, so every app gets its own client, hostname and instance.
 # Codex and Claude Code run on the Mac and reach the pi5 over SSH instead.
 let
   user = "lucas";
-  domain = "firilisinof.com";
-  issuerOrigin = "https://auth.${domain}";
+  inherit (config.networking) domain;
+  issuerOrigin = config.services.kanidm.server.settings.origin;
   socketDir = "/run/mcp";
   scope = "mcp:shell";
 

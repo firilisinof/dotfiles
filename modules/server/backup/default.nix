@@ -31,6 +31,25 @@ let
       ) job.sqlite
     );
 
+  # each command writes to a temporary file first, so a failed dump never replaces the last good one
+  commandScript =
+    name: job:
+    lib.concatStrings (
+      lib.mapAttrsToList (
+        file: command:
+        let
+          directory = "${dumpDirectory}/${name}/dump";
+        in
+        ''
+          ${lib.getExe' pkgs.coreutils "install"} -d -m 0700 ${directory}
+          ${lib.getExe' pkgs.coreutils "rm"} -f ${directory}/${file} ${directory}/${file}.tmp
+          (umask 077 && ${command} > ${directory}/${file}.tmp)
+          ${lib.getExe' pkgs.coreutils "test"} -s ${directory}/${file}.tmp
+          ${lib.getExe' pkgs.coreutils "mv"} ${directory}/${file}.tmp ${directory}/${file}
+        ''
+      ) job.dumps
+    );
+
   # a marker per stopped unit survives the snapshot, so only units that were running start again
   stoppedDirectory = name: "/run/restic-backups-${name}/stopped";
   stopScript = name: job: ''
@@ -81,13 +100,21 @@ in
             description = "Databases copied through the SQLite online backup API to ${dumpDirectory}/<job>/sqlite/<name>/<name>.db before the snapshot.";
           };
 
+          options.dumps = lib.mkOption {
+            type = lib.types.attrsOf lib.types.str;
+            default = { };
+            description = "Commands whose standard output is saved to ${dumpDirectory}/<job>/dump/<name> before the snapshot. An empty dump fails the job.";
+          };
+
           options.stopUnits = lib.mkOption {
             type = lib.types.listOf lib.types.str;
             default = [ ];
             description = "Units stopped before the database copies and the snapshot, and started again afterwards if they were running or starting.";
           };
 
-          config.paths = lib.optional (config.sqlite != { }) "${dumpDirectory}/${name}";
+          config.paths = lib.optional (
+            config.sqlite != { } || config.dumps != { }
+          ) "${dumpDirectory}/${name}";
         }
       )
     );
@@ -149,6 +176,7 @@ in
           preStart = lib.mkMerge [
             (lib.mkIf (job.stopUnits != [ ]) (lib.mkBefore (stopScript name job)))
             (lib.mkIf (job.sqlite != { }) (lib.mkAfter (dumpScript name job)))
+            (lib.mkIf (job.dumps != { }) (lib.mkAfter (commandScript name job)))
           ];
           postStop = lib.mkIf (job.stopUnits != [ ]) (lib.mkAfter (startScript name job));
         }

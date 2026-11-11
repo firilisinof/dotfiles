@@ -7,10 +7,10 @@
 
 let
   cfg = config.services.kanidm;
-  hostname = "auth.firilisinof.com";
+  inherit (config.networking) domain;
+  hostname = "auth.${domain}";
   origin = "https://${hostname}";
-  forgejoOrigin = "https://git.firilisinof.com";
-  tlsDirectory = config.security.acme.certs."firilisinof.com".directory;
+  tlsDirectory = config.security.acme.certs.${domain}.directory;
   identity = config.home-manager.users.lucas.programs.git.settings.user;
 in
 {
@@ -19,7 +19,6 @@ in
       [
         "kanidm/admin-password"
         "kanidm/idm-admin-password"
-        "forgejo/oidc-secret"
       ]
       (_: {
         group = "kanidm";
@@ -55,44 +54,24 @@ in
       acceptInvalidCerts = false;
       adminPasswordFile = config.sops.secrets."kanidm/admin-password".path;
       idmAdminPasswordFile = config.sops.secrets."kanidm/idm-admin-password".path;
-      groups = {
-        "forgejo.users" = { };
-        "forgejo.admins" = { };
-      };
+      # each service module adds its own groups and oauth2 client
       persons.lucas = {
         displayName = identity.name;
         mailAddresses = [ identity.email ];
-        groups = [
-          "forgejo.users"
-          "forgejo.admins"
-        ];
-      };
-      systems.oauth2.forgejo = {
-        displayName = "Forgejo";
-        originUrl = "${forgejoOrigin}/user/oauth2/kanidm/callback";
-        originLanding = "${forgejoOrigin}/";
-        basicSecretFile = config.sops.secrets."forgejo/oidc-secret".path;
-        preferShortUsername = true;
-        scopeMaps."forgejo.users" = [
-          "openid"
-          "email"
-          "profile"
-        ];
-        claimMaps.forgejo_role.valuesByGroup."forgejo.admins" = [ "admin" ];
       };
     };
   };
 
   users.users.kanidm.extraGroups = [ "acme" ];
-  security.acme.certs."firilisinof.com".reloadServices = [ "kanidm.service" ];
+  security.acme.certs.${domain}.reloadServices = [ "kanidm.service" ];
 
   systemd.services.kanidm = {
     after = [
-      "acme-firilisinof.com.service"
+      "acme-${domain}.service"
       "caddy.service"
     ];
     wants = [
-      "acme-firilisinof.com.service"
+      "acme-${domain}.service"
       "caddy.service"
     ];
     serviceConfig = {
@@ -117,9 +96,11 @@ in
     originRequest.originServerName = hostname;
   };
   # the pi5's own clients, such as provisioning at startup, reach it through Caddy rather than the tunnel
-  networking.hosts."100.74.192.104" = [ hostname ];
+  networking.hosts.${config.dotfiles.tailscale.ipv4} = [ hostname ];
 
   services.restic.backups.b2 = {
     paths = [ cfg.server.settings.online_backup.path ];
   };
+
+  dotfiles.monitors = [ { target = "${origin}/status"; } ];
 }

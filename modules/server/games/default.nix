@@ -7,6 +7,9 @@
 
 let
   inherit (config.sops) placeholder secrets;
+  inherit (config.networking) domain;
+  podman = lib.getExe config.virtualisation.podman.package;
+  auth = config.services.kanidm.server.settings.origin;
   state = "/srv/games-state";
   library = "/srv/games/library";
   staging = "/srv/media/downloads/romarr";
@@ -15,7 +18,21 @@ let
   apps = {
     games = 8087;
     romarr = 6868;
-    game-requests = 3088;
+    requestz = 3088;
+  };
+  url = lib.mapAttrs (name: _: "https://${name}.${domain}") apps // {
+    prowlarr = "https://prowlarr.${domain}";
+    torrents = "https://torrents.${domain}";
+  };
+  # the setup script reads these from its credentials directory
+  setupCredentials = {
+    romm-admin-password = "games/romm-admin-password";
+    romarr-library-password = "games/romarr-library-password";
+    ggrequestz-library-password = "games/ggrequestz-library-password";
+    romarr-api-key = "games/romarr-api-key";
+    prowlarr-password = "prowlarr/password";
+    prowlarr-api-key = "prowlarr/api-key";
+    qbittorrent-password = "qbittorrent/admin-password";
   };
   containers = [
     "romm-db"
@@ -33,7 +50,6 @@ in
 {
   imports = [
     ./identity.nix
-    ./prowlarr.nix
   ];
 
   users.groups.media.gid = 987;
@@ -115,7 +131,6 @@ in
     "d ${state}/ggrequestz-database 0700 - - - -"
     "d ${staging} 2770 qbittorrent media - -"
     "d ${staging}/hub 2770 romarr media - -"
-    "d /var/backup/games 0700 root root - -"
   ];
 
   virtualisation.oci-containers.containers = {
@@ -183,9 +198,9 @@ in
         OIDC_ENABLED = "true";
         OIDC_PROVIDER = "Kanidm";
         OIDC_CLIENT_ID = "romm";
-        OIDC_REDIRECT_URI = "https://games.firilisinof.com/api/oauth/openid";
-        OIDC_SERVER_APPLICATION_URL = "https://auth.firilisinof.com/oauth2/openid/romm";
-        OIDC_SERVER_METADATA_URL = "https://auth.firilisinof.com/oauth2/openid/romm/.well-known/openid-configuration";
+        OIDC_REDIRECT_URI = "${url.games}/api/oauth/openid";
+        OIDC_SERVER_APPLICATION_URL = "${auth}/oauth2/openid/romm";
+        OIDC_SERVER_METADATA_URL = "${auth}/oauth2/openid/romm/.well-known/openid-configuration";
         OIDC_CLAIM_ROLES = "games_role";
         OIDC_ROLE_ADMIN = "admin";
       };
@@ -213,10 +228,10 @@ in
         LIBRARY_URL = "http://romm:8080";
         LIBRARY_USERNAME = "romarr";
         LIBRARY_PATH = "${library}/roms";
-        QBITTORRENT_URL = "https://torrents.firilisinof.com:443";
+        QBITTORRENT_URL = "${url.torrents}:443";
         QBITTORRENT_USER = "lucas";
         QBITTORRENT_CATEGORY = "romarr";
-        GGREQUESTZ_URL = "https://game-requests.firilisinof.com";
+        GGREQUESTZ_URL = url.requestz;
         ROMARR_PLAYERS = "none";
       };
       volumes = [
@@ -243,17 +258,17 @@ in
         PM2_INSTANCES = "1";
         AUTO_MIGRATE = "true";
         AUTH_METHOD = "oidc";
-        OIDC_ISSUER_URL = "https://auth.firilisinof.com/oauth2/openid/ggrequestz";
+        OIDC_ISSUER_URL = "${auth}/oauth2/openid/ggrequestz";
         OIDC_CLIENT_ID = "ggrequestz";
         OIDC_PROVIDER_NAME = "Kanidm";
-        OIDC_REDIRECT_URI = "https://game-requests.firilisinof.com/api/auth/callback";
+        OIDC_REDIRECT_URI = "${url.requestz}/api/auth/callback";
         OIDC_GROUPS_CLAIM = "games_role";
         OIDC_ROLE_MAP = "admin:admin";
-        PUBLIC_SITE_URL = "https://game-requests.firilisinof.com";
-        ORIGIN = "https://game-requests.firilisinof.com";
+        PUBLIC_SITE_URL = url.requestz;
+        ORIGIN = url.requestz;
         LIBRARY_KIND = "romm";
         LIBRARY_URL = "http://romm:8080";
-        LIBRARY_PUBLIC_URL = "https://games.firilisinof.com";
+        LIBRARY_PUBLIC_URL = url.games;
         LIBRARY_USERNAME = "ggrequestz";
         LIBRARY_SYNC_ENABLED = "true";
         LIBRARY_SYNC_INTERVAL_MS = "300000";
@@ -294,37 +309,35 @@ in
           "qbittorrent.service"
           "caddy.service"
         ];
-        environment.GAMES_ADMIN_EMAIL = config.home-manager.users.lucas.programs.git.settings.user.email;
+        environment = {
+          GAMES_ADMIN_EMAIL = config.home-manager.users.lucas.programs.git.settings.user.email;
+          GAMES_DOMAIN = domain;
+        };
         serviceConfig = {
           Type = "oneshot";
-          ExecStart = "${pkgs.python3}/bin/python3 ${./setup.py}";
+          ExecStart = pkgs.writers.writePython3 "games-setup" {
+            # ruff formats the script, and these are the checks it disagrees with
+            flakeIgnore = [
+              "E203"
+              "E501"
+              "W503"
+            ];
+          } (builtins.readFile ./setup.py);
+          LoadCredential = lib.mapAttrsToList (
+            name: secret: "${name}:${secrets.${secret}.path}"
+          ) setupCredentials;
           UMask = "0077";
           TimeoutStartSec = "10min";
         };
       };
-      restic-backups-b2.preStart = lib.mkAfter ''
-        set -eu
-        umask 077
-        directory=/var/backup/games
-        rm -f "$directory/romm.sql.tmp" "$directory/ggrequestz.dump.tmp"
-        trap 'rm -f "$directory/romm.sql.tmp" "$directory/ggrequestz.dump.tmp"' EXIT
-        ${lib.getExe config.virtualisation.podman.package} exec romm-db \
-          mariadb-dump --defaults-extra-file=/run/secrets/backup.cnf \
-          --single-transaction --quick --routines --events --triggers --databases romm > "$directory/romm.sql.tmp"
-        ${lib.getExe config.virtualisation.podman.package} exec ggrequestz-db \
-          pg_dump -U ggrequestz -d ggrequestz -Fc > "$directory/ggrequestz.dump.tmp"
-        test -s "$directory/romm.sql.tmp"
-        test -s "$directory/ggrequestz.dump.tmp"
-        mv "$directory/romm.sql.tmp" "$directory/romm.sql"
-        mv "$directory/ggrequestz.dump.tmp" "$directory/ggrequestz.dump"
-        trap - EXIT
-      '';
     }
   ];
 
   services.restic.backups.b2 = {
     stopUnits = [ "games-setup.service" ] ++ appUnits;
-    paths = [ "/var/backup/games" ];
+    dumps."romm.sql" =
+      "${podman} exec romm-db mariadb-dump --defaults-extra-file=/run/secrets/backup.cnf --single-transaction --quick --routines --events --triggers --databases romm";
+    dumps."ggrequestz.dump" = "${podman} exec ggrequestz-db pg_dump -U ggrequestz -d ggrequestz -Fc";
     exclude = [
       "${state}/romm/database"
       "${state}/ggrequestz-database"
@@ -334,8 +347,14 @@ in
   };
   services.caddy.virtualHosts = lib.mapAttrs' (
     name: port:
-    lib.nameValuePair "${name}.firilisinof.com" {
+    lib.nameValuePair "${name}.${domain}" {
       extraConfig = "reverse_proxy 127.0.0.1:${toString port}";
     }
   ) apps;
+
+  dotfiles.monitors = [
+    { target = "${url.games}/api/heartbeat"; }
+    { target = "${url.romarr}/api/health"; }
+    { target = "${url.requestz}/api/health"; }
+  ];
 }

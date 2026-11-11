@@ -1,9 +1,10 @@
 { config, lib, ... }:
 
 let
+  inherit (config.networking) domain;
   clients = {
-    romm = "https://games.firilisinof.com";
-    ggrequestz = "https://game-requests.firilisinof.com";
+    romm = "https://games.${domain}";
+    ggrequestz = "https://requestz.${domain}";
   };
 in
 {

@@ -1,7 +1,7 @@
-_:
+{ config, ... }:
 
 let
-  hostname = "vault.firilisinof.com";
+  hostname = "vault.${config.networking.domain}";
   dataDirectory = "/var/lib/vaultwarden";
 in
 {
@@ -20,6 +20,8 @@ in
   };
 
   services.caddy.virtualHosts.${hostname}.extraConfig = "reverse_proxy 127.0.0.1:8222";
+
+  dotfiles.monitors = [ { target = "https://${hostname}/alive"; } ];
 
   services.restic.backups.b2 = {
     paths = [ dataDirectory ];

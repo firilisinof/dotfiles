@@ -8,7 +8,7 @@
 let
   cfg = config.services.qbittorrent;
   profile = "${cfg.profileDir}/qBittorrent";
-
+  hostname = "torrents.${config.networking.domain}";
 in
 {
   imports = [ ./network.nix ];
@@ -47,7 +47,7 @@ in
       LocalHostAuth=true
       AuthSubnetWhitelistEnabled=false
       HostHeaderValidation=true
-      ServerDomains=torrents.firilisinof.com
+      ServerDomains=${hostname}
       CSRFProtection=true
       ClickjackingProtection=true
       SecureCookie=true
@@ -117,6 +117,7 @@ in
     ];
   };
 
-  services.caddy.virtualHosts."torrents.firilisinof.com".extraConfig =
-    "reverse_proxy 10.200.0.2:8080";
+  services.caddy.virtualHosts.${hostname}.extraConfig = "reverse_proxy 10.200.0.2:8080";
+
+  dotfiles.monitors = [ { target = "https://${hostname}"; } ];
 }

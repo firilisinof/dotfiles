@@ -1,16 +1,33 @@
 { config, lib, ... }:
 
+let
+  inherit (config.networking) domain;
+  tailscale = config.dotfiles.tailscale;
+in
 {
-  # every site is a subdomain under the wildcard certificate, served only over tailscale
-  options.services.caddy.virtualHosts = lib.mkOption {
-    type = lib.types.attrsOf (
-      lib.types.submodule {
-        config = {
-          useACMEHost = lib.mkDefault "firilisinof.com";
-          logFormat = lib.mkDefault null;
-        };
-      }
-    );
+  options = {
+    dotfiles.tailscale = {
+      ipv4 = lib.mkOption {
+        type = lib.types.str;
+        description = "Tailscale IPv4 address of this host.";
+      };
+      ipv6 = lib.mkOption {
+        type = lib.types.str;
+        description = "Tailscale IPv6 address of this host.";
+      };
+    };
+
+    # every site is a subdomain under the wildcard certificate, served only over tailscale
+    services.caddy.virtualHosts = lib.mkOption {
+      type = lib.types.attrsOf (
+        lib.types.submodule {
+          config = {
+            useACMEHost = lib.mkDefault domain;
+            logFormat = lib.mkDefault null;
+          };
+        }
+      );
+    };
   };
 
   config = {
@@ -19,8 +36,8 @@
     security.acme = {
       acceptTerms = true;
       defaults.email = config.home-manager.users.lucas.programs.git.settings.user.email;
-      certs."firilisinof.com" = {
-        extraDomainNames = [ "*.firilisinof.com" ];
+      certs.${domain} = {
+        extraDomainNames = [ "*.${domain}" ];
         dnsProvider = "cloudflare";
         dnsResolver = "1.1.1.1:53";
         credentialFiles.CF_DNS_API_TOKEN_FILE = config.sops.secrets."cloudflare/api-token".path;
@@ -33,7 +50,7 @@
       enable = true;
       openFirewall = false;
       globalConfig = ''
-        default_bind 100.74.192.104 [fd7a:115c:a1e0::c37:c069]
+        default_bind ${tailscale.ipv4} [${tailscale.ipv6}]
         auto_https disable_redirects
         servers {
           protocols h1 h2

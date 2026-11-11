@@ -17,7 +17,8 @@ def setup(hub_url, email, hostname, monitors_path, key_path):
             method=method,
         )
         with urlopen(req, timeout=10) as response:
-            return json.load(response)
+            body = response.read()
+        return json.loads(body) if body else None
 
     def records(collection):
         items = []
@@ -74,7 +75,12 @@ def setup(hub_url, email, hostname, monitors_path, key_path):
             "/api/collections/systems/records", {**system_data, "status": "pending"}
         )
 
-    existing = records("network_monitors")
+    existing = [
+        record
+        for record in records("network_monitors")
+        if record["system"] == system["id"]
+    ]
+    declared = set()
     for monitor in json.loads(Path(monitors_path).read_text()):
         data = {
             "system": system["id"],
@@ -93,6 +99,7 @@ def setup(hub_url, email, hostname, monitors_path, key_path):
             )
         ]
         if matches:
+            declared.add(matches[0]["id"])
             request(
                 f"/api/collections/network_monitors/records/{matches[0]['id']}",
                 data,
@@ -100,6 +107,12 @@ def setup(hub_url, email, hostname, monitors_path, key_path):
             )
         else:
             request("/api/collections/network_monitors/records", data)
+    for record in existing:
+        if record["id"] not in declared:
+            request(
+                f"/api/collections/network_monitors/records/{record['id']}",
+                method="DELETE",
+            )
 
     key = request("/api/beszel/info")["key"]
     if not key.startswith("ssh-ed25519 "):

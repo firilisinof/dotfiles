@@ -8,6 +8,7 @@
 let
   inherit (config.sops) placeholder secrets;
 
+  hostname = "yt.${config.networking.domain}";
   appName = "youtarr";
   databaseName = "youtarr-db";
   networkName = "youtarr";
@@ -64,7 +65,6 @@ in
     # MariaDB owns this directory after initialization, including across rebuilds
     "d ${stateDir}/database 0750 - - - -"
     "d ${mediaDir} 2750 youtarr youtube - -"
-    "d /var/backup/youtarr 0700 root root - -"
   ];
 
   virtualisation.oci-containers = {
@@ -192,34 +192,26 @@ in
         fi
       '';
     };
-
-    # the dump needs only the database container, which keeps running
-    "restic-backups-b2" = {
-      preStart = lib.mkAfter ''
-        set -eu
-        dump=${lib.escapeShellArg "/var/backup/youtarr/youtarr.sql"}
-        tmp="''${dump}.tmp"
-        ${lib.getExe' pkgs.coreutils "rm"} -f "$dump" "$tmp"
-        umask 077
-        trap '${lib.getExe' pkgs.coreutils "rm"} -f "$tmp"' EXIT
-        ${lib.getExe config.virtualisation.podman.package} exec ${databaseName} \
-          mariadb-dump --defaults-extra-file=/run/secrets/backup.cnf \
-          --single-transaction --quick --routines --events --triggers --databases youtarr > "$tmp"
-        test -s "$tmp"
-        ${lib.getExe' pkgs.coreutils "mv"} "$tmp" "$dump"
-        trap - EXIT
-      '';
-    };
   };
 
   services.restic.backups.b2 = {
     stopUnits = [ "podman-${appName}.service" ];
-    paths = [ "/var/backup/youtarr" ];
+    # the dump needs only the database container, which keeps running
+    dumps."youtarr.sql" =
+      "${lib.getExe config.virtualisation.podman.package} exec ${databaseName} mariadb-dump --defaults-extra-file=/run/secrets/backup.cnf --single-transaction --quick --routines --events --triggers --databases youtarr";
     exclude = [
       "${stateDir}/database"
       "${mediaDir}/.youtarr_tmp"
     ];
   };
 
-  services.caddy.virtualHosts."archive.firilisinof.com".extraConfig = "reverse_proxy 127.0.0.1:3087";
+  services.caddy.virtualHosts.${hostname}.extraConfig = "reverse_proxy 127.0.0.1:3087";
+
+  dotfiles.monitors = [
+    {
+      target = hostname;
+      protocol = "tcp";
+      port = 443;
+    }
+  ];
 }

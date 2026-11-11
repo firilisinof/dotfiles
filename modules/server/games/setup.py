@@ -6,12 +6,13 @@ import time
 import urllib.error
 import urllib.parse
 import urllib.request
-import xml.etree.ElementTree as ET
 from pathlib import Path
+
+DOMAIN = os.environ["GAMES_DOMAIN"]
 
 
 def secret(name):
-    return Path(f"/run/secrets/games/{name}").read_text().strip()
+    return Path(os.environ["CREDENTIALS_DIRECTORY"], name).read_text().strip()
 
 
 class API:
@@ -54,7 +55,7 @@ def basic(username, password):
 
 
 def configure_romm():
-    api = API("https://games.firilisinof.com/api")
+    api = API(f"https://games.{DOMAIN}/api")
     api.wait("/heartbeat")
     password = secret("romm-admin-password")
     admin = API(api.url, basic("lucas", password))
@@ -82,7 +83,7 @@ def configure_romm():
                 "/users",
                 {
                     "username": username,
-                    "email": f"{username}@firilisinof.com",
+                    "email": f"{username}@{DOMAIN}",
                     "password": secret(f"{username}-library-password"),
                     "role": "user",
                 },
@@ -101,7 +102,7 @@ def configure_romm():
 def configure_qbittorrent():
     cookies = http.cookiejar.CookieJar()
     client = urllib.request.build_opener(urllib.request.HTTPCookieProcessor(cookies))
-    base = "https://torrents.firilisinof.com/api/v2/"
+    base = f"https://torrents.{DOMAIN}/api/v2/"
 
     def request(path, data=None):
         encoded = None if data is None else urllib.parse.urlencode(data).encode()
@@ -109,7 +110,7 @@ def configure_qbittorrent():
         with client.open(req, timeout=30) as response:
             return response.read()
 
-    password = Path("/run/secrets/qbittorrent/admin-password").read_text().strip()
+    password = secret("qbittorrent-password")
     request("auth/login", {"username": "lucas", "password": password})
     try:
         categories = json.loads(request("torrents/categories"))
@@ -124,17 +125,10 @@ def configure_qbittorrent():
 
 
 def configure_prowlarr():
-    for _attempt in range(90):
-        try:
-            key = ET.parse("/var/lib/prowlarr/config.xml").findtext("ApiKey")
-            if key:
-                break
-        except (OSError, ET.ParseError):
-            pass
-        time.sleep(2)
-    else:
-        raise RuntimeError("Prowlarr did not create its API key")
-    api = API("http://127.0.0.1:9696/api/v1", {"X-Api-Key": key})
+    api = API(
+        "http://127.0.0.1:9696/api/v1",
+        {"X-Api-Key": secret("prowlarr-api-key")},
+    )
     api.wait("/system/status")
     host = api.request("/config/host")
     host.update(
@@ -143,7 +137,7 @@ def configure_prowlarr():
         username="lucas",
         password=secret("prowlarr-password"),
         passwordConfirmation=secret("prowlarr-password"),
-        applicationUrl="https://prowlarr.firilisinof.com",
+        applicationUrl=f"https://prowlarr.{DOMAIN}",
         analyticsEnabled=False,
     )
     api.request(f"/config/host/{host['id']}", host, "PUT")
@@ -164,10 +158,9 @@ def configure_prowlarr():
     else:
         api.request("/indexer/test", existing)
     print("Prowlarr login and BlueRoms source verified")
-    return key
 
 
-def configure_romarr(prowlarr_key):
+def configure_romarr():
     api = API(
         "http://127.0.0.1:6868/api/v1",
         {"X-Api-Key": secret("romarr-api-key")},
@@ -195,8 +188,8 @@ def configure_romarr(prowlarr_key):
             "name": "Prowlarr",
             "type": "prowlarr",
             "enable": True,
-            "url": "https://prowlarr.firilisinof.com",
-            "api_key": prowlarr_key,
+            "url": f"https://prowlarr.{DOMAIN}",
+            "api_key": secret("prowlarr-api-key"),
         },
     )
     clients = settings["download_clients"]
@@ -208,13 +201,11 @@ def configure_romarr(prowlarr_key):
             "name": "qBittorrent",
             "type": "qbittorrent",
             "enable": True,
-            "host": "torrents.firilisinof.com",
+            "host": f"torrents.{DOMAIN}",
             "port": 443,
             "use_ssl": True,
             "username": "lucas",
-            "password": Path("/run/secrets/qbittorrent/admin-password")
-            .read_text()
-            .strip(),
+            "password": secret("qbittorrent-password"),
             "category": "romarr",
         },
     )
@@ -246,9 +237,9 @@ def main():
     print("Configuring qBittorrent", flush=True)
     configure_qbittorrent()
     print("Configuring Prowlarr", flush=True)
-    prowlarr_key = configure_prowlarr()
+    configure_prowlarr()
     print("Configuring ROMarr", flush=True)
-    configure_romarr(prowlarr_key)
+    configure_romarr()
 
 
 if __name__ == "__main__":

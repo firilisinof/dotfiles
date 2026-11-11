@@ -1,20 +1,47 @@
 {
   config,
   lib,
-  pkgs,
   ...
 }:
 
 let
   cfg = config.services.forgejo;
-  hostname = "git.firilisinof.com";
+  hostname = "git.${config.networking.domain}";
+  origin = "https://${hostname}";
   issuer = "${config.services.kanidm.server.settings.origin}/oauth2/openid/forgejo";
-  # per repository, past this the oldest release files are deleted to bound the b2 bill
-  releaseLimitBytes = 5 * 1024 * 1024 * 1024;
-  releaseToken = "${cfg.customDir}/conf/releases-token";
 in
 {
-  sops.secrets."forgejo/oidc-secret".restartUnits = [ "forgejo.service" ];
+  sops.secrets."forgejo/oidc-secret" = {
+    group = "kanidm";
+    mode = "0440";
+    restartUnits = [
+      "kanidm.service"
+      "forgejo.service"
+    ];
+  };
+
+  # the group claim grants the instance admin role
+  services.kanidm.provision = {
+    groups."forgejo.users" = { };
+    groups."forgejo.admins" = { };
+    persons.lucas.groups = [
+      "forgejo.users"
+      "forgejo.admins"
+    ];
+    systems.oauth2.forgejo = {
+      displayName = "Forgejo";
+      originUrl = "${origin}/user/oauth2/kanidm/callback";
+      originLanding = "${origin}/";
+      basicSecretFile = config.sops.secrets."forgejo/oidc-secret".path;
+      preferShortUsername = true;
+      scopeMaps."forgejo.users" = [
+        "openid"
+        "email"
+        "profile"
+      ];
+      claimMaps.forgejo_role.valuesByGroup."forgejo.admins" = [ "admin" ];
+    };
+  };
 
   services.forgejo = {
     enable = true;
@@ -23,7 +50,7 @@ in
     settings = {
       server = {
         DOMAIN = hostname;
-        ROOT_URL = "https://${hostname}/";
+        ROOT_URL = "${origin}/";
         HTTP_ADDR = "127.0.0.1";
         HTTP_PORT = 3000;
       };
@@ -47,7 +74,6 @@ in
     };
   };
 
-  # kanidm provisions the client, and the group claim grants the instance admin role
   systemd.services.forgejo = {
     after = [ "kanidm.service" ];
     serviceConfig.LoadCredential = [
@@ -72,46 +98,7 @@ in
       else
         forgejo admin auth add-oauth "''${options[@]}"
       fi
-      # a failure must not stop forgejo, and the release job then reports the missing token
-      if [ ! -s ${releaseToken} ]; then
-        forgejo admin user generate-access-token \
-          --username lucas \
-          --token-name forgejo-releases \
-          --scopes write:repository \
-          --raw >${releaseToken} || rm -f ${releaseToken}
-      fi
     '';
-  };
-
-  # mirrors carry only git data, so github releases are published into them through the api
-  systemd.services.forgejo-releases = {
-    description = "Publish GitHub releases of Forgejo mirrors";
-    after = [
-      "forgejo.service"
-      "network-online.target"
-    ];
-    wants = [ "network-online.target" ];
-    path = [ pkgs.git ];
-    serviceConfig = {
-      Type = "oneshot";
-      User = cfg.user;
-      Group = cfg.group;
-      ExecStart = "${pkgs.python3}/bin/python3 ${./releases.py} ${cfg.repositoryRoot} http://${cfg.settings.server.HTTP_ADDR}:${toString cfg.settings.server.HTTP_PORT} ${releaseToken} ${toString releaseLimitBytes}";
-      UMask = "0027";
-      NoNewPrivileges = true;
-      PrivateTmp = true;
-      ProtectHome = true;
-      ProtectSystem = "strict";
-    };
-  };
-
-  systemd.timers.forgejo-releases = {
-    wantedBy = [ "timers.target" ];
-    timerConfig = {
-      OnCalendar = "hourly";
-      RandomizedDelaySec = "5m";
-      Persistent = true;
-    };
   };
 
   services.openssh.settings.AllowUsers = [ cfg.user ];
@@ -130,4 +117,6 @@ in
 
   services.caddy.virtualHosts.${hostname}.extraConfig =
     "reverse_proxy ${cfg.settings.server.HTTP_ADDR}:${toString cfg.settings.server.HTTP_PORT}";
+
+  dotfiles.monitors = [ { target = "${origin}/api/healthz"; } ];
 }

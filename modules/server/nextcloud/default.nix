@@ -7,9 +7,8 @@
 
 let
   cfg = config.services.nextcloud;
-  hostname = "cloud.firilisinof.com";
+  hostname = "cloud.${config.networking.domain}";
   database = config.services.mysql.package;
-  dumpDirectory = "/var/backup/nextcloud";
   disabledApps = [
     "activity"
     "app_api"
@@ -90,9 +89,6 @@ in
     }
   ];
   services.caddy.virtualHosts.${hostname}.extraConfig = "reverse_proxy 127.0.0.1:8086";
-  services.caddy.virtualHosts."dav.firilisinof.com".extraConfig = ''
-    respond "WebDAV moved to Nextcloud. Update the client URL and app password." 410
-  '';
 
   systemd.services.nextcloud-setup = {
     serviceConfig.LoadCredential = [
@@ -116,26 +112,15 @@ in
     '';
   };
 
-  systemd.tmpfiles.rules = [ "d ${dumpDirectory} 0700 root root - -" ];
-
   services.restic.backups.b2 = {
-    paths = [ dumpDirectory ];
     stopUnits = [
       "nextcloud-cron.timer"
       "nextcloud-cron.service"
       "phpfpm-nextcloud.service"
     ];
+    dumps."nextcloud.sql" =
+      "${lib.getExe' database "mariadb-dump"} --single-transaction --quick --routines --events --triggers nextcloud";
   };
-  systemd.services.restic-backups-b2.preStart = lib.mkAfter ''
-    dump=${dumpDirectory}/nextcloud.sql
-    tmp="$dump.tmp"
-    rm -f "$dump" "$tmp"
-    umask 077
-    trap 'rm -f "$tmp"' EXIT
-    ${lib.getExe' database "mariadb-dump"} \
-      --single-transaction --quick --routines --events --triggers nextcloud > "$tmp"
-    test -s "$tmp"
-    mv "$tmp" "$dump"
-    trap - EXIT
-  '';
+
+  dotfiles.monitors = [ { target = "https://${hostname}/status.php"; } ];
 }

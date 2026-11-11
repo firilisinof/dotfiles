@@ -13,7 +13,7 @@ let
   };
 in
 {
-  # every module under modules/darwin applies to kanjiro, and every module under modules/nixos to pi5
+  # every module under modules/darwin applies to kanjiro, and every module under modules/server to pi5
   flake = {
     darwinConfigurations.kanjiro = inputs.nix-darwin.lib.darwinSystem {
       modules = [
