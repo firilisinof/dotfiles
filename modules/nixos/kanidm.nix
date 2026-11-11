@@ -116,6 +116,8 @@ in
     service = "https://${cfg.server.settings.bindaddress}";
     originRequest.originServerName = hostname;
   };
+  # the pi5's own clients, such as provisioning at startup, reach it through Caddy rather than the tunnel
+  networking.hosts."100.74.192.104" = [ hostname ];
 
   services.restic.backups.b2 = {
     paths = [ cfg.server.settings.online_backup.path ];
