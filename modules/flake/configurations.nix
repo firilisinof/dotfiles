@@ -15,6 +15,9 @@
         inputs.sops-nix.darwinModules.sops
         ../../hosts/kanjiro/configuration.nix
         {
+          home-manager.users.lucas.home.packages = [
+            inputs.zotero-mcp.packages.aarch64-darwin.default
+          ];
           home-manager.users.lucas.imports = with self.homeModules.lucas; [
             darwin
             ai

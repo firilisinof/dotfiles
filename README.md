@@ -44,6 +44,48 @@ Add new files to Git before you rebuild.
 
 Use Apple Watch or your password for `sudo`, including when the Mac lid is closed. Enable your watch in System Settings > Touch ID & Password.
 
+### Zotero MCP
+
+The Mac Home Manager configuration installs the core `zotero-mcp` package from
+the pinned upstream flake, without semantic search or optional PDF/EPUB extras.
+After rebuilding:
+
+1. In Zotero, enable **Settings → Advanced → Allow other applications on this
+   computer to communicate with Zotero**.
+2. Configure your MCP client to launch `/etc/profiles/per-user/lucas/bin/zotero-mcp`
+   with arguments `serve --transport stdio` and environment variable
+   `ZOTERO_LOCAL=true`. Keep Zotero running when using the server.
+3. For local writes on Zotero 10+, run `ZOTERO_LOCAL=true zotero-mcp authorize-local`
+   and approve the Zotero dialog. Older versions need Zotero Web API credentials
+   for writes; local reads need no API key.
+
+For clients using JSON MCP configuration:
+
+```json
+{
+  "mcpServers": {
+    "zotero": {
+      "command": "/etc/profiles/per-user/lucas/bin/zotero-mcp",
+      "args": ["serve", "--transport", "stdio"],
+      "env": { "ZOTERO_LOCAL": "true" }
+    }
+  }
+}
+```
+
+Restart the MCP client, then try searching your Zotero library.
+
+### Obsidian skill commands
+
+Home Manager installs `defuddle` for extracting web content, `knap` for rendering
+Markdown templates, and an `obsidian` launcher for the Homebrew-installed app.
+Knap uses the pinned npm distribution and its Day.js dependency, with Node.js
+provided by Nix.
+
+After rebuilding, open Obsidian and enable **Settings → General → Command line
+interface**. Obsidian must be running for the CLI to connect. Check the commands
+with `defuddle --help`, `knap --help`, and `obsidian help`.
+
 ## Raspberry Pi
 
 Build and apply the configuration on the Pi:

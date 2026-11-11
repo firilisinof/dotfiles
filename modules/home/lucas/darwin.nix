@@ -23,6 +23,9 @@ in
 
   home.file.".local/share/java/jdk21".source = "${jdk}";
   home.packages = [
+    (pkgs.writeShellScriptBin "obsidian" ''
+      exec /Applications/Obsidian.app/Contents/MacOS/obsidian-cli "$@"
+    '')
     # preserve vendor signatures by skipping bundle fixups
     (pkgs.anki-bin.overrideAttrs { dontFixup = true; })
     pkgs.firefox-bin-unwrapped

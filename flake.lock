@@ -185,6 +185,22 @@
         "type": "github"
       }
     },
+    "nixpkgs_3": {
+      "locked": {
+        "lastModified": 1792502884,
+        "narHash": "sha256-IoNisKcGbUjdd45qCqywGMCYmZ5EnkxezvLII0FWwNA=",
+        "owner": "NixOS",
+        "repo": "nixpkgs",
+        "rev": "02c087f3fe673c9e317f206a627cb6b910336dbe",
+        "type": "github"
+      },
+      "original": {
+        "owner": "NixOS",
+        "ref": "nixos-unstable",
+        "repo": "nixpkgs",
+        "type": "github"
+      }
+    },
     "root": {
       "inputs": {
         "autopilot": "autopilot",
@@ -197,7 +213,8 @@
         "nixpkgs": "nixpkgs_2",
         "sops-nix": "sops-nix",
         "systems": "systems",
-        "treefmt-nix": "treefmt-nix"
+        "treefmt-nix": "treefmt-nix",
+        "zotero-mcp": "zotero-mcp"
       }
     },
     "sops-nix": {
@@ -252,6 +269,24 @@
       "original": {
         "owner": "numtide",
         "repo": "treefmt-nix",
+        "type": "github"
+      }
+    },
+    "zotero-mcp": {
+      "inputs": {
+        "nixpkgs": "nixpkgs_3"
+      },
+      "locked": {
+        "lastModified": 1794341803,
+        "narHash": "sha256-nAUHpjUAc7cZPvCuZpBsQMlg7lxc/Sp6jXe6jk0g9RU=",
+        "owner": "54yyyu",
+        "repo": "zotero-mcp",
+        "rev": "454adf52a69e7797b554aabdd406c48ca797c6c6",
+        "type": "github"
+      },
+      "original": {
+        "owner": "54yyyu",
+        "repo": "zotero-mcp",
         "type": "github"
       }
     }

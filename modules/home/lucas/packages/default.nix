@@ -8,12 +8,14 @@
     pkgs.binutils
     pkgs.cmake
     pkgs.coreutils
+    pkgs.defuddle
     pkgs.e2fsprogs
     pkgs.fd
     pkgs.ffmpeg
     pkgs.findutils
     pkgs.gnumake
     pkgs.jq
+    (pkgs.callPackage ./knap.nix { })
     pkgs.libtool
     pkgs.meson
     pkgs.nasm
