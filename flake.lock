@@ -26,6 +26,21 @@
         "type": "github"
       }
     },
+    "crane": {
+      "locked": {
+        "lastModified": 1793836618,
+        "narHash": "sha256-TREenflwEjxOSq292FYwbc3kEm7TDRtXCZRNWEdjBmg=",
+        "owner": "ipetkov",
+        "repo": "crane",
+        "rev": "79fd63528501446749c09f08cad486a58c7d173e",
+        "type": "github"
+      },
+      "original": {
+        "owner": "ipetkov",
+        "repo": "crane",
+        "type": "github"
+      }
+    },
     "determinate": {
       "inputs": {
         "determinate-nixd-aarch64-darwin": [],
@@ -87,6 +102,31 @@
         "owner": "nix-community",
         "ref": "master",
         "repo": "home-manager",
+        "type": "github"
+      }
+    },
+    "mcp": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ],
+        "systems": [
+          "systems"
+        ]
+      },
+      "locked": {
+        "dir": "pkgs/mcp",
+        "lastModified": 1794403521,
+        "narHash": "sha256-mjkXuOpSV81ApXk/MNW74ZLevqDMqRZPWtqGcRrZB5U=",
+        "owner": "stepbrobd",
+        "repo": "inc",
+        "rev": "7f316e13a6562c553c9bbe18b40c8b779c1335da",
+        "type": "github"
+      },
+      "original": {
+        "dir": "pkgs/mcp",
+        "owner": "stepbrobd",
+        "repo": "inc",
         "type": "github"
       }
     },
@@ -207,12 +247,14 @@
         "determinate": "determinate",
         "flake-parts": "flake-parts",
         "home-manager": "home-manager",
+        "mcp": "mcp",
         "nix-darwin": "nix-darwin",
         "nixos-hardware": "nixos-hardware",
         "nixos-raspberrypi": "nixos-raspberrypi",
         "nixpkgs": "nixpkgs_2",
         "sops-nix": "sops-nix",
         "systems": "systems",
+        "things": "things",
         "treefmt-nix": "treefmt-nix",
         "zotero-mcp": "zotero-mcp"
       }
@@ -249,6 +291,33 @@
       "original": {
         "owner": "nix-systems",
         "repo": "triplet",
+        "type": "github"
+      }
+    },
+    "things": {
+      "inputs": {
+        "crane": "crane",
+        "nixpkgs": [
+          "nixpkgs"
+        ],
+        "parts": [
+          "flake-parts"
+        ],
+        "systems": [
+          "systems"
+        ]
+      },
+      "locked": {
+        "lastModified": 1793978225,
+        "narHash": "sha256-uk0MljApQz0iIwFS4NvmajkL1Pk4lLkbrHYZjSzRBqQ=",
+        "owner": "stepbrobd",
+        "repo": "things",
+        "rev": "a294bb52514f3f716766db7dae2fe02a9388d213",
+        "type": "github"
+      },
+      "original": {
+        "owner": "stepbrobd",
+        "repo": "things",
         "type": "github"
       }
     },

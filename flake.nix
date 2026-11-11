@@ -32,6 +32,18 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
     zotero-mcp.url = "github:54yyyu/zotero-mcp";
+    # the remote MCP shell served from the pi5
+    mcp = {
+      url = "github:stepbrobd/inc?dir=pkgs/mcp";
+      inputs.nixpkgs.follows = "nixpkgs";
+      inputs.systems.follows = "systems";
+    };
+    things = {
+      url = "github:stepbrobd/things";
+      inputs.nixpkgs.follows = "nixpkgs";
+      inputs.systems.follows = "systems";
+      inputs.parts.follows = "flake-parts";
+    };
     nixos-hardware = {
       url = "github:NixOS/nixos-hardware/master";
       inputs.nixpkgs.follows = "nixpkgs";

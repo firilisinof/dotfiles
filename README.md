@@ -95,6 +95,19 @@ git -C ~/dotfiles pull --ff-only
 nixos-rebuild switch --flake ~/dotfiles#pi5 --sudo
 ```
 
+Services are served only over Tailscale, except the hostnames in `dotfiles.tunnel.ingress`, which a Cloudflare tunnel publishes: Kanidm (`auth`) and the MCP shells.
+
+### Remote MCP shell
+
+`modules/nixos/mcp.nix` runs [stepbrobd's MCP shell](https://github.com/stepbrobd/inc/tree/master/pkgs/mcp) as `lucas`, so Claude and ChatGPT can run commands on the Pi, such as the Things CLI. Each app has its own Kanidm OAuth2 client, hostname and server instance, and every command is logged to `~/.local/state/mcp/<app>.log`. Codex and Claude Code on the Mac use SSH instead.
+
+| App | Connector URL | OAuth client |
+| --- | --- | --- |
+| Claude | `https://claude.firilisinof.com/mcp` | `mcp-claude` and the secret `kanidm/mcp-claude-secret` |
+| ChatGPT | `https://chatgpt.firilisinof.com/mcp` | `mcp-chatgpt` and the secret `kanidm/mcp-chatgpt-secret` |
+
+Read a client secret with `sops decrypt --extract '["kanidm"]["mcp-claude-secret"]' secrets/pi5.yaml`.
+
 For a new installation, the host SSH key changes. Add the new key to `.sops.yaml` and run `sops updatekeys` on the secrets file of the host.
 
 ## Secrets

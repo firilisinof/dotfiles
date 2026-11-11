@@ -5,6 +5,13 @@
   ...
 }:
 
+let
+  # packages from flakes outside nixpkgs, for every host
+  overlay = final: _: {
+    mcp = inputs.mcp.packages.${final.stdenv.hostPlatform.system}.default;
+    things = inputs.things.packages.${final.stdenv.hostPlatform.system}.default;
+  };
+in
 {
   # every module under modules/darwin applies to kanjiro, and every module under modules/nixos to pi5
   flake = {
@@ -15,6 +22,7 @@
         inputs.sops-nix.darwinModules.sops
         ../../hosts/kanjiro/configuration.nix
         {
+          nixpkgs.overlays = [ overlay ];
           home-manager.users.lucas.home.packages = [
             inputs.zotero-mcp.packages.aarch64-darwin.default
           ];
@@ -34,7 +42,10 @@
         inputs.nixos-hardware.nixosModules.raspberry-pi-5
         inputs.sops-nix.nixosModules.sops
         ../../hosts/pi5/configuration.nix
-        { home-manager.users.lucas.imports = [ self.homeModules.lucas.default ]; }
+        {
+          nixpkgs.overlays = [ overlay ];
+          home-manager.users.lucas.imports = [ self.homeModules.lucas.default ];
+        }
         {
           # the vendor kernel has the rp1 pwm driver that the fan curve needs
           boot.kernelPackages = inputs.nixos-raspberrypi.packages.aarch64-linux.linuxPackages_rpi5;

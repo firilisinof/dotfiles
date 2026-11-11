@@ -8,7 +8,6 @@
     };
     brews = [
       "mas"
-      "steipete/tap/remindctl"
     ];
     casks = [
       "antigravity"

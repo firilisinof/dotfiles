@@ -111,6 +111,12 @@ in
     '';
   };
 
+  # public, since the AI apps' servers fetch its metadata and exchange login codes for tokens
+  dotfiles.tunnel.ingress.${hostname} = {
+    service = "https://${cfg.server.settings.bindaddress}";
+    originRequest.originServerName = hostname;
+  };
+
   services.restic.backups.b2 = {
     paths = [ cfg.server.settings.online_backup.path ];
   };
