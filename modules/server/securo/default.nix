@@ -79,6 +79,8 @@ let
 in
 {
   sops.secrets."securo/secret-key".restartUnits = appUnits;
+  sops.secrets."securo/pluggy-client-id".restartUnits = appUnits;
+  sops.secrets."securo/pluggy-client-secret".restartUnits = appUnits;
   sops.secrets."securo/enable-banking-app-id".restartUnits = appUnits;
   sops.secrets."securo/enable-banking-private-key".restartUnits = appUnits;
   sops.secrets."securo/database-password".restartUnits = appUnits ++ [ "podman-securo-db.service" ];
@@ -93,6 +95,8 @@ in
       placeholder."securo/database-password"
     }@securo-db:5432/securo
     OIDC_CLIENT_SECRET=${placeholder."securo/oidc-secret"}
+    PLUGGY_CLIENT_ID=${placeholder."securo/pluggy-client-id"}
+    PLUGGY_CLIENT_SECRET=${placeholder."securo/pluggy-client-secret"}
     ENABLE_BANKING_APP_ID=${placeholder."securo/enable-banking-app-id"}
   '';
 
