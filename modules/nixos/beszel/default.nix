@@ -24,6 +24,7 @@ let
       { target = "https://prowlarr.firilisinof.com"; }
       { target = "https://git.firilisinof.com/api/healthz"; }
       { target = "https://auth.firilisinof.com/status"; }
+      { target = "https://vault.firilisinof.com/alive"; }
     ]
   );
 in
@@ -74,6 +75,7 @@ in
           "restic-*"
           "sshd*"
           "tailscaled*"
+          "vaultwarden*"
           "wifi-watchdog*"
         ];
       };
