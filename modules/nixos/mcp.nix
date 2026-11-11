@@ -23,7 +23,8 @@ let
     };
     chatgpt = {
       displayName = "ChatGPT";
-      redirect = "https://chatgpt.com/connector_platform_oauth_redirect";
+      # each ChatGPT connector has its own callback, shown in its OAuth settings
+      redirect = "https://chatgpt.com/connector/oauth/6Ifrwiif6ngv";
     };
   };
 
