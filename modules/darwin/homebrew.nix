@@ -6,7 +6,10 @@
       upgrade = false;
       cleanup = "zap";
     };
-    brews = [ "mas" ];
+    brews = [
+      "mas"
+      "steipete/tap/remindctl"
+    ];
     casks = [
       "antigravity"
       "beeper"

@@ -1,13 +1,9 @@
 {
-  config,
   lib,
   pkgs,
   ...
 }:
 
-let
-  skills = config.lib.file.mkOutOfStoreSymlink "${config.dotfiles.directory}/skills";
-in
 {
   options.dotfiles.directory = lib.mkOption {
     type = lib.types.str;
@@ -22,11 +18,7 @@ in
     ];
 
     home.file = {
-      ".agents/skills".source = skills;
-      ".codex/AGENTS.md".source = ./context.md;
-      ".claude/CLAUDE.md".source = ./context.md;
       ".gemini/GEMINI.md".source = ./context.md;
-      ".claude/skills".source = skills;
     };
   };
 }
