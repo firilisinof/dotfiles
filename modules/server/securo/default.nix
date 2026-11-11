@@ -41,6 +41,8 @@ let
       FRONTEND_URL = origin;
       REDIS_URL = "redis://securo-redis:6379/0";
       STORAGE_LOCAL_PATH = "/app/data/attachments";
+      ENABLE_BANKING_PRIVATE_KEY_FILE = "/run/secrets/enable-banking.pem";
+      ENABLE_BANKING_OAUTH_REDIRECT_URI = "${origin}/oauth/callback";
       OIDC_ENABLED = "true";
       OIDC_PROVIDER_NAME = "Kanidm";
       OIDC_DISCOVERY_URL = "${issuer}/.well-known/openid-configuration";
@@ -56,7 +58,10 @@ let
       TRUSTED_PROXY_HOPS = "1";
       AGENTS_ENABLED = "false";
     };
-    volumes = [ "${state}/attachments:/app/data/attachments" ];
+    volumes = [
+      "${state}/attachments:/app/data/attachments"
+      "${secrets."securo/enable-banking-private-key".path}:/run/secrets/enable-banking.pem:ro"
+    ];
     extraOptions = [
       "--add-host=auth.${config.networking.domain}:${config.dotfiles.tailscale.ipv4}"
     ];
@@ -74,6 +79,8 @@ let
 in
 {
   sops.secrets."securo/secret-key".restartUnits = appUnits;
+  sops.secrets."securo/enable-banking-app-id".restartUnits = appUnits;
+  sops.secrets."securo/enable-banking-private-key".restartUnits = appUnits;
   sops.secrets."securo/database-password".restartUnits = appUnits ++ [ "podman-securo-db.service" ];
   sops.secrets."securo/oidc-secret" = {
     group = "kanidm";
@@ -86,6 +93,7 @@ in
       placeholder."securo/database-password"
     }@securo-db:5432/securo
     OIDC_CLIENT_SECRET=${placeholder."securo/oidc-secret"}
+    ENABLE_BANKING_APP_ID=${placeholder."securo/enable-banking-app-id"}
   '';
 
   services.kanidm.provision = {
