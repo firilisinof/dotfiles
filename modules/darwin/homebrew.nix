@@ -36,6 +36,7 @@
       Amphetamine = 937984704;
       Bitwarden = 1352778147;
       Numbers = 361304891;
+      Xcode = 497799835;
       "uBlock Origin Lite" = 6745342698;
     };
   };

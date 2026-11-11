@@ -6,3 +6,4 @@ result-*
 hosts.yml
 *.pem
 *.key
+.ruff_cache/
