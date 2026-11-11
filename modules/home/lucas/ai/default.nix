@@ -1,24 +1,16 @@
-{
-  lib,
-  pkgs,
-  ...
-}:
+{ pkgs, ... }:
 
 {
-  options.dotfiles.directory = lib.mkOption {
-    type = lib.types.str;
-    description = "Local checkout of this repository, linked so skill edits apply without a rebuild.";
-  };
+  home.packages = [
+    pkgs.antigravity-cli
+    pkgs.claude-code
+    pkgs.codex
+  ];
 
-  config = {
-    home.packages = [
-      pkgs.antigravity-cli
-      pkgs.claude-code
-      pkgs.codex
-    ];
-
-    home.file = {
-      ".gemini/GEMINI.md".source = ./context.md;
-    };
+  # every harness loads the same user-level instructions
+  home.file = {
+    ".claude/CLAUDE.md".source = ./context.md;
+    ".codex/AGENTS.md".source = ./context.md;
+    ".gemini/GEMINI.md".source = ./context.md;
   };
 }

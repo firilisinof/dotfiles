@@ -16,7 +16,6 @@ Nix configuration for two hosts:
 | `modules/home/lucas/` | Home Manager user modules |
 | `modules/flake/` | Module exports, host configurations, and the formatter |
 | `secrets/` | Secrets encrypted with sops |
-| `skills/` | AI agent skills |
 | `wallpapers/` | Wallpapers |
 
 Every file or directory under `modules/<class>/` is one module named after it. A service module keeps its helper scripts next to its `default.nix` and declares its own Caddy site, backup paths, and secrets.

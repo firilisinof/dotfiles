@@ -7,7 +7,6 @@
   system.stateVersion = 6;
 
   home-manager.users.lucas = {
-    dotfiles.directory = "/Users/lucas/Pessoal/dotfiles";
     home.stateVersion = "26.05";
   };
 }
