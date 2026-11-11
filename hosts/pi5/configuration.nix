@@ -130,15 +130,27 @@
       RuntimeDirectoryPreserve = true;
     };
     script = ''
-      route=$(ip -4 route show default dev wlan0)
+      interface=
+      while IFS=: read -r device type; do
+        if [[ $type == wifi ]]; then
+          interface=$device
+          break
+        fi
+      done < <(nmcli --terse --fields DEVICE,TYPE device status)
+      if [[ -z $interface ]]; then
+        echo "no Wi-Fi interface, leaving recovery to NetworkManager"
+        exit 0
+      fi
+
+      route=$(ip -4 route show default dev "$interface")
       if [[ -z $route ]]; then
-        echo "no default route on wlan0, leaving recovery to NetworkManager"
+        echo "no default route on $interface, leaving recovery to NetworkManager"
         exit 0
       fi
       read -r _ _ gateway _ <<< "$route"
 
       failures_file=$RUNTIME_DIRECTORY/failures
-      if ping -c 3 -W 2 -I wlan0 "$gateway" > /dev/null; then
+      if ping -c 3 -W 2 -I "$interface" "$gateway" > /dev/null; then
         if [[ -e $failures_file ]]; then
           echo "gateway $gateway is answering again"
           rm "$failures_file"
@@ -158,16 +170,16 @@
         echo "+ $*"
         "$@" 2>&1 || echo "exit status $?"
       }
-      record ip -s link show dev wlan0
-      record ip -s neigh show dev wlan0
-      record ip route show dev wlan0
-      record iw dev wlan0 link
-      record iw dev wlan0 station dump
-      record nmcli device show wlan0
+      record ip -s link show dev "$interface"
+      record ip -s neigh show dev "$interface"
+      record ip route show dev "$interface"
+      record iw dev "$interface" link
+      record iw dev "$interface" station dump
+      record nmcli device show "$interface"
 
-      connection=$(nmcli --get-values GENERAL.CONNECTION device show wlan0)
+      connection=$(nmcli --get-values GENERAL.CONNECTION device show "$interface")
       echo "reconnecting $connection"
-      nmcli --wait 60 connection up "$connection" ifname wlan0
+      nmcli --wait 60 connection up "$connection" ifname "$interface"
     '';
   };
 
