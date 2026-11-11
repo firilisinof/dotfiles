@@ -28,7 +28,7 @@ in
       });
 
   services.kanidm = {
-    package = pkgs.kanidm_1_11.withSecretProvisioning;
+    package = pkgs.kanidm_1_12.withSecretProvisioning;
     client = {
       enable = true;
       settings.uri = origin;
