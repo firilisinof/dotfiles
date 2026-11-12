@@ -8,5 +8,8 @@
     ./ssh
   ];
   xdg.enable = true;
-  home.packages = [ pkgs.eza ];
+  programs.helix = {
+    enable = true;
+    defaultEditor = true;
+  };
 }

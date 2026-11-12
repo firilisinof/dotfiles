@@ -18,6 +18,7 @@
       "font-roboto"
       "font-roboto-condensed"
       "font-roboto-mono"
+      "font-roboto-mono-nerd-font"
       "font-roboto-serif"
       "font-roboto-slab"
       "mactex-no-gui"
@@ -30,6 +31,7 @@
       "tailscale-app"
       "visual-studio-code"
       "vlc"
+      "zed"
       "zotero"
     ];
     masApps = {

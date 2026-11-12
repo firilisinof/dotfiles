@@ -1,4 +1,4 @@
-{ config, lib, ... }:
+{ config, ... }:
 
 let
   user = config.system.primaryUser;
@@ -7,14 +7,7 @@ in
   # the upstream completion package needs the omitted determinate-nixd inputs
   determinateNix.shellCompletions.enable = false;
 
-  nixpkgs.config.allowUnfreePredicate =
-    pkg:
-    builtins.elem (lib.getName pkg) [
-      "antigravity-cli"
-      "claude-code"
-      "firefox-bin-unwrapped"
-      "google-chrome"
-    ];
+  nixpkgs.config.allowUnfree = true;
   programs.zsh.enable = true;
 
   security.pam.services.sudo_local.watchIdAuth = true;

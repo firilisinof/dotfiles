@@ -36,5 +36,7 @@
     pkgs.uv
     pkgs.wget
     pkgs.yt-dlp
+    pkgs.nil
+    pkgs.eza
   ];
 }
