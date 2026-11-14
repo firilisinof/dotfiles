@@ -7,8 +7,9 @@ include = [
   "devShells.*.default",
 ]
 
-substituters = ["https://cache.ysun.co"]
+substituters = ["https://cache.ysun.co", "https://nixos-raspberrypi.cachix.org"]
 
 trusted-public-keys = [
+  "nixos-raspberrypi.cachix.org-1:4iMO9LXa8BqhU+Rpg6LQKiGa2lsNh/j2oiYLNOQ5sPI=",
   "cache.ysun.co-1:WxPYwT5g3kt9XhUhHPpNLZKI9HIOsVVAuqSHpok8Qt4=",
 ]
