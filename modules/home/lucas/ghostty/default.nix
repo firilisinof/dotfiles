@@ -7,8 +7,8 @@
     # ghostty-bin is the macOS build, other platforms keep the module default
     package = lib.mkIf pkgs.stdenv.hostPlatform.isDarwin pkgs.ghostty-bin;
     settings = {
-      font-family = "MesloLGS Nerd Font";
-      font-size = 16;
+      font-family = "RobotoMono Nerd Font Mono";
+      font-size = 18;
       theme = "Apple System Colors Light";
     };
     enableZshIntegration = true;
