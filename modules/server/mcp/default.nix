@@ -22,8 +22,8 @@ let
 
   redirects = [
     "https://claude.ai/api/mcp/auth_callback"
-    # each ChatGPT connector has its own callback, shown in its OAuth settings
-    "https://chatgpt.com/connector/oauth/6Ifrwiif6ngv"
+    # shown in the OAuth settings of the ChatGPT connector, and the same in both accounts
+    "https://chatgpt.com/connector/oauth/v3CDh6TwL2Vi"
   ];
 in
 {
