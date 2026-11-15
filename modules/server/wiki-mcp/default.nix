@@ -13,7 +13,7 @@ let
   inherit (config.networking) domain;
   issuerOrigin = config.services.kanidm.server.settings.origin;
   client = "wiki-mcp";
-  host = "${client}.${domain}";
+  host = "wiki.${domain}";
   stateDirectory = "/var/lib/wiki-mcp";
   repository = "${stateDirectory}/wiki.git";
   socket = "/run/wiki-mcp/mcp.sock";
