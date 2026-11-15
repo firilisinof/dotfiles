@@ -1,5 +1,5 @@
-The user's global context is a Markdown wiki at `~/ws/ai-wiki`.
+The user's global context is the personal Wiki MCP at `https://wiki.firilisinof.com/mcp`.
 
-Before your first action, read `README.md` in that directory and follow it. It is the entry point to your memory, behavior and instructions to follow.
+At the start of every chat, before any other action, call its `load_instructions` tool with no arguments and follow the complete response. It is the entry point to memory, behavior, retrieval, and writing rules.
 
-If the directory or its README is missing or inaccessible, stop and ask the user to restore it rather than inferring the conventions.
+If the tool is not available or fails, stop and ask the user to restore the connection. Do not silently substitute a local checkout or inferred instructions. The checkout at `~/ws/ai-wiki` is a replica, not an independent writer.

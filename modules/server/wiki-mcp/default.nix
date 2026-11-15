@@ -18,7 +18,19 @@ let
   repository = "${stateDirectory}/wiki.git";
   socket = "/run/wiki-mcp/mcp.sock";
   secret = "kanidm/wiki-mcp-secret";
+  githubKey = "wiki-mcp/github-key";
+  githubRemote = "git@github.com:firilisinof/ai-wiki.git";
   scope = "wiki:memory";
+
+  githubKnownHosts = pkgs.writeText "wiki-mcp-known-hosts" ''
+    github.com ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOMqqnkVzrm0SdG6UOoqKLsabgH5C9okWi0dh2l9GKJl
+  '';
+  gitSsh = pkgs.writeShellScript "wiki-mcp-ssh" ''
+    exec ${lib.getExe' pkgs.openssh "ssh"} -F /dev/null \
+      -i "$CREDENTIALS_DIRECTORY/github-key" \
+      -o IdentitiesOnly=yes -o BatchMode=yes -o StrictHostKeyChecking=yes \
+      -o UserKnownHostsFile=${githubKnownHosts} "$@"
+  '';
 
   redirects = [
     "https://claude.ai/api/mcp/auth_callback"
@@ -61,6 +73,8 @@ in
     restartUnits = [ "kanidm.service" ];
   };
 
+  sops.secrets.${githubKey}.restartUnits = [ "wiki-mcp.service" ];
+
   services.kanidm.provision = {
     groups."wiki-mcp.users" = { };
     persons.lucas.groups = [ "wiki-mcp.users" ];
@@ -82,6 +96,8 @@ in
     after = [ "network-online.target" ];
     wants = [ "network-online.target" ];
     environment = environment // {
+      WIKI_MCP_PUSH_REMOTE = "origin";
+      GIT_SSH_COMMAND = "${gitSsh}";
       WIKI_MCP_LISTEN = "unix:${socket}";
       WIKI_MCP_ISSUER = "${issuerOrigin}/oauth2/openid/${client}";
       WIKI_MCP_AUDIENCE = client;
@@ -96,9 +112,11 @@ in
       if [ ! -d ${repository} ]; then
         ${lib.getExe pkgs.git} init --quiet --bare --initial-branch=main ${repository}
       fi
+      ${lib.getExe pkgs.git} --git-dir=${repository} config remote.origin.url ${lib.escapeShellArg githubRemote}
     '';
     serviceConfig = {
       ExecStart = "${lib.getExe pkgs.wiki-mcp} serve";
+      LoadCredential = [ "github-key:${config.sops.secrets.${githubKey}.path}" ];
       User = user;
       Group = user;
       StateDirectory = "wiki-mcp";
@@ -124,5 +142,8 @@ in
   };
 
   # the index and the model are rebuilt from the repository and the package
-  services.restic.backups.b2.paths = [ repository ];
+  services.restic.backups.b2 = {
+    paths = [ repository ];
+    stopUnits = [ "wiki-mcp.service" ];
+  };
 }
