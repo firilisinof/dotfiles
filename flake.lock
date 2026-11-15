@@ -1,5 +1,21 @@
 {
   "nodes": {
+    "account-switch": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1794570856,
+        "narHash": "sha256-ARoddzBcCnecQcj91N5nHaOW0crYyW2o1oMN63NiWmM=",
+        "owner": "firilisinof",
+        "repo": "account-switch",
+        "rev": "3dad6b8e705150310cce25f4cedb5833663eb931",
+        "type": "github"
+      },
+      "original": {
+        "owner": "firilisinof",
+        "repo": "account-switch",
+        "type": "github"
+      }
+    },
     "autopilot": {
       "inputs": {
         "nixpkgs": [
@@ -243,6 +259,7 @@
     },
     "root": {
       "inputs": {
+        "account-switch": "account-switch",
         "autopilot": "autopilot",
         "determinate": "determinate",
         "flake-parts": "flake-parts",

@@ -44,6 +44,11 @@
       inputs.systems.follows = "systems";
       inputs.parts.follows = "flake-parts";
     };
+    # the Codex account switcher has no flake, only a package.nix
+    account-switch = {
+      url = "github:firilisinof/account-switch";
+      flake = false;
+    };
     nixos-hardware = {
       url = "github:NixOS/nixos-hardware/master";
       inputs.nixpkgs.follows = "nixpkgs";
