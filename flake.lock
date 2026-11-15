@@ -273,6 +273,7 @@
         "systems": "systems",
         "things": "things",
         "treefmt-nix": "treefmt-nix",
+        "wiki-mcp": "wiki-mcp",
         "zotero-mcp": "zotero-mcp"
       }
     },
@@ -355,6 +356,29 @@
       "original": {
         "owner": "numtide",
         "repo": "treefmt-nix",
+        "type": "github"
+      }
+    },
+    "wiki-mcp": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ],
+        "systems": [
+          "systems"
+        ]
+      },
+      "locked": {
+        "lastModified": 1794775474,
+        "narHash": "sha256-N4IhjowlO4aaFoTtDplN0L6BKHlToSrkuCGot4pKgw4=",
+        "owner": "firilisinof",
+        "repo": "wiki-mcp",
+        "rev": "b8e3249147e3f4c678cb062330cbde3bf157b721",
+        "type": "github"
+      },
+      "original": {
+        "owner": "firilisinof",
+        "repo": "wiki-mcp",
         "type": "github"
       }
     },

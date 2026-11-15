@@ -9,6 +9,7 @@ let
   # packages from flakes outside nixpkgs, for every host
   overlay = final: _: {
     mcp = inputs.mcp.packages.${final.stdenv.hostPlatform.system}.default;
+    wiki-mcp = inputs.wiki-mcp.packages.${final.stdenv.hostPlatform.system}.default;
     things = inputs.things.packages.${final.stdenv.hostPlatform.system}.default;
     # an input instead of a fetcher, so evaluation on another system needs no build
     codex-login = final.callPackage (inputs.account-switch + "/package.nix") { };

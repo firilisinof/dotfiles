@@ -38,6 +38,12 @@
       inputs.nixpkgs.follows = "nixpkgs";
       inputs.systems.follows = "systems";
     };
+    # the wiki MCP service served from the pi5
+    wiki-mcp = {
+      url = "github:firilisinof/wiki-mcp";
+      inputs.nixpkgs.follows = "nixpkgs";
+      inputs.systems.follows = "systems";
+    };
     things = {
       url = "github:stepbrobd/things";
       inputs.nixpkgs.follows = "nixpkgs";
