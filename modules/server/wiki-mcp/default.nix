@@ -22,6 +22,7 @@ let
 
   redirects = [
     "https://claude.ai/api/mcp/auth_callback"
+    "https://chatgpt.com/connector/oauth/9pafN9BwjnlO"
   ];
 
   environment = {
