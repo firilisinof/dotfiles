@@ -16,6 +16,10 @@ let
     ];
   });
   ortie = lib.getExe ortiePackage;
+  # the first sign-in of an account, for a host without a browser
+  googleLogin = pkgs.writers.writePython3Bin "google-login" { flakeIgnore = [ "E501" ]; } (
+    builtins.replaceStrings [ "@ortie@" ] [ ortie ] (builtins.readFile ./google-login.py)
+  );
   tokens = "${home.xdg.stateHome}/ortie";
   # label and address of each Google account
   google = {
@@ -29,6 +33,7 @@ in
     home.packages = [
       pkgs.himalaya
       ortiePackage
+      googleLogin
     ];
     xdg.configFile."himalaya/config.toml".source = toml.generate "himalaya-config.toml" {
       accounts = lib.mapAttrs (name: email: {
