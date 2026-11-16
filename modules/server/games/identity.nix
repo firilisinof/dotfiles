@@ -1,38 +1,30 @@
-{ config, lib, ... }:
+{ config, ... }:
 
 let
-  inherit (config.networking) domain;
-  clients = {
-    romm = "https://games.${domain}";
-    ggrequestz = "https://requestz.${domain}";
-  };
+  origin = "https://games.${config.networking.domain}";
 in
 {
-  sops.secrets = lib.mapAttrs' (
-    name: _:
-    lib.nameValuePair "games/${name}-oidc-secret" {
-      group = "kanidm";
-      mode = "0440";
-      restartUnits = [ "kanidm.service" ];
-    }
-  ) clients;
+  sops.secrets."games/romm-oidc-secret" = {
+    group = "kanidm";
+    mode = "0440";
+    restartUnits = [ "kanidm.service" ];
+  };
   services.kanidm.provision = {
     groups."games.admins" = { };
     persons.lucas.groups = [ "games.admins" ];
-    systems.oauth2 = lib.mapAttrs (name: origin: {
-      displayName = if name == "romm" then "Game library" else "Game requests";
+    systems.oauth2.romm = {
+      displayName = "Game library";
       originLanding = "${origin}/";
-      originUrl = "${origin}" + (if name == "romm" then "/api/oauth/openid" else "/api/auth/callback");
-      basicSecretFile = config.sops.secrets."games/${name}-oidc-secret".path;
-      allowInsecureClientDisablePkce = name == "ggrequestz";
+      originUrl = "${origin}/api/oauth/openid";
+      basicSecretFile = config.sops.secrets."games/romm-oidc-secret".path;
       preferShortUsername = true;
       scopeMaps."games.admins" = [
         "openid"
         "email"
         "profile"
-      ]
-      ++ lib.optional (name == "romm") "games_role";
+        "games_role"
+      ];
       claimMaps.games_role.valuesByGroup."games.admins" = [ "admin" ];
-    }) clients;
+    };
   };
 }

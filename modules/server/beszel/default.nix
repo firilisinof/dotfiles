@@ -53,7 +53,6 @@ in
           SERVICE_PATTERNS = lib.concatStringsSep "," [
             "beszel*"
             "caddy*"
-            "ggrequestz*"
             "git-mirror*"
             "kanidm*"
             "mysql*"
@@ -67,7 +66,6 @@ in
             "redis-nextcloud*"
             "redis-romm*"
             "restic-*"
-            "romarr*"
             "romm*"
             "sshd*"
             "tailscaled*"

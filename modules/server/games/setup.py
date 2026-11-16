@@ -60,7 +60,7 @@ def configure_romm():
     password = secret("romm-admin-password")
     admin = API(api.url, basic("lucas", password))
     try:
-        users = admin.request("/users")
+        admin.request("/users")
     except urllib.error.HTTPError as error:
         if error.code not in (401, 403):
             raise
@@ -73,55 +73,7 @@ def configure_romm():
                 "role": "admin",
             },
         )
-        users = admin.request("/users")
-    groups = admin.request("/permissions/groups")
-    viewer = next(group["id"] for group in groups if group["system_key"] == "viewer")
-    names = {user["username"]: user for user in users}
-    for username in ("romarr", "ggrequestz"):
-        if username not in names:
-            names[username] = admin.request(
-                "/users",
-                {
-                    "username": username,
-                    "email": f"{username}@{DOMAIN}",
-                    "password": secret(f"{username}-library-password"),
-                    "role": "user",
-                },
-            )
-        overrides = []
-        if username == "romarr":
-            overrides = [{"entity": "tasks", "action": "write", "granted": True}]
-        admin.request(
-            f"/permissions/users/{names[username]['id']}",
-            {"set_group": True, "permission_group_id": viewer, "overrides": overrides},
-            "PUT",
-        )
-    print("RomM administrator and integration accounts verified")
-
-
-def configure_qbittorrent():
-    cookies = http.cookiejar.CookieJar()
-    client = urllib.request.build_opener(urllib.request.HTTPCookieProcessor(cookies))
-    base = f"https://torrents.{DOMAIN}/api/v2/"
-
-    def request(path, data=None):
-        encoded = None if data is None else urllib.parse.urlencode(data).encode()
-        req = urllib.request.Request(base + path, data=encoded)
-        with client.open(req, timeout=30) as response:
-            return response.read()
-
-    password = secret("qbittorrent-password")
-    request("auth/login", {"username": "lucas", "password": password})
-    try:
-        categories = json.loads(request("torrents/categories"))
-        path = "/srv/media/downloads/romarr"
-        if "romarr" not in categories:
-            request("torrents/createCategory", {"category": "romarr", "savePath": path})
-        elif categories["romarr"]["savePath"] != path:
-            raise ValueError(f"qBittorrent category romarr must use {path}")
-    finally:
-        request("auth/logout", {})
-    print("qBittorrent game category verified")
+    print("RomM administrator verified")
 
 
 def configure_prowlarr():
@@ -160,94 +112,11 @@ def configure_prowlarr():
     print("Prowlarr login and BlueRoms source verified")
 
 
-def configure_romarr():
-    api = API(
-        "http://127.0.0.1:6868/api/v1",
-        {"X-Api-Key": secret("romarr-api-key")},
-    )
-    settings = api.wait("/config")
-    api.request(
-        "/config",
-        {
-            "rename_on_import": False,
-            "overwrite_existing": False,
-            "rss_sync_interval_minutes": 0,
-            "list_sync_interval_hours": 0,
-            "search_missing_interval_hours": 12,
-            "max_size_mb": 65536,
-            "auto_update": False,
-        },
-        "PUT",
-    )
-    # ROMarr seeds the library from its environment once and then keeps its own copy
-    libraries = api.request("/library/config")["items"]
-    library = next(item for item in libraries if item.get("type") == "romm")
-    library["url"] = f"https://games.{DOMAIN}"
-    api.request("/library", library)
-    check = api.request("/library/test", library)
-    if not check.get("ok") or not check.get("path_ok"):
-        raise ValueError(f"ROMarr cannot use the RomM library: {check}")
-    indexers = api.request("/indexer")["items"]
-    existing = next((item for item in indexers if item.get("type") == "prowlarr"), {})
-    api.request(
-        "/indexer",
-        {
-            **existing,
-            "name": "Prowlarr",
-            "type": "prowlarr",
-            "enable": True,
-            "url": f"https://prowlarr.{DOMAIN}",
-            "api_key": secret("prowlarr-api-key"),
-        },
-    )
-    clients = settings["download_clients"]
-    qbit = next((item for item in clients if item.get("type") == "qbittorrent"), {})
-    api.request(
-        "/downloadclient",
-        {
-            **qbit,
-            "name": "qBittorrent",
-            "type": "qbittorrent",
-            "enable": True,
-            "host": f"torrents.{DOMAIN}",
-            "port": 443,
-            "use_ssl": True,
-            "username": "lucas",
-            "password": secret("qbittorrent-password"),
-            "category": "romarr",
-        },
-    )
-    if not any(item.get("type") == "hub" for item in clients):
-        api.request(
-            "/downloadclient",
-            {
-                "name": "ROM Hub",
-                "type": "hub",
-                "enable": True,
-                "save_path": "/srv/media/downloads/romarr/hub",
-            },
-        )
-    plugins = api.request("/hub/plugins")
-    rows = plugins["items"]
-    for slug in ("archive-org", "nointro-archive"):
-        plugin = next((row for row in rows if row.get("slug") == slug), {})
-        if not plugin.get("installed"):
-            api.request("/hub/plugin", {"slug": slug, "action": "install"})
-        api.request("/hub/plugin", {"slug": slug, "action": "enable"})
-    print(
-        "ROMarr acquisition, request-only defaults, and Archive.org sources configured"
-    )
-
-
 def main():
     print("Configuring RomM", flush=True)
     configure_romm()
-    print("Configuring qBittorrent", flush=True)
-    configure_qbittorrent()
     print("Configuring Prowlarr", flush=True)
     configure_prowlarr()
-    print("Configuring ROMarr", flush=True)
-    configure_romarr()
 
 
 if __name__ == "__main__":
