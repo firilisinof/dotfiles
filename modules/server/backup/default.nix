@@ -68,8 +68,12 @@ let
     status=0
     for unit in ${lib.escapeShellArgs job.stopUnits}; do
       if [ -e "${stoppedDirectory name}/$unit" ]; then
-        ${lib.getExe' pkgs.coreutils "rm"} -f "${stoppedDirectory name}/$unit"
-        ${lib.getExe' pkgs.systemd "systemctl"} start "$unit" || status=1
+        # queue every restart so one unhealthy service cannot block the others
+        if ${lib.getExe' pkgs.systemd "systemctl"} start --no-block "$unit"; then
+          ${lib.getExe' pkgs.coreutils "rm"} -f "${stoppedDirectory name}/$unit"
+        else
+          status=1
+        fi
       fi
     done
     exit "$status"

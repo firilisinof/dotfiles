@@ -128,11 +128,12 @@ in
     allowedUDPPorts = [ 53 ];
   };
 
-  systemd.tmpfiles.rules = map (path: "d ${state}/${path} 0700 root root - -") [
-    ""
-    "database"
-    "attachments"
-    "beat"
+  systemd.tmpfiles.rules = [
+    "d ${state} 0700 root root - -"
+    # postgres owns its data directory after initialization
+    "d ${state}/database 0700 - - - -"
+    "d ${state}/attachments 0700 root root - -"
+    "d ${state}/beat 0700 root root - -"
   ];
 
   virtualisation.oci-containers.containers = {
