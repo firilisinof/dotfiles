@@ -59,7 +59,6 @@ in
             "nextcloud*"
             "nginx*"
             "phpfpm-nextcloud*"
-            "podman-*"
             "postgresql*"
             "qbittorrent*"
             "redis-nextcloud*"
@@ -72,6 +71,7 @@ in
             "tailscaled*"
             "vaultwarden*"
             "wifi-watchdog*"
+            "youtarr*"
           ];
         };
       };
