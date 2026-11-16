@@ -66,6 +66,10 @@ buildNpmPackage (finalAttrs: {
       --replace-fail \
         'server.listen(port, () => {' \
         "server.listen(port, process.env.HOST || '0.0.0.0', () => {"
+    # upstream hardcodes the image's locations of these two tools
+    substituteInPlace server/modules/configModule.js \
+      --replace-fail "'/usr/bin/ffmpeg'" "'${lib.getExe ffmpeg}'" \
+      --replace-fail "'/usr/bin/AtomicParsley'" "'${lib.getExe atomicparsley}'"
   '';
 
   # npm pack would leave out the client build, so install what the image copies
@@ -92,7 +96,8 @@ buildNpmPackage (finalAttrs: {
           deno
           ffmpeg
           finalAttrs.nodejs
-          python3
+          # the cookie validator imports yt-dlp as a module
+          (python3.withPackages (ps: [ ps.yt-dlp ]))
           yt-dlp
         ]
       }
