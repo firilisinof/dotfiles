@@ -17,8 +17,9 @@ Dates and times:
   Durations are minutes, or 45m, 2h, 1h30m.
 
 Environment:
-  GCAL_ACCOUNTS  Comma-separated accounts the views read, the first one receiving new events
-  GCAL_ORTIE     The ortie program that prints an access token, ortie by default
+  GCAL_ACCOUNTS   Comma-separated accounts the views read, the first one receiving new events
+  GCAL_ORTIE      The ortie program that prints an access token, ortie by default
+  GCAL_TIME_ZONE The zone typed times are in, such as Europe/Paris, the calendar's own by default
 
 Exit status:
   0  Success
@@ -159,14 +160,18 @@ fn parse_day(text: &str) -> Res<NaiveDate> {
     let today = Local::now().date_naive();
     match text.to_ascii_lowercase().as_str() {
         "today" => Ok(today),
-        "tomorrow" => today.succ_opt().ok_or_else(|| "date out of range".to_string()),
-        other => NaiveDate::parse_from_str(other, "%Y-%m-%d")
-            .map_err(|_| format!("`{text}` is not a date, expected today, tomorrow, or 2026-11-20")),
+        "tomorrow" => today
+            .succ_opt()
+            .ok_or_else(|| "date out of range".to_string()),
+        other => NaiveDate::parse_from_str(other, "%Y-%m-%d").map_err(|_| {
+            format!("`{text}` is not a date, expected today, tomorrow, or 2026-11-20")
+        }),
     }
 }
 
 fn parse_time(text: &str) -> Res<NaiveTime> {
-    NaiveTime::parse_from_str(text, "%H:%M").map_err(|_| format!("`{text}` is not a time, expected 14:00"))
+    NaiveTime::parse_from_str(text, "%H:%M")
+        .map_err(|_| format!("`{text}` is not a time, expected 14:00"))
 }
 
 /// Reads a day, a day and a time, or a time alone on `fallback`.
@@ -220,7 +225,9 @@ fn midnight(day: NaiveDate) -> Res<DateTime<Local>> {
 fn encode(text: &str) -> String {
     text.bytes()
         .map(|byte| match byte {
-            b'A'..=b'Z' | b'a'..=b'z' | b'0'..=b'9' | b'-' | b'_' | b'.' | b'~' => (byte as char).to_string(),
+            b'A'..=b'Z' | b'a'..=b'z' | b'0'..=b'9' | b'-' | b'_' | b'.' | b'~' => {
+                (byte as char).to_string()
+            }
             other => format!("%{other:02X}"),
         })
         .collect()
@@ -239,10 +246,13 @@ impl Client {
             .output()
             .map_err(|error| format!("cannot run {ortie}: {error}"))?;
         if !output.status.success() {
-            return Err(format!(
-                "no access token for account {account}: {}",
-                String::from_utf8_lossy(&output.stderr).trim()
-            ));
+            let reason = String::from_utf8_lossy(&output.stderr).trim().to_string();
+            let reason = if reason.is_empty() {
+                "is it signed in?".to_string()
+            } else {
+                reason
+            };
+            return Err(format!("no access token for account {account}: {reason}"));
         }
         Ok(Client {
             account: account.to_string(),
@@ -250,7 +260,13 @@ impl Client {
         })
     }
 
-    fn call(&self, method: &str, path: &str, query: &[(&str, String)], body: Option<&Value>) -> Res<Value> {
+    fn call(
+        &self,
+        method: &str,
+        path: &str,
+        query: &[(&str, String)],
+        body: Option<&Value>,
+    ) -> Res<Value> {
         let mut request = ureq::request(method, &format!("{API}{path}"))
             .set("Authorization", &format!("Bearer {}", self.token));
         for (key, value) in query {
@@ -262,17 +278,28 @@ impl Client {
         };
         match result {
             Ok(response) if response.status() == 204 => Ok(Value::Null),
-            Ok(response) => response.into_json().map_err(|error| format!("unreadable answer: {error}")),
+            Ok(response) => response
+                .into_json()
+                .map_err(|error| format!("unreadable answer: {error}")),
             Err(ureq::Error::Status(code, response)) => {
                 let answer: Value = response.into_json().unwrap_or(Value::Null);
                 let message = answer["error"]["message"].as_str().unwrap_or("no details");
-                Err(format!("Google answered {code} for account {}: {message}", self.account))
+                Err(format!(
+                    "Google answered {code} for account {}: {message}",
+                    self.account
+                ))
             }
             Err(error) => Err(format!("cannot reach Google: {error}")),
         }
     }
 
-    fn events(&self, calendar: &str, from: DateTime<Local>, to: DateTime<Local>, text: Option<&str>) -> Res<Vec<Value>> {
+    fn events(
+        &self,
+        calendar: &str,
+        from: DateTime<Local>,
+        to: DateTime<Local>,
+        text: Option<&str>,
+    ) -> Res<Vec<Value>> {
         let mut found = Vec::new();
         let mut page: Option<String> = None;
         loop {
@@ -289,7 +316,12 @@ impl Client {
             if let Some(token) = &page {
                 query.push(("pageToken", token.clone()));
             }
-            let answer = self.call("GET", &format!("/calendars/{}/events", encode(calendar)), &query, None)?;
+            let answer = self.call(
+                "GET",
+                &format!("/calendars/{}/events", encode(calendar)),
+                &query,
+                None,
+            )?;
             for event in answer["items"].as_array().into_iter().flatten() {
                 found.push(simplify(&self.account, calendar, event));
             }
@@ -304,8 +336,20 @@ impl Client {
         format!("/calendars/{}/events/{}", encode(calendar), encode(id))
     }
 
+    /// The zone typed times are in: the user's, which a calendar set up elsewhere does not share.
     fn time_zone(&self, calendar: &str) -> Res<String> {
-        let answer = self.call("GET", &format!("/calendars/{}", encode(calendar)), &[], None)?;
+        if let Some(zone) = std::env::var("GCAL_TIME_ZONE")
+            .ok()
+            .filter(|zone| !zone.is_empty())
+        {
+            return Ok(zone);
+        }
+        let answer = self.call(
+            "GET",
+            &format!("/calendars/{}", encode(calendar)),
+            &[],
+            None,
+        )?;
         answer["timeZone"]
             .as_str()
             .map(str::to_string)
@@ -316,7 +360,12 @@ impl Client {
 /// The fields worth showing, under stable names.
 fn simplify(account: &str, calendar: &str, event: &Value) -> Value {
     let all_day = event["start"]["date"].is_string();
-    let edge = |side: &str| event[side]["dateTime"].as_str().or(event[side]["date"].as_str()).map(str::to_string);
+    let edge = |side: &str| {
+        event[side]["dateTime"]
+            .as_str()
+            .or(event[side]["date"].as_str())
+            .map(str::to_string)
+    };
     let guests: Vec<Value> = event["attendees"]
         .as_array()
         .into_iter()
@@ -348,22 +397,33 @@ fn instant(event: &Value, side: &str) -> Option<DateTime<Local>> {
     if event["all_day"].as_bool().unwrap_or(false) {
         midnight(NaiveDate::parse_from_str(text, "%Y-%m-%d").ok()?).ok()
     } else {
-        Some(DateTime::parse_from_rfc3339(text).ok()?.with_timezone(&Local))
+        Some(
+            DateTime::parse_from_rfc3339(text)
+                .ok()?
+                .with_timezone(&Local),
+        )
     }
 }
 
 fn line(event: &Value, with_account: bool) -> String {
     let start = instant(event, "start");
-    let day = start.map(|start| start.format("%Y-%m-%d %a").to_string()).unwrap_or_default();
+    let day = start
+        .map(|start| start.format("%Y-%m-%d %a").to_string())
+        .unwrap_or_default();
     let hours = if event["all_day"].as_bool().unwrap_or(false) {
         "all day".to_string()
     } else {
         match (start, instant(event, "end")) {
-            (Some(start), Some(end)) => format!("{}-{}", start.format("%H:%M"), end.format("%H:%M")),
+            (Some(start), Some(end)) => {
+                format!("{}-{}", start.format("%H:%M"), end.format("%H:%M"))
+            }
             _ => String::new(),
         }
     };
-    let mut text = format!("{day}  {hours:<11}  {}", event["title"].as_str().unwrap_or(""));
+    let mut text = format!(
+        "{day}  {hours:<11}  {}",
+        event["title"].as_str().unwrap_or("")
+    );
     if event["repeats"].as_bool().unwrap_or(false) {
         text.push_str(" (repeats)");
     }
@@ -415,11 +475,18 @@ fn accounts(cli: &Cli) -> Res<Vec<String>> {
 }
 
 fn view(cli: &Cli, from: NaiveDate, days: u64, text: Option<&str>) -> Res<()> {
-    let end = from.checked_add_days(Days::new(days)).ok_or("date out of range")?;
+    let end = from
+        .checked_add_days(Days::new(days))
+        .ok_or("date out of range")?;
     let names = accounts(cli)?;
     let mut events = Vec::new();
     for name in &names {
-        events.extend(Client::open(name)?.events(&cli.calendar, midnight(from)?, midnight(end)?, text)?);
+        events.extend(Client::open(name)?.events(
+            &cli.calendar,
+            midnight(from)?,
+            midnight(end)?,
+            text,
+        )?);
     }
     events.sort_by_key(|event| instant(event, "start"));
     if cli.json {
@@ -445,7 +512,10 @@ fn locate(cli: &Cli, id: &str) -> Res<(Client, Value)> {
             Err(error) => return Err(error),
         }
     }
-    Err(format!("no event {id} in calendar {}: {missing}", cli.calendar))
+    Err(format!(
+        "no event {id} in calendar {}: {missing}",
+        cli.calendar
+    ))
 }
 
 fn print_event(cli: &Cli, account: &str, event: &Value) {
@@ -472,18 +542,25 @@ fn span(start: &str, end: Option<&str>, duration: Option<&str>, zone: &str) -> R
             let last = match (end, duration) {
                 (Some(end), _) => match parse_when(end, first)? {
                     When::Day(day) => day,
-                    When::Time(_) => return Err("an all-day event ends on a day, not at a time".to_string()),
+                    When::Time(_) => {
+                        return Err("an all-day event ends on a day, not at a time".to_string())
+                    }
                 },
                 (None, Some(duration)) => {
                     let days = (parse_duration(duration)?.num_minutes() as u64).div_ceil(1440);
-                    first.checked_add_days(Days::new(days.max(1) - 1)).ok_or("date out of range")?
+                    first
+                        .checked_add_days(Days::new(days.max(1) - 1))
+                        .ok_or("date out of range")?
                 }
                 (None, None) => first,
             };
             if last < first {
                 return Err("the event ends before it starts".to_string());
             }
-            Ok((day_edge(first), day_edge(last.succ_opt().ok_or("date out of range")?)))
+            Ok((
+                day_edge(first),
+                day_edge(last.succ_opt().ok_or("date out of range")?),
+            ))
         }
         When::Time(first) => {
             let last = match (end, duration) {
@@ -503,7 +580,9 @@ fn span(start: &str, end: Option<&str>, duration: Option<&str>, zone: &str) -> R
 }
 
 fn rule(args: &NewArgs, all_day: bool) -> Res<Option<String>> {
-    let Some(repeat) = &args.repeat else { return Ok(None) };
+    let Some(repeat) = &args.repeat else {
+        return Ok(None);
+    };
     let upper = repeat.to_ascii_uppercase();
     if upper.starts_with("RRULE:") {
         return Ok(Some(upper));
@@ -512,7 +591,9 @@ fn rule(args: &NewArgs, all_day: bool) -> Res<Option<String>> {
         return Ok(Some(format!("RRULE:{upper}")));
     }
     if !["DAILY", "WEEKLY", "MONTHLY", "YEARLY"].contains(&upper.as_str()) {
-        return Err(format!("`{repeat}` is not daily, weekly, monthly, yearly, or an RRULE"));
+        return Err(format!(
+            "`{repeat}` is not daily, weekly, monthly, yearly, or an RRULE"
+        ));
     }
     let mut text = format!("RRULE:FREQ={upper}");
     if let Some(every) = args.every {
@@ -528,14 +609,20 @@ fn rule(args: &NewArgs, all_day: bool) -> Res<Option<String>> {
         } else {
             // the last moment of that local day, which the rule wants in UTC
             let last = midnight(day.succ_opt().ok_or("date out of range")?)? - Duration::seconds(1);
-            text.push_str(&format!(";UNTIL={}", last.with_timezone(&Utc).format("%Y%m%dT%H%M%SZ")));
+            text.push_str(&format!(
+                ";UNTIL={}",
+                last.with_timezone(&Utc).format("%Y%m%dT%H%M%SZ")
+            ));
         }
     }
     Ok(Some(text))
 }
 
 fn meeting() -> Value {
-    let id = format!("gcal-{}", Utc::now().timestamp_nanos_opt().unwrap_or_default());
+    let id = format!(
+        "gcal-{}",
+        Utc::now().timestamp_nanos_opt().unwrap_or_default()
+    );
     json!({ "createRequest": { "requestId": id, "conferenceSolutionKey": { "type": "hangoutsMeet" } } })
 }
 
@@ -543,7 +630,12 @@ fn create(cli: &Cli, args: &NewArgs) -> Res<()> {
     let name = accounts(cli)?.remove(0);
     let client = Client::open(&name)?;
     let zone = client.time_zone(&cli.calendar)?;
-    let (start, end) = span(&args.start, args.end.as_deref(), args.duration.as_deref(), &zone)?;
+    let (start, end) = span(
+        &args.start,
+        args.end.as_deref(),
+        args.duration.as_deref(),
+        &zone,
+    )?;
     let all_day = start["date"].is_string();
     let mut body = Map::new();
     body.insert("summary".into(), json!(args.title));
@@ -559,14 +651,26 @@ fn create(cli: &Cli, args: &NewArgs) -> Res<()> {
         body.insert("recurrence".into(), json!([rule]));
     }
     if !args.invite.is_empty() {
-        let guests: Vec<Value> = args.invite.iter().map(|email| json!({ "email": email })).collect();
+        let guests: Vec<Value> = args
+            .invite
+            .iter()
+            .map(|email| json!({ "email": email }))
+            .collect();
         body.insert("attendees".into(), json!(guests));
     }
     if args.meet {
         body.insert("conferenceData".into(), meeting());
     }
     let query = [
-        ("sendUpdates", if args.invite.is_empty() { "none" } else { "all" }.to_string()),
+        (
+            "sendUpdates",
+            if args.invite.is_empty() {
+                "none"
+            } else {
+                "all"
+            }
+            .to_string(),
+        ),
         ("conferenceDataVersion", "1".to_string()),
     ];
     let path = format!("/calendars/{}/events", encode(&cli.calendar));
@@ -591,7 +695,9 @@ fn edit(cli: &Cli, args: &EditArgs) -> Res<()> {
         let now = simplify(&client.account, &cli.calendar, &current);
         let all_day = now["all_day"].as_bool().unwrap_or(false);
         let (was_start, was_end) = (instant(&now, "start"), instant(&now, "end"));
-        let (was_start, was_end) = was_start.zip(was_end).ok_or("the event has no readable time")?;
+        let (was_start, was_end) = was_start
+            .zip(was_end)
+            .ok_or("the event has no readable time")?;
         let shown = |moment: DateTime<Local>| {
             if all_day {
                 moment.format("%Y-%m-%d").to_string()
@@ -606,10 +712,7 @@ fn edit(cli: &Cli, args: &EditArgs) -> Res<()> {
             (None, None) => Some(kept),
             (_, duration) => duration.clone(),
         };
-        let zone = match current["start"]["timeZone"].as_str() {
-            Some(zone) => zone.to_string(),
-            None => client.time_zone(&cli.calendar)?,
-        };
+        let zone = client.time_zone(&cli.calendar)?;
         let (start, end) = span(&start, args.end.as_deref(), duration.as_deref(), &zone)?;
         body.insert("start".into(), start);
         body.insert("end".into(), end);
@@ -626,7 +729,10 @@ fn edit(cli: &Cli, args: &EditArgs) -> Res<()> {
         return Err("nothing to change".to_string());
     }
     let query = [
-        ("sendUpdates", if args.silent { "none" } else { "all" }.to_string()),
+        (
+            "sendUpdates",
+            if args.silent { "none" } else { "all" }.to_string(),
+        ),
         ("conferenceDataVersion", "1".to_string()),
     ];
     let path = Client::event_path(&cli.calendar, &args.id);
@@ -658,7 +764,11 @@ fn calendars(cli: &Cli) -> Res<()> {
                 "[{}]  {}{}  ({})  {}",
                 calendar["account"].as_str().unwrap_or(""),
                 calendar["name"].as_str().unwrap_or(""),
-                if calendar["primary"].as_bool().unwrap_or(false) { " (primary)" } else { "" },
+                if calendar["primary"].as_bool().unwrap_or(false) {
+                    " (primary)"
+                } else {
+                    ""
+                },
                 calendar["access"].as_str().unwrap_or(""),
                 calendar["id"].as_str().unwrap_or(""),
             );
@@ -697,8 +807,16 @@ fn run(cli: &Cli) -> Res<()> {
         Cmd::Edit(args) => edit(cli, args),
         Cmd::Delete { id, silent } => {
             let (client, _) = locate(cli, id)?;
-            let query = [("sendUpdates", if *silent { "none" } else { "all" }.to_string())];
-            client.call("DELETE", &Client::event_path(&cli.calendar, id), &query, None)?;
+            let query = [(
+                "sendUpdates",
+                if *silent { "none" } else { "all" }.to_string(),
+            )];
+            client.call(
+                "DELETE",
+                &Client::event_path(&cli.calendar, id),
+                &query,
+                None,
+            )?;
             if cli.json {
                 println!("{}", json!({ "deleted": id, "account": client.account }));
             } else {

@@ -45,6 +45,7 @@ let
     postInstall = ''
       wrapProgram $out/bin/gcal \
         --set-default GCAL_ORTIE ${ortie} \
+        --set-default GCAL_TIME_ZONE ${config.time.timeZone} \
         --set-default GCAL_ACCOUNTS ${lib.concatStringsSep "," calendarAccounts}
     '';
     meta.mainProgram = "gcal";
