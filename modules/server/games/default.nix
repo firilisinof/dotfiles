@@ -352,8 +352,6 @@ in
     dumps."ggrequestz.dump" = "${podman} exec ggrequestz-db pg_dump -U ggrequestz -d ggrequestz -Fc";
     exclude = [
       "${state}/ggrequestz-database"
-      # container data kept until the native service is confirmed
-      "${state}/romarr"
       "${games}/resources"
       "${games}/cache"
     ];
