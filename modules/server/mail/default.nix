@@ -8,7 +8,14 @@
 let
   inherit (config.sops) placeholder;
   home = config.home-manager.users.lucas;
-  ortie = lib.getExe pkgs.ortie;
+  # the nixpkgs build lacks two libraries its dependencies link against
+  ortiePackage = pkgs.ortie.overrideAttrs (old: {
+    buildInputs = (old.buildInputs or [ ]) ++ [
+      pkgs.libgit2
+      pkgs.aws-lc
+    ];
+  });
+  ortie = lib.getExe ortiePackage;
   tokens = "${home.xdg.stateHome}/ortie";
   # label and address of each Google account
   google = {
@@ -21,7 +28,7 @@ in
   home-manager.users.lucas = {
     home.packages = [
       pkgs.himalaya
-      pkgs.ortie
+      ortiePackage
     ];
     xdg.configFile."himalaya/config.toml".source = toml.generate "himalaya-config.toml" {
       accounts = lib.mapAttrs (name: email: {
