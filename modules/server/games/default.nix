@@ -18,8 +18,6 @@ let
   # the setup script reads these from its credentials directory
   setupCredentials = {
     romm-admin-password = "games/romm-admin-password";
-    prowlarr-password = "prowlarr/password";
-    prowlarr-api-key = "prowlarr/api-key";
   };
   # starting romm.service alone leaves the units that require it stopped
   rommUnits = map (name: "${name}.service") [
@@ -129,16 +127,10 @@ in
         after = [ "mysql.service" ];
       };
       games-setup = {
-        description = "Create the game library administrator and configure Prowlarr";
+        description = "Create the game library administrator";
         wantedBy = [ "multi-user.target" ];
-        wants = rommUnits ++ [
-          "prowlarr.service"
-          "caddy.service"
-        ];
-        after = rommUnits ++ [
-          "prowlarr.service"
-          "caddy.service"
-        ];
+        wants = rommUnits ++ [ "caddy.service" ];
+        after = rommUnits ++ [ "caddy.service" ];
         environment = {
           GAMES_ADMIN_EMAIL = config.home-manager.users.lucas.programs.git.settings.user.email;
           GAMES_DOMAIN = domain;

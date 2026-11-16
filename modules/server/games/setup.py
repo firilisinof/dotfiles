@@ -76,47 +76,9 @@ def configure_romm():
     print("RomM administrator verified")
 
 
-def configure_prowlarr():
-    api = API(
-        "http://127.0.0.1:9696/api/v1",
-        {"X-Api-Key": secret("prowlarr-api-key")},
-    )
-    api.wait("/system/status")
-    host = api.request("/config/host")
-    host.update(
-        authenticationMethod="forms",
-        authenticationRequired="enabled",
-        username="lucas",
-        password=secret("prowlarr-password"),
-        passwordConfirmation=secret("prowlarr-password"),
-        applicationUrl=f"https://prowlarr.{DOMAIN}",
-        analyticsEnabled=False,
-    )
-    api.request(f"/config/host/{host['id']}", host, "PUT")
-    indexers = api.request("/indexer")
-    existing = next((item for item in indexers if item["name"] == "BlueRoms"), None)
-    if existing is None:
-        provider = next(
-            item
-            for item in api.request("/indexer/schema")
-            if item["name"] == "BlueRoms"
-        )
-        provider.pop("id", None)
-        profiles = api.request("/appprofile")
-        profile = next(item for item in profiles if item["name"] == "Standard")
-        provider.update(enable=True, priority=10, appProfileId=profile["id"])
-        api.request("/indexer/test", provider)
-        api.request("/indexer", provider)
-    else:
-        api.request("/indexer/test", existing)
-    print("Prowlarr login and BlueRoms source verified")
-
-
 def main():
     print("Configuring RomM", flush=True)
     configure_romm()
-    print("Configuring Prowlarr", flush=True)
-    configure_prowlarr()
 
 
 if __name__ == "__main__":

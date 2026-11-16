@@ -61,7 +61,6 @@ in
             "phpfpm-nextcloud*"
             "podman-*"
             "postgresql*"
-            "prowlarr*"
             "qbittorrent*"
             "redis-nextcloud*"
             "redis-romm*"
