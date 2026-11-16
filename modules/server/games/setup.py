@@ -179,6 +179,14 @@ def configure_romarr():
         },
         "PUT",
     )
+    # ROMarr seeds the library from its environment once and then keeps its own copy
+    libraries = api.request("/library/config")["items"]
+    library = next(item for item in libraries if item.get("type") == "romm")
+    library["url"] = f"https://games.{DOMAIN}"
+    api.request("/library", library)
+    check = api.request("/library/test", library)
+    if not check.get("ok") or not check.get("path_ok"):
+        raise ValueError(f"ROMarr cannot use the RomM library: {check}")
     indexers = api.request("/indexer")["items"]
     existing = next((item for item in indexers if item.get("type") == "prowlarr"), {})
     api.request(
