@@ -18,7 +18,9 @@ let
   ortie = lib.getExe ortiePackage;
   # the first sign-in of an account, for a host without a browser
   googleLogin = pkgs.writers.writePython3Bin "google-login" { flakeIgnore = [ "E501" ]; } (
-    builtins.replaceStrings [ "@ortie@" ] [ ortie ] (builtins.readFile ./google-login.py)
+    builtins.replaceStrings [ "@ortie@" "@state@" ] [ ortie home.xdg.stateHome ] (
+      builtins.readFile ./google-login.py
+    )
   );
   tokens = "${home.xdg.stateHome}/ortie";
   # label and address of each Google account
@@ -26,16 +28,75 @@ let
     personal = "roses.lucas404@gmail.com";
   };
   toml = pkgs.formats.toml { };
+  calendars = "${home.xdg.dataHome}/calendars";
+  secretCommand =
+    name:
+    "${builtins.toJSON [
+      "command"
+      (lib.getExe' pkgs.coreutils "cat")
+      config.sops.secrets.${name}.path
+    ]}";
 in
 {
-  # agents read and organize mail with himalaya, and ortie hands it the google access tokens
+  # agents read and organize mail with himalaya and calendars with khal, and ortie holds the google sign-ins
   home-manager.users.lucas = {
     home.packages = [
       pkgs.himalaya
+      pkgs.khal
+      pkgs.vdirsyncer
       ortiePackage
       googleLogin
     ];
+    # khal reads and writes local copies that vdirsyncer synchronizes with google
+    xdg.configFile."vdirsyncer/config".text = ''
+      [general]
+      status_path = "${home.xdg.stateHome}/vdirsyncer/status/"
+    ''
+    + lib.concatStrings (
+      lib.mapAttrsToList (name: _: ''
+
+        [pair ${name}]
+        a = "${name}_local"
+        b = "${name}_google"
+        collections = ["from b"]
+        conflict_resolution = "b wins"
+        metadata = ["displayname", "color"]
+
+        [storage ${name}_local]
+        type = "filesystem"
+        path = "${calendars}/${name}/"
+        fileext = ".ics"
+
+        [storage ${name}_google]
+        type = "google_calendar"
+        token_file = "${home.xdg.stateHome}/vdirsyncer/google-${name}.json"
+        client_id.fetch = ${secretCommand "google/oauth-client-id"}
+        client_secret.fetch = ${secretCommand "google/oauth-client-secret"}
+      '') google
+    );
+    xdg.configFile."khal/config".text = ''
+      [calendars]
+    ''
+    + lib.concatStrings (
+      lib.mapAttrsToList (name: _: ''
+        [[${name}]]
+        path = ${calendars}/${name}/*
+        type = discover
+      '') google
+    )
+    + ''
+
+      [locale]
+      timeformat = %H:%M
+      dateformat = %Y-%m-%d
+      longdateformat = %Y-%m-%d
+      datetimeformat = %Y-%m-%d %H:%M
+      longdatetimeformat = %Y-%m-%d %H:%M
+      firstweekday = 0
+    '';
     xdg.configFile."himalaya/config.toml".source = toml.generate "himalaya-config.toml" {
+      # dates otherwise keep the offset of the sender's server
+      envelope.list.datetime-local-tz = true;
       accounts = lib.mapAttrs (name: email: {
         inherit email;
         default = name == "personal";
@@ -50,8 +111,9 @@ in
     };
   };
 
-  sops.secrets."google/oauth-client-id" = { };
-  sops.secrets."google/oauth-client-secret" = { };
+  # vdirsyncer reads both as the user
+  sops.secrets."google/oauth-client-id".owner = "lucas";
+  sops.secrets."google/oauth-client-secret".owner = "lucas";
 
   # the client id cannot come from a command, so the whole file is rendered
   sops.templates."ortie-config.toml" = {
