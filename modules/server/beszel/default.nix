@@ -53,6 +53,7 @@ in
           SERVICE_PATTERNS = lib.concatStringsSep "," [
             "beszel*"
             "caddy*"
+            "ggrequestz*"
             "git-mirror*"
             "kanidm*"
             "mysql*"
@@ -60,6 +61,7 @@ in
             "nginx*"
             "phpfpm-nextcloud*"
             "podman-*"
+            "postgresql*"
             "prowlarr*"
             "qbittorrent*"
             "redis-nextcloud*"

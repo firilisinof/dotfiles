@@ -8,13 +8,13 @@
 let
   inherit (config.sops) placeholder secrets;
   inherit (config.networking) domain;
-  podman = lib.getExe config.virtualisation.podman.package;
   auth = config.services.kanidm.server.settings.origin;
   state = "/srv/games-state";
   games = "/srv/games";
   library = "${games}/library";
   staging = "/srv/media/downloads/romarr";
-  network = "games";
+  ggrequestz = pkgs.callPackage ./packages/ggrequestz.nix { };
+  postgresql = config.services.postgresql.package;
   romarr = pkgs.callPackage ./packages/romarr.nix { };
   romarrState = "/var/lib/romarr";
   database = config.services.mysql.package;
@@ -37,10 +37,6 @@ let
     prowlarr-api-key = "prowlarr/api-key";
     qbittorrent-password = "qbittorrent/admin-password";
   };
-  containers = [
-    "ggrequestz-db"
-    "ggrequestz"
-  ];
   # starting romm.service alone leaves the units that require it stopped
   rommUnits = map (name: "${name}.service") [
     "romm"
@@ -49,7 +45,7 @@ let
     "romm-watcher"
   ];
   appUnits = [
-    "podman-ggrequestz.service"
+    "ggrequestz.service"
     "romarr.service"
   ]
   ++ rommUnits;
@@ -60,12 +56,10 @@ in
   ];
 
   users.groups.media.gid = 987;
-  networking.firewall.interfaces.games0 = {
-    allowedTCPPorts = [
-      53
-      443
-    ];
-    allowedUDPPorts = [ 53 ];
+  users.groups.ggrequestz = { };
+  users.users.ggrequestz = {
+    isSystemUser = true;
+    group = "ggrequestz";
   };
   users.users.romarr = {
     isSystemUser = true;
@@ -87,7 +81,6 @@ in
     "ggrequestz-library-password"
     "romarr-password"
     "romarr-api-key"
-    "ggrequestz-database-password"
     "ggrequestz-session-secret"
   ]) (_: { });
 
@@ -104,7 +97,6 @@ in
     LIBRARY_PASSWORD=${placeholder."games/romarr-library-password"}
   '';
   sops.templates."ggrequestz.env".content = ''
-    POSTGRES_PASSWORD=${placeholder."games/ggrequestz-database-password"}
     SESSION_SECRET=${placeholder."games/ggrequestz-session-secret"}
     IGDB_CLIENT_ID=${placeholder."games/igdb-client-id"}
     IGDB_CLIENT_SECRET=${placeholder."games/igdb-client-secret"}
@@ -117,8 +109,6 @@ in
 
   systemd.tmpfiles.rules = [
     "d ${library}/roms 2770 romarr media - -"
-    "d ${state} 0750 root root - -"
-    "d ${state}/ggrequestz-database 0700 - - - -"
     "d ${staging} 2770 qbittorrent media - -"
     "d ${staging}/hub 2770 romarr media - -"
   ];
@@ -170,6 +160,15 @@ in
       OIDC_ROLE_ADMIN = "admin";
     };
   };
+  services.postgresql = {
+    ensureDatabases = [ "ggrequestz" ];
+    ensureUsers = [
+      {
+        name = "ggrequestz";
+        ensureDBOwnership = true;
+      }
+    ];
+  };
   services.mysql = {
     ensureDatabases = [ "romm" ];
     ensureUsers = [
@@ -186,63 +185,7 @@ in
     }
   ];
 
-  virtualisation.oci-containers.containers = {
-    ggrequestz-db = {
-      image = "docker.io/library/postgres@sha256:aae6554de426ae1990f1a939ff183a0299146cf7142a6f4c379c3357af9cc2d8";
-      autoRemoveOnStop = false;
-      networks = [ network ];
-      environment = {
-        POSTGRES_DB = "ggrequestz";
-        POSTGRES_USER = "ggrequestz";
-        POSTGRES_PASSWORD_FILE = "/run/secrets/password";
-        POSTGRES_INITDB_ARGS = "--encoding=UTF-8 --lc-collate=C --lc-ctype=C";
-      };
-      volumes = [
-        "${state}/ggrequestz-database:/var/lib/postgresql/data"
-        "${secrets."games/ggrequestz-database-password".path}:/run/secrets/password:ro"
-      ];
-    };
-    ggrequestz = {
-      image = "ghcr.io/xtreemmak/ggrequestz@sha256:32a55965b4d76bbe3dc8d0552afd882f74d6ed8c494ee6a4355ba7573f038466";
-      autoRemoveOnStop = false;
-      networks = [ network ];
-      dependsOn = [ "ggrequestz-db" ];
-      ports = [ "127.0.0.1:3088:3000" ];
-      environmentFiles = [ config.sops.templates."ggrequestz.env".path ];
-      environment = {
-        NODE_ENV = "production";
-        TZ = config.time.timeZone;
-        POSTGRES_HOST = "ggrequestz-db";
-        POSTGRES_PORT = "5432";
-        POSTGRES_DB = "ggrequestz";
-        POSTGRES_USER = "ggrequestz";
-        POSTGRES_POOL_MAX = "5";
-        PM2_INSTANCES = "1";
-        AUTO_MIGRATE = "true";
-        AUTH_METHOD = "oidc";
-        OIDC_ISSUER_URL = "${auth}/oauth2/openid/ggrequestz";
-        OIDC_CLIENT_ID = "ggrequestz";
-        OIDC_PROVIDER_NAME = "Kanidm";
-        OIDC_REDIRECT_URI = "${url.requestz}/api/auth/callback";
-        OIDC_GROUPS_CLAIM = "games_role";
-        OIDC_ROLE_MAP = "admin:admin";
-        PUBLIC_SITE_URL = url.requestz;
-        ORIGIN = url.requestz;
-        LIBRARY_KIND = "romm";
-        LIBRARY_URL = url.games;
-        LIBRARY_PUBLIC_URL = url.games;
-        LIBRARY_USERNAME = "ggrequestz";
-        LIBRARY_SYNC_ENABLED = "true";
-        LIBRARY_SYNC_INTERVAL_MS = "300000";
-      };
-    };
-  };
-
   systemd.services = lib.mkMerge [
-    (lib.genAttrs (map (name: "podman-${name}") containers) (_: {
-      requires = [ "podman-network-games.service" ];
-      after = [ "podman-network-games.service" ];
-    }))
     (lib.genAttrs (map (lib.removeSuffix ".service") rommUnits) (_: {
       # ROMarr writes to the library through the media group
       serviceConfig.UMask = "0007";
@@ -293,19 +236,54 @@ in
           ];
         };
       };
-      podman-network-games = {
-        description = "Create the private game services network";
+      ggrequestz = {
+        description = "GG Requestz game requests";
         wantedBy = [ "multi-user.target" ];
-        path = [ config.virtualisation.podman.package ];
-        serviceConfig = {
-          Type = "oneshot";
-          RemainAfterExit = true;
+        wants = [ "network-online.target" ];
+        requires = [ "postgresql.target" ];
+        after = [
+          "network-online.target"
+          "postgresql.target"
+        ];
+        environment = {
+          NODE_ENV = "production";
+          HOST = "127.0.0.1";
+          PORT = toString apps.requestz;
+          POSTGRES_HOST = "/run/postgresql";
+          POSTGRES_PORT = "5432";
+          POSTGRES_DB = "ggrequestz";
+          POSTGRES_USER = "ggrequestz";
+          # the password is required but unused, PostgreSQL authenticates the socket peer
+          POSTGRES_PASSWORD = "socket-authentication";
+          POSTGRES_POOL_MAX = "5";
+          AUTH_METHOD = "oidc";
+          OIDC_ISSUER_URL = "${auth}/oauth2/openid/ggrequestz";
+          OIDC_CLIENT_ID = "ggrequestz";
+          OIDC_PROVIDER_NAME = "Kanidm";
+          OIDC_REDIRECT_URI = "${url.requestz}/api/auth/callback";
+          OIDC_GROUPS_CLAIM = "games_role";
+          OIDC_ROLE_MAP = "admin:admin";
+          PUBLIC_SITE_URL = url.requestz;
+          ORIGIN = url.requestz;
+          LIBRARY_KIND = "romm";
+          LIBRARY_URL = url.games;
+          LIBRARY_PUBLIC_URL = url.games;
+          LIBRARY_USERNAME = "ggrequestz";
+          LIBRARY_SYNC_ENABLED = "true";
+          LIBRARY_SYNC_INTERVAL_MS = "300000";
         };
-        script = ''
-          if ! podman network exists ${network}; then
-            podman network create --interface-name games0 ${network}
-          fi
-        '';
+        serviceConfig = {
+          ExecStartPre = lib.getExe' ggrequestz "ggrequestz-migrate";
+          ExecStart = lib.getExe ggrequestz;
+          EnvironmentFile = config.sops.templates."ggrequestz.env".path;
+          User = "ggrequestz";
+          Group = "ggrequestz";
+          Restart = "on-failure";
+          NoNewPrivileges = true;
+          PrivateTmp = true;
+          ProtectHome = true;
+          ProtectSystem = "strict";
+        };
       };
       games-setup = {
         description = "Connect the game library, acquisition services, and sources";
@@ -349,8 +327,10 @@ in
     paths = [ romarrState ];
     dumps."romm.sql" =
       "${lib.getExe' database "mariadb-dump"} --single-transaction --quick --routines --events --triggers --databases romm";
-    dumps."ggrequestz.dump" = "${podman} exec ggrequestz-db pg_dump -U ggrequestz -d ggrequestz -Fc";
+    dumps."ggrequestz.dump" =
+      "${lib.getExe' pkgs.util-linux "runuser"} -u postgres -- ${lib.getExe' postgresql "pg_dump"} -Fc ggrequestz";
     exclude = [
+      # container data kept until the native service is confirmed
       "${state}/ggrequestz-database"
       "${games}/resources"
       "${games}/cache"
