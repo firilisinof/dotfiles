@@ -65,6 +65,7 @@ in
             "redis-nextcloud*"
             "redis-romm*"
             "restic-*"
+            "romarr*"
             "romm*"
             "sshd*"
             "tailscaled*"

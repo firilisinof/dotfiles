@@ -15,6 +15,8 @@ let
   library = "${games}/library";
   staging = "/srv/media/downloads/romarr";
   network = "games";
+  romarr = pkgs.callPackage ./packages/romarr.nix { };
+  romarrState = "/var/lib/romarr";
   database = config.services.mysql.package;
   apps = {
     games = 8087;
@@ -37,7 +39,6 @@ let
   };
   containers = [
     "ggrequestz-db"
-    "romarr"
     "ggrequestz"
   ];
   # starting romm.service alone leaves the units that require it stopped
@@ -47,12 +48,11 @@ let
     "romm-scheduler"
     "romm-watcher"
   ];
-  appUnits =
-    map (name: "podman-${name}.service") [
-      "ggrequestz"
-      "romarr"
-    ]
-    ++ rommUnits;
+  appUnits = [
+    "podman-ggrequestz.service"
+    "romarr.service"
+  ]
+  ++ rommUnits;
 in
 {
   imports = [
@@ -110,7 +110,7 @@ in
     IGDB_CLIENT_SECRET=${placeholder."games/igdb-client-secret"}
     LIBRARY_PASSWORD=${placeholder."games/ggrequestz-library-password"}
     OIDC_CLIENT_SECRET=${placeholder."games/ggrequestz-oidc-secret"}
-    REQUEST_WEBHOOK_URL=http://romarr:6868/api/v1/webhook/ggrequestz?apikey=${
+    REQUEST_WEBHOOK_URL=${url.romarr}/api/v1/webhook/ggrequestz?apikey=${
       placeholder."games/romarr-api-key"
     }
   '';
@@ -118,7 +118,6 @@ in
   systemd.tmpfiles.rules = [
     "d ${library}/roms 2770 romarr media - -"
     "d ${state} 0750 root root - -"
-    "d ${state}/romarr 0700 romarr media - -"
     "d ${state}/ggrequestz-database 0700 - - - -"
     "d ${staging} 2770 qbittorrent media - -"
     "d ${staging}/hub 2770 romarr media - -"
@@ -203,33 +202,6 @@ in
         "${secrets."games/ggrequestz-database-password".path}:/run/secrets/password:ro"
       ];
     };
-    romarr = {
-      image = "ghcr.io/blizzhacker/romarr@sha256:19cbfad5189d630cc914eed1efb174dbd05c1888484b9ef6eb3698f71dc56458";
-      autoRemoveOnStop = false;
-      networks = [ network ];
-      ports = [ "127.0.0.1:6868:6868" ];
-      environmentFiles = [ config.sops.templates."romarr.env".path ];
-      environment = {
-        PUID = "807";
-        PGID = "987";
-        UMASK = "007";
-        TZ = config.time.timeZone;
-        LIBRARY_KIND = "romm";
-        LIBRARY_URL = url.games;
-        LIBRARY_USERNAME = "romarr";
-        LIBRARY_PATH = "${library}/roms";
-        QBITTORRENT_URL = "${url.torrents}:443";
-        QBITTORRENT_USER = "lucas";
-        QBITTORRENT_CATEGORY = "romarr";
-        GGREQUESTZ_URL = url.requestz;
-        ROMARR_PLAYERS = "none";
-      };
-      volumes = [
-        "${state}/romarr:/config"
-        "${library}/roms:${library}/roms"
-        "${staging}:${staging}"
-      ];
-    };
     ggrequestz = {
       image = "ghcr.io/xtreemmak/ggrequestz@sha256:32a55965b4d76bbe3dc8d0552afd882f74d6ed8c494ee6a4355ba7573f038466";
       autoRemoveOnStop = false;
@@ -279,6 +251,47 @@ in
       romm = {
         requires = [ "mysql.service" ];
         after = [ "mysql.service" ];
+      };
+      romarr = {
+        description = "ROMarr game acquisition";
+        wantedBy = [ "multi-user.target" ];
+        wants = [ "network-online.target" ];
+        after = [ "network-online.target" ];
+        environment = {
+          ROMARR_HOST = "127.0.0.1";
+          ROMARR_PORT = toString apps.romarr;
+          ROMARR_DATA = "${romarrState}/romarr.json";
+          # installed plugins live with the settings
+          ROM_HUB_HOME = "${romarrState}/rom-hub";
+          LIBRARY_KIND = "romm";
+          LIBRARY_URL = url.games;
+          LIBRARY_USERNAME = "romarr";
+          LIBRARY_PATH = "${library}/roms";
+          QBITTORRENT_URL = "${url.torrents}:443";
+          QBITTORRENT_USER = "lucas";
+          QBITTORRENT_CATEGORY = "romarr";
+          GGREQUESTZ_URL = url.requestz;
+          ROMARR_PLAYERS = "none";
+        };
+        serviceConfig = {
+          ExecStart = lib.getExe romarr;
+          EnvironmentFile = config.sops.templates."romarr.env".path;
+          User = "romarr";
+          Group = "media";
+          UMask = "0007";
+          StateDirectory = "romarr";
+          StateDirectoryMode = "0700";
+          WorkingDirectory = romarrState;
+          Restart = "on-failure";
+          NoNewPrivileges = true;
+          PrivateTmp = true;
+          ProtectHome = true;
+          ProtectSystem = "strict";
+          ReadWritePaths = [
+            "${library}/roms"
+            staging
+          ];
+        };
       };
       podman-network-games = {
         description = "Create the private game services network";
@@ -333,11 +346,14 @@ in
 
   services.restic.backups.b2 = {
     stopUnits = [ "games-setup.service" ] ++ appUnits;
+    paths = [ romarrState ];
     dumps."romm.sql" =
       "${lib.getExe' database "mariadb-dump"} --single-transaction --quick --routines --events --triggers --databases romm";
     dumps."ggrequestz.dump" = "${podman} exec ggrequestz-db pg_dump -U ggrequestz -d ggrequestz -Fc";
     exclude = [
       "${state}/ggrequestz-database"
+      # container data kept until the native service is confirmed
+      "${state}/romarr"
       "${games}/resources"
       "${games}/cache"
     ];
