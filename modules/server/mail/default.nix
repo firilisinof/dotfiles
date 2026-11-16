@@ -28,9 +28,11 @@ let
     personal = "roses.lucas404@gmail.com";
     drall = "drallmortal@gmail.com";
     usp = "roses.lucas@usp.br";
-    ime = "roses.lucas@ime.usp.br";
   };
-  toml = pkgs.formats.toml { };
+  ugaPassword = builtins.toJSON [
+    (lib.getExe' pkgs.coreutils "cat")
+    config.sops.secrets."mail/uga-password".path
+  ];
   calendars = "${home.xdg.dataHome}/calendars";
   secretCommand =
     name:
@@ -97,26 +99,47 @@ in
       longdatetimeformat = %Y-%m-%d %H:%M
       firstweekday = 0
     '';
-    xdg.configFile."himalaya/config.toml".source = toml.generate "himalaya-config.toml" {
-      # dates otherwise keep the offset of the sender's server
-      envelope.list.datetime-local-tz = true;
-      accounts = lib.mapAttrs (name: email: {
-        inherit email;
-        default = name == "personal";
-        gmail.auth.token.command = [
-          ortie
-          "token"
-          "show"
-          "-a"
-          name
-        ];
-      }) google;
-    };
   };
 
   # vdirsyncer reads both as the user
   sops.secrets."google/oauth-client-id".owner = "lucas";
   sops.secrets."google/oauth-client-secret".owner = "lucas";
+
+  sops.secrets."mail/uga-login" = { };
+  sops.secrets."mail/uga-password".owner = "lucas";
+
+  # rendered so the university login stays out of the repository
+  sops.templates."himalaya-config.toml" = {
+    owner = "lucas";
+    path = "${home.xdg.configHome}/himalaya/config.toml";
+    content = ''
+      # dates otherwise keep the offset of the sender's server
+      envelope.list.datetime-local-tz = true
+
+    ''
+    + lib.concatStrings (
+      lib.mapAttrsToList (name: email: ''
+        [accounts.${name}]
+        default = ${lib.boolToString (name == "personal")}
+        email = "${email}"
+        gmail.auth.token.command = ["${ortie}", "token", "show", "-a", "${name}"]
+
+      '') google
+    )
+    + ''
+      [accounts.uga]
+      imap.server = "imaps://zimbra.univ-grenoble-alpes.fr:993"
+      imap.sasl.plain.username = "${placeholder."mail/uga-login"}"
+      imap.sasl.plain.password.command = ${ugaPassword}
+      smtp.server = "smtps://smtps.univ-grenoble-alpes.fr:465"
+      smtp.sasl.plain.username = "${placeholder."mail/uga-login"}"
+      smtp.sasl.plain.password.command = ${ugaPassword}
+      message.send.save-copy = "sent"
+      mailbox.alias.sent = "Sent"
+      mailbox.alias.drafts = "Drafts"
+      mailbox.alias.trash = "Trash"
+    '';
+  };
 
   # the client id cannot come from a command, so the whole file is rendered
   sops.templates."ortie-config.toml" = {
