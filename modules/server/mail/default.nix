@@ -18,9 +18,7 @@ let
   ortie = lib.getExe ortiePackage;
   # the first sign-in of an account, for a host without a browser
   googleLogin = pkgs.writers.writePython3Bin "google-login" { flakeIgnore = [ "E501" ]; } (
-    builtins.replaceStrings [ "@ortie@" "@state@" ] [ ortie home.xdg.stateHome ] (
-      builtins.readFile ./google-login.py
-    )
+    builtins.replaceStrings [ "@ortie@" ] [ ortie ] (builtins.readFile ./google-login.py)
   );
   tokens = "${home.xdg.stateHome}/ortie";
   # label and address of each Google account
@@ -33,77 +31,38 @@ let
     (lib.getExe' pkgs.coreutils "cat")
     config.sops.secrets."mail/uga-password".path
   ];
-  calendars = "${home.xdg.dataHome}/calendars";
-  secretCommand =
-    name:
-    "${builtins.toJSON [
-      "command"
-      (lib.getExe' pkgs.coreutils "cat")
-      config.sops.secrets.${name}.path
-    ]}";
+  # the accounts whose calendars the views read, the first one receiving new events
+  calendarAccounts = [
+    "personal"
+    "usp"
+  ];
+  gcal = pkgs.rustPlatform.buildRustPackage {
+    pname = "gcal";
+    version = "0.1.0";
+    src = ./gcal;
+    cargoLock.lockFile = ./gcal/Cargo.lock;
+    nativeBuildInputs = [ pkgs.makeWrapper ];
+    postInstall = ''
+      wrapProgram $out/bin/gcal \
+        --set-default GCAL_ORTIE ${ortie} \
+        --set-default GCAL_ACCOUNTS ${lib.concatStringsSep "," calendarAccounts}
+    '';
+    meta.mainProgram = "gcal";
+  };
 in
 {
-  # agents read and organize mail with himalaya and calendars with khal, and ortie holds the google sign-ins
+  # agents read and organize mail with himalaya and calendars with gcal, and ortie holds the google sign-ins
   home-manager.users.lucas = {
     home.packages = [
       pkgs.himalaya
-      pkgs.khal
-      pkgs.vdirsyncer
+      gcal
       ortiePackage
       googleLogin
     ];
-    # khal reads and writes local copies that vdirsyncer synchronizes with google
-    xdg.configFile."vdirsyncer/config".text = ''
-      [general]
-      status_path = "${home.xdg.stateHome}/vdirsyncer/status/"
-    ''
-    + lib.concatStrings (
-      lib.mapAttrsToList (name: _: ''
-
-        [pair ${name}]
-        a = "${name}_local"
-        b = "${name}_google"
-        collections = ["from b"]
-        conflict_resolution = "b wins"
-        metadata = ["displayname", "color"]
-
-        [storage ${name}_local]
-        type = "filesystem"
-        path = "${calendars}/${name}/"
-        fileext = ".ics"
-
-        [storage ${name}_google]
-        type = "google_calendar"
-        token_file = "${home.xdg.stateHome}/vdirsyncer/google-${name}.json"
-        client_id.fetch = ${secretCommand "google/oauth-client-id"}
-        client_secret.fetch = ${secretCommand "google/oauth-client-secret"}
-      '') google
-    );
-    xdg.configFile."khal/config".text = ''
-      [calendars]
-    ''
-    + lib.concatStrings (
-      lib.mapAttrsToList (name: _: ''
-        [[${name}]]
-        path = ${calendars}/${name}/*
-        type = discover
-      '') google
-    )
-    + ''
-
-      [locale]
-      timeformat = %H:%M
-      dateformat = %Y-%m-%d
-      longdateformat = %Y-%m-%d
-      datetimeformat = %Y-%m-%d %H:%M
-      longdatetimeformat = %Y-%m-%d %H:%M
-      firstweekday = 0
-    '';
   };
 
-  # vdirsyncer reads both as the user
-  sops.secrets."google/oauth-client-id".owner = "lucas";
-  sops.secrets."google/oauth-client-secret".owner = "lucas";
+  sops.secrets."google/oauth-client-id" = { };
+  sops.secrets."google/oauth-client-secret" = { };
 
   sops.secrets."mail/uga-login" = { };
   sops.secrets."mail/uga-password".owner = "lucas";
