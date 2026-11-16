@@ -27,10 +27,6 @@ let
     drall = "drallmortal@gmail.com";
     usp = "roses.lucas@usp.br";
   };
-  ugaPassword = builtins.toJSON [
-    (lib.getExe' pkgs.coreutils "cat")
-    config.sops.secrets."mail/uga-password".path
-  ];
   # the accounts whose calendars the views read, the first one receiving new events
   calendarAccounts = [
     "personal"
@@ -65,10 +61,6 @@ in
   sops.secrets."google/oauth-client-id" = { };
   sops.secrets."google/oauth-client-secret" = { };
 
-  sops.secrets."mail/uga-login" = { };
-  sops.secrets."mail/uga-password".owner = "lucas";
-
-  # rendered so the university login stays out of the repository
   sops.templates."himalaya-config.toml" = {
     owner = "lucas";
     path = "${home.xdg.configHome}/himalaya/config.toml";
@@ -85,20 +77,7 @@ in
         gmail.auth.token.command = ["${ortie}", "token", "show", "-a", "${name}"]
 
       '') google
-    )
-    + ''
-      [accounts.uga]
-      imap.server = "imaps://zimbra.univ-grenoble-alpes.fr:993"
-      imap.sasl.plain.username = "${placeholder."mail/uga-login"}"
-      imap.sasl.plain.password.command = ${ugaPassword}
-      smtp.server = "smtps://smtps.univ-grenoble-alpes.fr:465"
-      smtp.sasl.plain.username = "${placeholder."mail/uga-login"}"
-      smtp.sasl.plain.password.command = ${ugaPassword}
-      message.send.save-copy = "sent"
-      mailbox.alias.sent = "Sent"
-      mailbox.alias.drafts = "Drafts"
-      mailbox.alias.trash = "Trash"
-    '';
+    );
   };
 
   # the client id cannot come from a command, so the whole file is rendered
