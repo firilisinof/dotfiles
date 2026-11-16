@@ -26,6 +26,9 @@ let
   # label and address of each Google account
   google = {
     personal = "roses.lucas404@gmail.com";
+    drall = "drallmortal@gmail.com";
+    usp = "roses.lucas@usp.br";
+    ime = "roses.lucas@ime.usp.br";
   };
   toml = pkgs.formats.toml { };
   calendars = "${home.xdg.dataHome}/calendars";
