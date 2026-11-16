@@ -191,11 +191,7 @@ in
     paths = [ state ];
     dumps."securo.dump" =
       "${lib.getExe' pkgs.util-linux "runuser"} -u postgres -- ${lib.getExe' postgresql "pg_dump"} -Fc securo";
-    exclude = [
-      "${state}/beat"
-      # container data kept until the native service is confirmed
-      "/srv/securo"
-    ];
+    exclude = [ "${state}/beat" ];
   };
 
   dotfiles.monitors = [ { target = "${origin}/api/health"; } ];
