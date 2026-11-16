@@ -154,11 +154,7 @@ in
     stopUnits = [ "youtarr.service" ];
     dumps."youtarr.sql" =
       "${lib.getExe' database "mariadb-dump"} --single-transaction --quick --routines --events --triggers --databases youtarr";
-    exclude = [
-      # container data kept until the native service has proved to work
-      "${stateDir}/database"
-      "${mediaDir}/.youtarr_tmp"
-    ];
+    exclude = [ "${mediaDir}/.youtarr_tmp" ];
   };
 
   services.caddy.virtualHosts.${hostname}.extraConfig = "reverse_proxy 127.0.0.1:${toString port}";
