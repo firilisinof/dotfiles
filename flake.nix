@@ -55,6 +55,27 @@
       url = "github:firilisinof/account-switch";
       flake = false;
     };
+    # securo's python environment is built from upstream's uv.lock
+    pyproject-nix = {
+      url = "github:pyproject-nix/pyproject.nix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+    uv2nix = {
+      url = "github:pyproject-nix/uv2nix";
+      inputs.nixpkgs.follows = "nixpkgs";
+      inputs.pyproject-nix.follows = "pyproject-nix";
+    };
+    pyproject-build-systems = {
+      url = "github:pyproject-nix/build-system-pkgs";
+      inputs.nixpkgs.follows = "nixpkgs";
+      inputs.pyproject-nix.follows = "pyproject-nix";
+      inputs.uv2nix.follows = "uv2nix";
+    };
+    # securo 0.18.0, an input instead of a fetcher so its lock file is readable during evaluation
+    securo = {
+      url = "github:securo-finance/securo/c95e6a027b8592c4ed6b2fefd7fa546c2710da13";
+      flake = false;
+    };
     nixos-hardware = {
       url = "github:NixOS/nixos-hardware/master";
       inputs.nixpkgs.follows = "nixpkgs";
