@@ -11,10 +11,11 @@ let
   podman = lib.getExe config.virtualisation.podman.package;
   auth = config.services.kanidm.server.settings.origin;
   state = "/srv/games-state";
-  library = "/srv/games/library";
+  games = "/srv/games";
+  library = "${games}/library";
   staging = "/srv/media/downloads/romarr";
   network = "games";
-  databaseImage = "docker.io/library/mariadb@sha256:d1891ede5a559f1086f55053bb8cc1569b0298338c4d72d71725a7f74f6ba620";
+  database = config.services.mysql.package;
   apps = {
     games = 8087;
     romarr = 6868;
@@ -35,17 +36,23 @@ let
     qbittorrent-password = "qbittorrent/admin-password";
   };
   containers = [
-    "romm-db"
     "ggrequestz-db"
-    "romm"
     "romarr"
     "ggrequestz"
   ];
-  appUnits = map (name: "podman-${name}.service") [
-    "ggrequestz"
-    "romarr"
+  # starting romm.service alone leaves the units that require it stopped
+  rommUnits = map (name: "${name}.service") [
     "romm"
+    "romm-worker"
+    "romm-scheduler"
+    "romm-watcher"
   ];
+  appUnits =
+    map (name: "podman-${name}.service") [
+      "ggrequestz"
+      "romarr"
+    ]
+    ++ rommUnits;
 in
 {
   imports = [
@@ -74,8 +81,6 @@ in
   sops.secrets = lib.genAttrs (map (name: "games/${name}") [
     "igdb-client-id"
     "igdb-client-secret"
-    "romm-database-password"
-    "romm-database-root-password"
     "romm-auth-secret"
     "romm-admin-password"
     "romarr-library-password"
@@ -87,7 +92,6 @@ in
   ]) (_: { });
 
   sops.templates."romm.env".content = ''
-    DB_PASSWD=${placeholder."games/romm-database-password"}
     ROMM_AUTH_SECRET_KEY=${placeholder."games/romm-auth-secret"}
     IGDB_CLIENT_ID=${placeholder."games/igdb-client-id"}
     IGDB_CLIENT_SECRET=${placeholder."games/igdb-client-secret"}
@@ -110,53 +114,80 @@ in
       placeholder."games/romarr-api-key"
     }
   '';
-  sops.templates."romm-backup.cnf".content = ''
-    [client]
-    user=root
-    password=${placeholder."games/romm-database-root-password"}
-  '';
 
   systemd.tmpfiles.rules = [
-    "d /srv/games 2750 root media - -"
-    "d ${library} 2770 romarr media - -"
     "d ${library}/roms 2770 romarr media - -"
     "d ${state} 0750 root root - -"
     "d ${state}/romarr 0700 romarr media - -"
-    "d ${state}/romm 0750 root root - -"
-    "d ${state}/romm/resources 2770 romm media - -"
-    "d ${state}/romm/assets 2770 romm media - -"
-    "d ${state}/romm/config 0700 romm media - -"
-    "d ${state}/romm/redis 0700 romm media - -"
-    "d ${state}/romm/database 0700 - - - -"
     "d ${state}/ggrequestz-database 0700 - - - -"
     "d ${staging} 2770 qbittorrent media - -"
     "d ${staging}/hub 2770 romarr media - -"
   ];
+  # the library keeps ROMarr as its writer, and the module would hand it to RomM
+  systemd.tmpfiles.settings."10-romm" = {
+    ${games}.d.mode = lib.mkForce "2750";
+    ${library}.d = {
+      mode = lib.mkForce "2770";
+      user = lib.mkForce "romarr";
+    };
+  };
+
+  services.romm = {
+    enable = true;
+    group = "media";
+    # upstream fixes the library at <dataDir>/library
+    dataDir = games;
+    database = {
+      createLocally = false;
+      host = "localhost";
+      port = 3306;
+    };
+    nginx.virtualHost = "games.${domain}";
+    environmentFile = config.sops.templates."romm.env".path;
+    extraEnvironment = {
+      ROMM_DB_DRIVER = "mariadb";
+      # the password is required but unused, MariaDB authenticates the socket peer
+      DB_PASSWD = "socket-authentication";
+      DB_QUERY_JSON = builtins.toJSON { unix_socket = "/run/mysqld/mysqld.sock"; };
+      ROMM_BASE_URL = url.games;
+      # nginx serves /cache/ from <dataDir>/cache, and RomM derives its cache from this path
+      ROMM_TMP_PATH = games;
+      SCAN_WORKERS = "2";
+      WEB_SERVER_CONCURRENCY = "2";
+      HASHEOUS_API_ENABLED = "true";
+      RESCAN_ON_FILESYSTEM_CHANGE_DELAY = "2";
+      DISABLE_EMULATOR_JS = "true";
+      DISABLE_RUFFLE_RS = "true";
+      DISABLE_JSDOS = "true";
+      DISABLE_PICO8 = "true";
+      DISABLE_EASYRPG = "true";
+      OIDC_ENABLED = "true";
+      OIDC_PROVIDER = "Kanidm";
+      OIDC_CLIENT_ID = "romm";
+      OIDC_REDIRECT_URI = "${url.games}/api/oauth/openid";
+      OIDC_SERVER_APPLICATION_URL = "${auth}/oauth2/openid/romm";
+      OIDC_SERVER_METADATA_URL = "${auth}/oauth2/openid/romm/.well-known/openid-configuration";
+      OIDC_CLAIM_ROLES = "games_role";
+      OIDC_ROLE_ADMIN = "admin";
+    };
+  };
+  services.mysql = {
+    ensureDatabases = [ "romm" ];
+    ensureUsers = [
+      {
+        name = "romm";
+        ensurePermissions."romm.*" = "ALL PRIVILEGES";
+      }
+    ];
+  };
+  services.nginx.virtualHosts."games.${domain}".listen = [
+    {
+      addr = "127.0.0.1";
+      port = apps.games;
+    }
+  ];
 
   virtualisation.oci-containers.containers = {
-    romm-db = {
-      image = databaseImage;
-      autoRemoveOnStop = false;
-      networks = [ network ];
-      environment = {
-        MARIADB_DATABASE = "romm";
-        MARIADB_USER = "romm";
-        MARIADB_PASSWORD_FILE = "/run/secrets/password";
-        MARIADB_ROOT_PASSWORD_FILE = "/run/secrets/root-password";
-      };
-      volumes = [
-        "${state}/romm/database:/var/lib/mysql"
-        "${secrets."games/romm-database-password".path}:/run/secrets/password:ro"
-        "${secrets."games/romm-database-root-password".path}:/run/secrets/root-password:ro"
-        "${config.sops.templates."romm-backup.cnf".path}:/run/secrets/backup.cnf:ro"
-      ];
-      cmd = [
-        "--innodb-buffer-pool-size=128M"
-        "--character-set-server=utf8mb4"
-        "--collation-server=utf8mb4_unicode_ci"
-        "--log-bin-trust-function-creators=1"
-      ];
-    };
     ggrequestz-db = {
       image = "docker.io/library/postgres@sha256:aae6554de426ae1990f1a939ff183a0299146cf7142a6f4c379c3357af9cc2d8";
       autoRemoveOnStop = false;
@@ -172,47 +203,6 @@ in
         "${secrets."games/ggrequestz-database-password".path}:/run/secrets/password:ro"
       ];
     };
-    romm = {
-      image = "docker.io/rommapp/romm@sha256:8677fb7b81b1d3db20b849e989a1dadc2a11159e51eb34a2acdcb01102274edf";
-      user = "808:987";
-      autoRemoveOnStop = false;
-      networks = [ network ];
-      dependsOn = [ "romm-db" ];
-      ports = [ "127.0.0.1:8087:8080" ];
-      environmentFiles = [ config.sops.templates."romm.env".path ];
-      environment = {
-        DB_HOST = "romm-db";
-        DB_NAME = "romm";
-        DB_USER = "romm";
-        TZ = config.time.timeZone;
-        SCAN_WORKERS = "2";
-        WEB_SERVER_CONCURRENCY = "2";
-        HASHEOUS_API_ENABLED = "true";
-        ENABLE_RESCAN_ON_FILESYSTEM_CHANGE = "true";
-        RESCAN_ON_FILESYSTEM_CHANGE_DELAY = "2";
-        DISABLE_EMULATOR_JS = "true";
-        DISABLE_RUFFLE_RS = "true";
-        DISABLE_JSDOS = "true";
-        DISABLE_PICO8 = "true";
-        DISABLE_EASYRPG = "true";
-        OIDC_ENABLED = "true";
-        OIDC_PROVIDER = "Kanidm";
-        OIDC_CLIENT_ID = "romm";
-        OIDC_REDIRECT_URI = "${url.games}/api/oauth/openid";
-        OIDC_SERVER_APPLICATION_URL = "${auth}/oauth2/openid/romm";
-        OIDC_SERVER_METADATA_URL = "${auth}/oauth2/openid/romm/.well-known/openid-configuration";
-        OIDC_CLAIM_ROLES = "games_role";
-        OIDC_ROLE_ADMIN = "admin";
-      };
-      volumes = [
-        "${library}:/romm/library"
-        "${state}/romm/resources:/romm/resources"
-        "${state}/romm/assets:/romm/assets"
-        "${state}/romm/config:/romm/config"
-        "${state}/romm/redis:/redis-data"
-      ];
-      extraOptions = [ "--umask=0007" ];
-    };
     romarr = {
       image = "ghcr.io/blizzhacker/romarr@sha256:19cbfad5189d630cc914eed1efb174dbd05c1888484b9ef6eb3698f71dc56458";
       autoRemoveOnStop = false;
@@ -225,7 +215,7 @@ in
         UMASK = "007";
         TZ = config.time.timeZone;
         LIBRARY_KIND = "romm";
-        LIBRARY_URL = "http://romm:8080";
+        LIBRARY_URL = url.games;
         LIBRARY_USERNAME = "romarr";
         LIBRARY_PATH = "${library}/roms";
         QBITTORRENT_URL = "${url.torrents}:443";
@@ -267,7 +257,7 @@ in
         PUBLIC_SITE_URL = url.requestz;
         ORIGIN = url.requestz;
         LIBRARY_KIND = "romm";
-        LIBRARY_URL = "http://romm:8080";
+        LIBRARY_URL = url.games;
         LIBRARY_PUBLIC_URL = url.games;
         LIBRARY_USERNAME = "ggrequestz";
         LIBRARY_SYNC_ENABLED = "true";
@@ -281,7 +271,15 @@ in
       requires = [ "podman-network-games.service" ];
       after = [ "podman-network-games.service" ];
     }))
+    (lib.genAttrs (map (lib.removeSuffix ".service") rommUnits) (_: {
+      # ROMarr writes to the library through the media group
+      serviceConfig.UMask = "0007";
+    }))
     {
+      romm = {
+        requires = [ "mysql.service" ];
+        after = [ "mysql.service" ];
+      };
       podman-network-games = {
         description = "Create the private game services network";
         wantedBy = [ "multi-user.target" ];
@@ -336,13 +334,14 @@ in
   services.restic.backups.b2 = {
     stopUnits = [ "games-setup.service" ] ++ appUnits;
     dumps."romm.sql" =
-      "${podman} exec romm-db mariadb-dump --defaults-extra-file=/run/secrets/backup.cnf --single-transaction --quick --routines --events --triggers --databases romm";
+      "${lib.getExe' database "mariadb-dump"} --single-transaction --quick --routines --events --triggers --databases romm";
     dumps."ggrequestz.dump" = "${podman} exec ggrequestz-db pg_dump -U ggrequestz -d ggrequestz -Fc";
     exclude = [
-      "${state}/romm/database"
       "${state}/ggrequestz-database"
-      "${state}/romm/redis"
-      "${state}/romm/resources"
+      # container data kept until the native service is confirmed
+      "${state}/romm"
+      "${games}/resources"
+      "${games}/cache"
     ];
   };
   services.caddy.virtualHosts = lib.mapAttrs' (
