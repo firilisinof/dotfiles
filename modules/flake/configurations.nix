@@ -49,10 +49,14 @@ in
         inputs.nixos-hardware.nixosModules.raspberry-pi-5
         inputs.sops-nix.nixosModules.sops
         ../../hosts/pi5/configuration.nix
-        {
+        ({ pkgs, ... }: {
           nixpkgs.overlays = [ overlay ];
           home-manager.users.lucas.imports = [ self.homeModules.lucas.default ];
-        }
+          home-manager.users.lucas.home.packages = [
+            pkgs.defuddle
+            (pkgs.callPackage ../home/lucas/packages/knap.nix { })
+          ];
+        })
         {
           # the vendor kernel has the rp1 pwm driver that the fan curve needs
           boot.kernelPackages = inputs.nixos-raspberrypi.packages.aarch64-linux.linuxPackages_rpi5;
