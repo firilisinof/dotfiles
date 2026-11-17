@@ -10,6 +10,7 @@ let
   home = config.home-manager.users.lucas;
   # the nixpkgs build lacks two libraries its dependencies link against
   ortiePackage = pkgs.ortie.overrideAttrs (old: {
+    nativeBuildInputs = (old.nativeBuildInputs or [ ]) ++ [ pkgs.pkg-config ];
     buildInputs = (old.buildInputs or [ ]) ++ [
       pkgs.libgit2
       pkgs.aws-lc
