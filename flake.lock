@@ -323,7 +323,7 @@
         "things": "things",
         "treefmt-nix": "treefmt-nix",
         "uv2nix": "uv2nix",
-        "wiki-mcp": "wiki-mcp",
+        "wiki-check": "wiki-check",
         "zotero-mcp": "zotero-mcp"
       }
     },
@@ -449,7 +449,7 @@
         "type": "github"
       }
     },
-    "wiki-mcp": {
+    "wiki-check": {
       "inputs": {
         "nixpkgs": [
           "nixpkgs"
@@ -459,16 +459,16 @@
         ]
       },
       "locked": {
-        "lastModified": 1794775474,
-        "narHash": "sha256-N4IhjowlO4aaFoTtDplN0L6BKHlToSrkuCGot4pKgw4=",
+        "lastModified": 1795259696,
+        "narHash": "sha256-YEK50zCbvsrXam6tO1kUX0i48eFcE09u50Ml/xVQ09g=",
         "owner": "firilisinof",
-        "repo": "wiki-mcp",
-        "rev": "b8e3249147e3f4c678cb062330cbde3bf157b721",
+        "repo": "wiki-check",
+        "rev": "958110a9f0ae627111e1298067658c017d3445c7",
         "type": "github"
       },
       "original": {
         "owner": "firilisinof",
-        "repo": "wiki-mcp",
+        "repo": "wiki-check",
         "type": "github"
       }
     },

@@ -8,8 +8,16 @@
 let
   # packages from flakes outside nixpkgs, for every host
   overlay = final: _: {
-    mcp = inputs.mcp.packages.${final.stdenv.hostPlatform.system}.default;
-    wiki-mcp = inputs.wiki-mcp.packages.${final.stdenv.hostPlatform.system}.default;
+    # the server instructions asked for confirmation before every command,
+    # including the wiki reads that Claude and ChatGPT make through it
+    mcp = inputs.mcp.packages.${final.stdenv.hostPlatform.system}.default.overrideAttrs (old: {
+      postPatch = (old.postPatch or "") + ''
+        substituteInPlace src/prompts.rs --replace-fail \
+          'Commands can change the system, confirm before each call.' \
+          'Run read-only commands without asking. Confirm before a command that changes the system, unless standing instructions already authorize it.'
+      '';
+    });
+    wiki-check = inputs.wiki-check.packages.${final.stdenv.hostPlatform.system}.default;
     things = inputs.things.packages.${final.stdenv.hostPlatform.system}.default;
     # an input instead of a fetcher, so evaluation on another system needs no build
     codex-login = final.callPackage (inputs.account-switch + "/package.nix") { };

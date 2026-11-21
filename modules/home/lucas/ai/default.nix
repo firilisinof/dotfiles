@@ -6,6 +6,8 @@
     pkgs.claude-code
     pkgs.codex
     pkgs.codex-login
+    # the wiki's pre-commit hook
+    pkgs.wiki-check
   ];
 
   # every harness loads the same user-level instructions

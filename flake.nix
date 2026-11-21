@@ -38,9 +38,9 @@
       inputs.nixpkgs.follows = "nixpkgs";
       inputs.systems.follows = "systems";
     };
-    # the wiki MCP service served from the pi5
-    wiki-mcp = {
-      url = "github:firilisinof/wiki-mcp";
+    # the validator behind the wiki's pre-commit hook
+    wiki-check = {
+      url = "github:firilisinof/wiki-check";
       inputs.nixpkgs.follows = "nixpkgs";
       inputs.systems.follows = "systems";
     };
