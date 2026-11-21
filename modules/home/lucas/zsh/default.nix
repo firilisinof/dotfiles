@@ -1,4 +1,9 @@
-{ config, lib, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 
 let
   # path_helper on macOS puts the system directories first in every login shell,
@@ -33,7 +38,10 @@ in
     profileExtra = lib.mkAfter pathSetup;
     initContent = lib.mkMerge [
       (lib.mkOrder 500 pathSetup)
-      (lib.mkOrder 1000 "bindkey '^W' backward-kill-word")
+      (lib.mkOrder 1000 ''
+        bindkey '^W' backward-kill-word
+        source <(${pkgs.things}/bin/things completions zsh)
+      '')
     ];
   };
 }
