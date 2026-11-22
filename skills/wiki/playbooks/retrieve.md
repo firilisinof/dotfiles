@@ -1,11 +1,7 @@
 # Retrieve
 
-From the wiki root, read each applicable task rule in full. The `applies_to` field selects coding (implement, review, configure, debug), plotting, tasks, mail, calendar, or web (read a page or extract it). For example:
+Read the matching skill for the current request. On a shell-only client use `~/.local/share/agent-workflows/skills/<name>/SKILL.md`. Use `coding` for implementation, configuration, review or debugging, `plotting` for figures, and `writing` for drafting and editing. Use `things` for priorities, outstanding work and project next steps. Use `mail` or `calendar` for a requested mailbox or scheduling operation. For a web page or a saved web reference, follow [Web pages](web.md). Open `orchestrate` only when the user asks for delegation.
 
-```sh
-rg -l -U '^applies_to:\n(  - .+\n)*  - coding\n' global
-```
+For a known project read `projects/<slug>/<slug>.md`, its current rules and decisions in full, and its state note when present. To find a project, list homes whose filename matches the project directory and inspect their descriptions. Search supporting notes inside that project first. Search in English, preserve literal identifiers and broaden terms within scope before reporting an unsuccessful search. Read relevant notes in full. Use `notes/` for standalone subjects.
 
-For a known project read `projects/<slug>/<slug>.md`, its current rules and decisions in full, and its state note when present. Find a project by listing the descriptions in `projects/*/*.md` whose filename matches its directory. Search supporting notes inside that project first. Search in English, preserve literal identifiers and broaden the terms within scope before reporting an unsuccessful search. Read the relevant notes in full. Use `notes/` for standalone subjects.
-
-Read applicable instructions in their own words. Supporting knowledge may be summarized. Skip superseded history unless the question needs it. Search saved references only on request. Load a role prompt only when the requested behavior matches. For plans, follow the links in `plans/index.md`. For next steps, consult project state and the authorized task system.
+Preserve the wording of applicable instructions. Supporting knowledge may be summarized. Skip superseded history unless needed. Search saved references only on request. For plans, use `plans/index.md`. For project next steps combine current wiki state with the open tasks you find through the Things skill.

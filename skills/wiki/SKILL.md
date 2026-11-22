@@ -7,7 +7,8 @@ description: Retrieve, maintain, or audit project knowledge in the personal Git 
 
 Start from the checkout and its README. The same files are available locally or through the remote shell. Use the relevant playbook:
 
-- [Retrieve](playbooks/retrieve.md) for project work and topical rules.
+- [Retrieve](playbooks/retrieve.md) for project work and selecting task-specific skills.
+- [Web pages](playbooks/web.md) for extracting articles and rendering saved references.
 - [Record](playbooks/record.md) before saving a finding, decision, reference or change of state.
 - [Audit](playbooks/audit.md) when asked to compare guidance with its sources.
 

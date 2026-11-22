@@ -4,7 +4,7 @@ Use one subject and one type per note. Project material lives in `projects/<slug
 
 Start ordinary notes with YAML fields `created`, `verified`, `description`, `type`, and `tags`. Preserve creation dates. Set verification to the last substantive confirmation or null. Use YYYY-MM-DD. A mechanical move does not reverify the content. Write a one-sentence description ending with a period. Use a small list of meaningful reusable tags or an empty list.
 
-Types are overview, state, rules, prompt, configuration, procedure, finding, research, decisions, plan and reference. Status is current (the default), proposed, or superseded. Research and plan notes must declare it. A state note may include `things_project_id`. Task rules in `global/` declare `applies_to`.
+Types are overview, state, rules, configuration, procedure, finding, research, decisions, plan and reference. Status is current (the default), proposed, or superseded. Research and plan notes must declare it. A state note may include `things_project_id`.
 
 Saved resources belong in `references/<slug>.md`. Their fields are `title`, `url`, `description`, `added` and `tags`. Create or reuse the reference before linking a note to it. Saving a resource does not verify its claims.
 

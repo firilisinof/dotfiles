@@ -1,12 +1,25 @@
 { lib, pkgs, ... }:
 
 let
-  # Claude and Codex store their explicit-invocation policies in different files
-  claudeSkills = pkgs.runCommand "claude-wiki-skills" { } ''
-    cp -R ${../../../../skills} "$out"
+  skills = ../../../../skills;
+  skillNames = builtins.attrNames (
+    lib.filterAttrs (
+      name: kind: kind == "directory" && builtins.pathExists (skills + "/${name}/SKILL.md")
+    ) (builtins.readDir skills)
+  );
+
+  # mirror each skill's Codex invocation policy in Claude's frontmatter
+  claudeSkills = pkgs.runCommand "claude-workflow-skills" { nativeBuildInputs = [ pkgs.yq-go ]; } ''
+    cp -R ${skills} "$out"
     chmod -R u+w "$out"
     for skill in "$out"/*/SKILL.md; do
-      sed -i '2i disable-model-invocation: true' "$skill"
+      policy="$(dirname "$skill")/agents/openai.yaml"
+      if [ -f "$policy" ]; then
+        implicit=$(yq -r '.policy.allow_implicit_invocation' "$policy")
+        if [ "$implicit" = false ]; then
+          sed -i '2i disable-model-invocation: true' "$skill"
+        fi
+      fi
     done
   '';
 in
@@ -20,16 +33,18 @@ in
     pkgs.codex-login
   ];
 
-  # every harness loads the same user-level instructions
-  home.file = {
-    ".agents/skills/wiki".source = ../../../../skills/wiki;
-    ".agents/skills/project-plan".source = ../../../../skills/project-plan;
-    ".claude/skills/wiki".source = "${claudeSkills}/wiki";
-    ".claude/skills/project-plan".source = "${claudeSkills}/project-plan";
-    ".claude/CLAUDE.md".source = ./context.md;
-    ".codex/AGENTS.md".source = ./context.md;
-    ".gemini/GEMINI.md".source = ./context.md;
-  };
+  home.file =
+    lib.listToAttrs (
+      lib.concatMap (name: [
+        (lib.nameValuePair ".agents/skills/${name}" { source = skills + "/${name}"; })
+        (lib.nameValuePair ".claude/skills/${name}" { source = "${claudeSkills}/${name}"; })
+      ]) skillNames
+    )
+    // {
+      ".claude/CLAUDE.md".source = ./context.md;
+      ".codex/AGENTS.md".source = ./context.md;
+      ".gemini/GEMINI.md".source = ./context.md;
+    };
 
   # each client keeps ownership of its other settings
   home.activation.wikiSessionHooks = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
