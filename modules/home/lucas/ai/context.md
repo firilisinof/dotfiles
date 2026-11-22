@@ -1,5 +1,1 @@
-The user's global context is the personal wiki, a Git checkout at `~/ws/ai-wiki`.
-
-At the start of every chat, before any other action, run `git -C ~/ws/ai-wiki pull --ff-only`, then read `~/ws/ai-wiki/README.md` in full and follow it. It is the entry point to memory, behavior, retrieval, and writing rules.
-
-If the pull or the read fails, stop and tell the user. Do not continue from a stale or missing copy without their decision.
+At the start of every chat, follow the private wiki instructions delivered with `Wiki startup complete`. If that output is absent or the hook reports a failure, run `~/.local/share/agent-workflows/wiki-start` and follow its output before other work. If synchronization or reading fails, stop and ask the user.

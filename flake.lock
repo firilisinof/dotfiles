@@ -369,11 +369,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1795259696,
-        "narHash": "sha256-YEK50zCbvsrXam6tO1kUX0i48eFcE09u50Ml/xVQ09g=",
+        "lastModified": 1795379392,
+        "narHash": "sha256-BI9ZjkwpzO3xOQ9rUif2W08x28GZs601rsdTjEyO5jY=",
         "owner": "firilisinof",
         "repo": "wiki-check",
-        "rev": "958110a9f0ae627111e1298067658c017d3445c7",
+        "rev": "634f8e2282dbd3bde385ce1d0ec756fa59976734",
         "type": "github"
       },
       "original": {

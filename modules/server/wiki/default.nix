@@ -16,8 +16,8 @@ in
   programs.ssh.knownHosts."github.com".publicKey =
     "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOMqqnkVzrm0SdG6UOoqKLsabgH5C9okWi0dh2l9GKJl";
 
-  home-manager.users.lucas.home.packages = [
-    pkgs.ripgrep
-    pkgs.wiki-check
-  ];
+  home-manager.users.lucas = {
+    imports = [ ../../home/lucas/ai/wiki.nix ];
+    home.packages = [ pkgs.ripgrep ];
+  };
 }
