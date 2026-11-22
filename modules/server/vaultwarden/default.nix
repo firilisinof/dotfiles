@@ -21,7 +21,9 @@ in
 
   services.caddy.virtualHosts.${hostname}.extraConfig = "reverse_proxy 127.0.0.1:8222";
 
-  dotfiles.monitors = [ { target = "https://${hostname}/alive"; } ];
+  dotfiles.monitors.${hostname} = {
+    path = "/alive";
+  };
 
   services.restic.backups.b2 = {
     paths = [ dataDirectory ];

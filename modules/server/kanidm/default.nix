@@ -102,5 +102,7 @@ in
     paths = [ cfg.server.settings.online_backup.path ];
   };
 
-  dotfiles.monitors = [ { target = "${origin}/status"; } ];
+  dotfiles.monitors.${hostname} = {
+    path = "/status";
+  };
 }

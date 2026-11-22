@@ -119,5 +119,5 @@ in
 
   services.caddy.virtualHosts.${hostname}.extraConfig = "reverse_proxy 10.200.0.2:8080";
 
-  dotfiles.monitors = [ { target = "https://${hostname}"; } ];
+  dotfiles.monitors.${hostname} = { };
 }

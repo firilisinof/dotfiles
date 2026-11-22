@@ -122,5 +122,7 @@ in
       "${lib.getExe' database "mariadb-dump"} --single-transaction --quick --routines --events --triggers nextcloud";
   };
 
-  dotfiles.monitors = [ { target = "https://${hostname}/status.php"; } ];
+  dotfiles.monitors.${hostname} = {
+    path = "/status.php";
+  };
 }

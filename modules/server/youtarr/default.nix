@@ -159,11 +159,7 @@ in
 
   services.caddy.virtualHosts.${hostname}.extraConfig = "reverse_proxy 127.0.0.1:${toString port}";
 
-  dotfiles.monitors = [
-    {
-      target = hostname;
-      protocol = "tcp";
-      port = 443;
-    }
-  ];
+  dotfiles.monitors.${hostname} = {
+    tcpPort = 443;
+  };
 }

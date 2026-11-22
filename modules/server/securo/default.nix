@@ -194,5 +194,7 @@ in
     exclude = [ "${state}/beat" ];
   };
 
-  dotfiles.monitors = [ { target = "${origin}/api/health"; } ];
+  dotfiles.monitors.${hostname} = {
+    path = "/api/health";
+  };
 }

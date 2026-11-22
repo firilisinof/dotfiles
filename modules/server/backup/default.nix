@@ -128,7 +128,6 @@ in
     sops.secrets."backup/b2-key-id" = { };
     sops.secrets."backup/b2-application-key" = { };
     sops.secrets."backup/restic-password" = { };
-    sops.secrets."backup/healthchecks-ping-url" = { };
 
     sops.templates."restic-b2.env".content = ''
       AWS_ACCESS_KEY_ID=${placeholder."backup/b2-key-id"}
@@ -142,7 +141,6 @@ in
       initialize = true;
       paths = [ "/srv" ];
       timerConfig = {
-        # daytime, outside fan quiet hours
         OnCalendar = "10:00";
         Persistent = true;
       };
@@ -163,12 +161,19 @@ in
         restic-backups-b2.serviceConfig = {
           Nice = 19;
           IOSchedulingClass = "idle";
-          # healthchecks.io alerts on a failure ping or when a day passes without a success ping
           ExecStopPost = [
-            (pkgs.writeShellScript "restic-backups-b2-healthcheck" ''
-              url=$(cat ${secrets."backup/healthchecks-ping-url".path})
-              [ "$SERVICE_RESULT" = success ] || url="$url/fail"
-              ${lib.getExe pkgs.curl} -fsS -m 10 --retry 5 -o /dev/null "$url"
+            (pkgs.writeShellScript "restic-backup-metrics" ''
+              set -eu
+              cd /var/lib/pi5-metrics
+              if [ "$SERVICE_RESULT" = success ]; then
+                echo "pi5_backup_last_success_timestamp_seconds $(date +%s)" > restic-b2-success.tmp
+                mv restic-b2-success.tmp restic-b2-success.prom
+                success=1
+              else
+                success=0
+              fi
+              echo "pi5_backup_last_run_success $success" > restic-b2-result.tmp
+              mv restic-b2-result.tmp restic-b2-result.prom
             '')
           ];
         };

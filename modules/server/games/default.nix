@@ -166,5 +166,7 @@ in
   };
   services.caddy.virtualHosts.${hostname}.extraConfig = "reverse_proxy 127.0.0.1:${toString port}";
 
-  dotfiles.monitors = [ { target = "${url}/api/heartbeat"; } ];
+  dotfiles.monitors.${hostname} = {
+    path = "/api/heartbeat";
+  };
 }
