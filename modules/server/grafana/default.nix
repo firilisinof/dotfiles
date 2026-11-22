@@ -15,12 +15,43 @@ let
     ++ [ "www.${domain}" ]
   );
   link = host: "https://${host}" + lib.optionalString (host == "mcp.${domain}") "/mcp";
+  serviceNames = {
+    games = "Games";
+    cloud = "Files";
+    torrents = "Torrents";
+    auth = "Identity";
+    home = "Pi dashboard";
+    mcp = "MCP";
+    securo = "Finances";
+    vault = "Passwords";
+    www = "Website";
+    yt = "YouTube archive";
+  };
+  favorites = [
+    "games"
+    "cloud"
+    "torrents"
+  ];
   inventory = pkgs.writeText "services.prom" (
-    lib.concatMapStrings (host: ''
-      pi5_service_info{url=${builtins.toJSON (link host)},probed="${
-        lib.boolToString (monitors ? ${host})
-      }"} 1
-    '') hosts
+    lib.concatMapStrings (
+      host:
+      let
+        subdomain = lib.removeSuffix ".${domain}" host;
+        name = serviceNames.${subdomain} or host;
+        priority = lib.lists.findFirstIndex (
+          favorite: favorite == subdomain
+        ) (lib.length favorites) favorites;
+        labels = {
+          url = link host;
+          service = name;
+          sort_key = "${toString priority} ${name}";
+          probed = lib.boolToString (monitors ? ${host});
+        };
+      in
+      "pi5_service_info{${
+        lib.concatStringsSep "," (lib.mapAttrsToList (k: v: "${k}=${builtins.toJSON v}") labels)
+      }} 1\n"
+    ) hosts
   );
   metricDirectory = "/var/lib/pi5-metrics";
   blackbox = prometheus.exporters.blackbox;
@@ -142,6 +173,7 @@ in
     services.grafana = {
       enable = true;
       declarativePlugins = [ pkgs.grafanaPlugins.prometheus ];
+      settings.users.default_theme = "light";
       settings.plugins.preinstall_disabled = true;
       settings.server = {
         domain = hostname;
