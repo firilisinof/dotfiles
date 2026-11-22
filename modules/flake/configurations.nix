@@ -21,10 +21,6 @@ let
     things = inputs.things.packages.${final.stdenv.hostPlatform.system}.default;
     # an input instead of a fetcher, so evaluation on another system needs no build
     codex-login = final.callPackage (inputs.account-switch + "/package.nix") { };
-    securo = final.callPackage ../server/securo/package.nix {
-      inherit (inputs) pyproject-nix uv2nix pyproject-build-systems;
-      src = inputs.securo;
-    };
   };
 in
 {

@@ -22,7 +22,6 @@ let
     auth = "Identity";
     home = "Pi dashboard";
     mcp = "MCP";
-    securo = "Finances";
     vault = "Passwords";
     www = "Website";
     yt = "YouTube archive";
