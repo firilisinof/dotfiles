@@ -41,16 +41,19 @@ def mirror_path(root: Path, url: str) -> Path:
 
 def remove_undeclared(root: Path, declared: set[Path]) -> None:
     # only directories with a mirror name are deleted, and an unfinished clone is never declared
+    parents = []
     for directory, names, _ in os.walk(root):
+        if Path(directory) != root:
+            parents.append(Path(directory))
         for name in [n for n in names if n.endswith((".git", ".git.tmp"))]:
             names.remove(name)
             path = Path(directory, name)
             if path not in declared:
                 shutil.rmtree(path)
                 log("removed", path=str(path))
-    for directory, _, _ in os.walk(root, topdown=False):
-        path = Path(directory)
-        if path != root and not any(path.iterdir()):
+    # the pruned walk excludes repository internals, including an empty refs directory
+    for path in reversed(parents):
+        if not any(path.iterdir()):
             path.rmdir()
 
 
