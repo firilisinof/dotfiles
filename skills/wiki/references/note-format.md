@@ -8,4 +8,4 @@ Types are overview, state, rules, configuration, procedure, finding, research, d
 
 Saved resources belong in `references/<slug>.md`. Their fields are `title`, `url`, `description`, `added` and `tags`. Create or reuse the reference before linking a note to it. Saving a resource does not verify its claims.
 
-Use relative Markdown links, including paths to sibling repositories. Project home links are curated entry points. Keep the plans index maintained by hand; do not generate vault-wide catalogs. Store attachments according to the vault's attachment-storage note.
+Use relative Markdown links, including paths to sibling repositories. Project home links are curated entry points. Keep the plans index maintained by hand; do not generate vault-wide catalogs. Store attachments according to the vault README.
