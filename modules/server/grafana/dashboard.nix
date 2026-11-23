@@ -5,15 +5,14 @@ let
   };
   cpu = ''100 * (1 - avg(rate(node_cpu_seconds_total{job="pi5",mode="idle"}[$__rate_interval])))'';
   memory = ''100 * (1 - node_memory_MemAvailable_bytes{job="pi5"} / node_memory_MemTotal_bytes{job="pi5"})'';
+  nvme = ''100 * (1 - node_filesystem_free_bytes{job="pi5",mountpoint="/"} / node_filesystem_size_bytes{job="pi5",mountpoint="/"})'';
   fan = ''node_hwmon_fan_rpm{job="pi5"}'';
   temperatures = ''node_hwmon_temp_celsius{job="pi5",sensor!="temp0"} * on(instance, chip) group_left(chip_name) node_hwmon_chip_names{job="pi5"}'';
   cpuTemp = ''node_hwmon_temp_celsius{job="pi5",sensor="temp1"} and on(instance, chip) node_hwmon_chip_names{job="pi5",chip_name="cpu_thermal"}'';
 
-  # keep failed probes distinct from failed scrapes and shortcuts without probes
-  availability = ''
-    (probe_success{job="services"} and on(instance) (up{job="services"} == 1))
-    or on(url) (-2 * pi5_service_info{probed="true"})
-  '';
+  # Grafana places each cell at the start of its hour
+  hourlyProbes = ''probe_success{job="services"}[1h] offset -1h'';
+  monitoredServices = ''max by (url, service) (pi5_service_info{probed="true"} @ end())'';
   states = {
     "-2" = {
       text = "Unknown";
@@ -22,6 +21,10 @@ let
     "0" = {
       text = "Down";
       color = "red";
+    };
+    "2" = {
+      text = "Partial outage";
+      color = "orange";
     };
     "1" = {
       text = "Up";
@@ -34,12 +37,11 @@ let
       inherit options;
     }
   ];
-  graph = id: title: unit: expr: legendFormat: x: y: {
+  graph = id: title: unit: expr: legendFormat: x: y: w: {
     inherit id title datasource;
     type = "timeseries";
     gridPos = {
-      inherit x y;
-      w = 12;
+      inherit x y w;
       h = 8;
     };
     fieldConfig.defaults = {
@@ -115,10 +117,7 @@ in
           instant = true;
           range = false;
           format = "table";
-          expr = ''
-            max by (url) (${availability} or on(url) (-1 * pi5_service_info{probed="false"}))
-              * on(url) group_left(service, sort_key) max by (url, service, sort_key) (pi5_service_info)
-          '';
+          expr = "max by (url, sort_key) (pi5_service_info)";
         }
       ];
       transformations = [
@@ -132,16 +131,9 @@ in
             excludeByName = {
               Time = true;
               sort_key = true;
+              Value = true;
             };
-            indexByName = {
-              service = 0;
-              Value = 1;
-              url = 2;
-            };
-            renameByName = {
-              service = "Service";
-              Value = "Availability";
-            };
+            renameByName.url = "URL";
           };
         }
       ];
@@ -149,7 +141,7 @@ in
         {
           matcher = {
             id = "byName";
-            options = "Service";
+            options = "URL";
           };
           properties = [
             {
@@ -157,38 +149,10 @@ in
               value = [
                 {
                   title = "Open service";
-                  url = "\${__data.fields.url}";
+                  url = "\${__value.raw}";
                   targetBlank = true;
                 }
               ];
-            }
-          ];
-        }
-        {
-          matcher = {
-            id = "byName";
-            options = "url";
-          };
-          properties = [
-            {
-              id = "custom.hidden";
-              value = true;
-            }
-          ];
-        }
-        {
-          matcher = {
-            id = "byName";
-            options = "Availability";
-          };
-          properties = [
-            {
-              id = "mappings";
-              value = valueMappings (states // { "-1".text = "Unmonitored"; });
-            }
-            {
-              id = "custom.cellOptions";
-              value.type = "color-text";
             }
           ];
         }
@@ -198,7 +162,8 @@ in
     {
       id = 11;
       title = "Service availability";
-      type = "state-timeline";
+      type = "status-history";
+      description = "Each bar summarizes the probe results recorded in one hour. The current hour fills as checks arrive. Gray means no probe results.";
       inherit datasource;
       gridPos = {
         x = 10;
@@ -207,14 +172,18 @@ in
         h = 12;
       };
       timeFrom = "24h";
-      maxDataPoints = 1441;
+
       targets = [
         {
           refId = "A";
-          # use the current names for samples collected before the launcher was added
+          interval = "1h";
+          # encode all failures as 0, all successes as 1, and mixed results as 2
           expr = ''
-            max by (url) (${availability})
-              * on(url) group_left(service) max by (url, service) (pi5_service_info{probed="true"} @ end())
+            (
+              2 * max by (url) (max_over_time(${hourlyProbes}))
+                - min by (url) (min_over_time(${hourlyProbes}))
+            ) * on(url) group_left(service) ${monitoredServices}
+            or on(url) (-2 * ${monitoredServices})
           '';
           legendFormat = "{{service}}";
           range = true;
@@ -223,22 +192,21 @@ in
       fieldConfig.defaults = {
         mappings = valueMappings states;
         custom = {
-          spanNulls = false;
-          insertNulls = 120000;
           fillOpacity = 85;
           lineWidth = 0;
         };
       };
       options = {
-        mergeValues = true;
+        colWidth = 0.8;
         showValue = "never";
         rowHeight = 0.8;
         legend.showLegend = false;
       };
     }
-    (graph 2 "CPU usage" "percent" cpu "CPU" 0 16)
-    (graph 3 "Memory usage" "percent" memory "Memory" 12 16)
-    (graph 4 "Temperatures" "celsius" temperatures "{{chip_name}} / {{sensor}}" 0 24)
-    (graph 5 "Fan speed" "rotrpm" fan "Fan" 12 24)
+    (graph 2 "CPU usage" "percent" cpu "CPU" 0 16 8)
+    (graph 3 "Memory usage" "percent" memory "Memory" 8 16 8)
+    (graph 12 "NVMe space used" "percent" nvme "Used" 16 16 8)
+    (graph 4 "Temperatures" "celsius" temperatures "{{chip_name}} / {{sensor}}" 0 24 12)
+    (graph 5 "Fan speed" "rotrpm" fan "Fan" 12 24 12)
   ];
 }
