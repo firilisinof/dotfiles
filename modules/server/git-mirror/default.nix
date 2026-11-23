@@ -19,6 +19,7 @@ let
     "https://github.com/Djihads80/Eglantine.git"
     "https://github.com/FelipePrado0/SpartanPort.git"
     "https://github.com/ly05010419/MacNativeGames.git"
+    "https://github.com/ProjectLeonida/Leonida.git"
     "https://github.com/riyadhHDA/wichforks.git"
     "https://github.com/seedds/nxnative.git"
     "https://github.com/slothic/d3hack.git"
