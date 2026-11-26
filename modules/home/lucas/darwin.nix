@@ -6,6 +6,8 @@
 }:
 
 let
+  # AppStream validates Linux desktop metadata and pulls in Wayland on macOS
+  zathuraPackages = pkgs.zathuraPkgs.overrideScope (_: _: { appstream = null; });
   jdk = pkgs.temurin-bin-21;
   # macOS resets the environment between the zsh startup files, so each one repeats it
   environment = ''
@@ -30,6 +32,7 @@ in
     (pkgs.anki-bin.overrideAttrs { dontFixup = true; })
     pkgs.firefox-bin-unwrapped
     pkgs.google-chrome
+    (zathuraPackages.zathuraWrapper.override { plugins = [ zathuraPackages.zathura_pdf_poppler ]; })
   ];
   home.sessionPath = [
     "/opt/homebrew/bin"
