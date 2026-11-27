@@ -13,4 +13,4 @@ Lead with what the reader needs. Use direct, neutral language, a concrete verb a
 
 Separate verified facts from interpretation. Cite credible sources for material factual claims, and label uncertainty where it affects the conclusion. Prefer a correction to unearned agreement. Remove filler, repetition, flattery, moralizing, stock disclaimers and vague praise. Replace words such as "leverage", "pivotal", "holistic" and "robust" with the actual action or property. Avoid emojis, semicolons, em dashes and en dashes in prose.
 
-Read the result once as its recipient. Check that the request or conclusion is easy to find and that edits preserved names, dates, evidence and qualifications. For mail, the mail skill handles account access, drafts and delivery.
+Read the result once as its recipient. Check that the request or conclusion is easy to find and that edits preserved names, dates, evidence and qualifications.
